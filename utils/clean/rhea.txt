@@ -1,0 +1,152 @@
+DEPTH: 0
+
+Rhea                                     1.000           28844
+
+DEPTH: 1
+
+Construction Blocks                      2,250.000       3828
+Morphite                                 3,750.000       11399
+R.A.M.- Starship Tech                    60.000          11478
+Charon                                   1.000           20185
+Capital Jump Drive                       30.000          21025
+Capital Gravimetric Sensor Cluster       665.000         29055
+Capital Graviton Reactor Unit            777.000         29059
+Capital Magpulse Thruster                633.000         29071
+Capital Quantum Microprocessor           1,056.000       29093
+Capital Scalar Capacitor Unit            1,056.000       29097
+Capital Sustained Shield Emitter         674.000         29101
+Capital Titanium Diborite Armor Plate    1,520.000       29107
+
+DEPTH: 2
+
+Titanium Carbide                         11,994,024.000  16671
+Sylramic Fibers                          3,133,026.000   16678
+Fullerides                               1,173,216.000   16679
+Phenolic Composites                      80,025.000      16680
+Nanotransistors                          42,163.000      16681
+Hypersynaptic Fibers                     14,630.000      16682
+Ferrogel                                 14,377.000      16683
+Capital Propulsion Engine                5.000           21009
+Capital Armor Plates                     5.000           21017
+Capital Cargo Bay                        50.000          21027
+Capital Construction Parts               5.000           21037
+R-O Trigger Neurolink Conduit            16.000          57471
+Gravimetric-FTL Interlink Communicator   1.000           57475
+Auto-Integrity Preservation Seal         400.000         57478
+Life Support Backup Unit                 200.000         57486
+Capital Core Temperature Regulator       1.000           57487
+
+DEPTH: 3
+
+Supertensile Plastics                    533.333         2312
+Test Cultures                            533.333         2319
+Nanites                                  533.333         2463
+Broadcast Node                           2.000           2867
+Integrity Response Drones                20.000          2868
+Organic Mortar Applicators               25.000          2870
+Self-Harmonizing Power Core              26.000          2872
+Wetware Mainframe                        31.000          2876
+Viral Agent                              533.333         3775
+Silicon Diborite                         123,577.740     16658
+Ceramic Powder                           52,217.100      16660
+Platinum Technite                        41,918.067      16662
+Solerium                                 1,950.667       16664
+Hexite                                   55,811.350      16665
+Hyperflurite                             3,594.250       16666
+Neo Mercurite                            2,810.867       16667
+Fermionic Condensates                    17,134.000      17317
+Vanadium Hafnite                         5,588.167       17959
+Fulleroferrocene                         660.000         30303
+PPD Fullerene Fibers                     190.000         30304
+Fullerene Intercalated Graphite          390.000         30305
+Methanofullerene                         190.000         30306
+Lanthanum Metallofullerene               190.000         30307
+Scandium Metallofullerene                130.000         30308
+Graphene Nanoribbons                     560.000         30309
+Carbon-86 Epoxy Resin                    380.000         30310
+C3-FTM Acid                              260.000         30311
+Nonlinear Metamaterials                  47,024.000      33362
+Axosomatic Neurolink Enhancer            640.000         57460
+Reaction-Orienting Neurolink Stabilizer  16.000          57467
+Core Temperature Regulator               35.000          57479
+
+DEPTH: 4
+
+Tritanium                                5,078,493.600   34
+Pyerite                                  18,274,624.400  35
+Mexallon                                 5,079,583.200   36
+Isogen                                   1,417,905.450   37
+Nocxium                                  143,219.933     38
+Zydrine                                  73,081.562      39
+Megacyte                                 35,823.000      40
+Chiral Structures                        3,500.000       2401
+Water                                    3,500.000       3645
+Vanadium                                 4,591.208       16642
+Platinum                                 48,864.708      16644
+Technetium                               20,959.033      16649
+Titanium Chromide                        135,614.907     16654
+Caesarium Cadmide                        12,204.500      16663
+Dysporite                                10,517.667      16668
+Ferrofluid                               19,268.917      16669
+Fluxed Condensates                       8,567.000       17769
+Prometium                                12,161.250      17960
+Amber Cytoserocin                        16.000          25268
+Golden Cytoserocin                       16.000          25273
+Amber Mykoserocin                        1,280.000       28694
+Golden Mykoserocin                       1,280.000       28697
+Fullerite-C50                            360.000         30370
+Fullerite-C60                            467.000         30371
+Fullerite-C70                            602.083         30372
+Fullerite-C72                            200.000         30373
+Fullerite-C84                            418.333         30374
+Fullerite-C28                            547.917         30375
+Fullerite-C32                            704.167         30376
+Fullerite-C320                           237.500         30377
+Fullerite-C540                           260.000         30378
+AG-Composite Molecular Condenser         33.600          57446
+Pressurized Oxidizers                    17,660.000      57456
+Reinforced Carbon Fiber                  29,160.000      57457
+
+DEPTH: 5
+
+Titanium                                 67,807.453      16638
+Chromium                                 96,688.462      16641
+Cadmium                                  12,182.875      16643
+Mercury                                  6,664.267       16646
+Caesium                                  7,077.583       16647
+Hafnium                                  12,428.542      16648
+Dysprosium                               14,893.292      16650
+Neodymium                                5,688.933       16651
+Promethium                               7,877.750       16652
+Thulium                                  4,283.500       16653
+Carbon Polymers                          56,767.200      16659
+Sulfuric Acid                            20,470.867      16661
+Carbon Fiber                             29,160.000      57453
+Oxy-Organic Solvents                     234.100         57454
+Thermosetting Polymer                    29,160.000      57455
+
+DEPTH: 6
+
+Nitrogen Fuel Block                      6,127.708       4051
+Hydrogen Fuel Block                      2,861.555       4246
+Helium Fuel Block                        4,808.661       4247
+Oxygen Fuel Block                        14,485.589      4312
+Hydrocarbons                             89,783.600      16633
+Atmospheric Gases                        71,635.433      16634
+Evaporite Deposits                       112,712.853     16635
+Silicates                                130,861.020     16636
+
+DEPTH: 7
+
+Enriched Uranium                         2,828.351       44
+Oxygen                                   15,555.932      3683
+Mechanical Parts                         2,828.351       3689
+Coolant                                  6,363.790       9832
+Robotics                                 707.088         9848
+Heavy Water                              120,204.927     16272
+Liquid Ozone                             247,480.733     16273
+Helium Isotopes                          54,097.434      16274
+Strontium Clathrates                     14,141.756      16275
+Oxygen Isotopes                          162,962.872     17887
+Nitrogen Isotopes                        68,936.719      17888
+Hydrogen Isotopes                        32,192.489      17889

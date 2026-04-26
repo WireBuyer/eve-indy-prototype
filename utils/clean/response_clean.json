@@ -1,0 +1,1720 @@
+[
+  {
+    "data": {
+      "base_node_amount": 1,
+      "depth": 0,
+      "end_node": "x",
+      "id": "28844",
+      "item_volume": 1300000,
+      "name": "Rhea",
+      "unit_mats": {
+        "11399": 3750.0,
+        "11478": 60.0,
+        "20185": 1.0,
+        "21025": 30.0,
+        "29055": 665.0,
+        "29059": 777.0,
+        "29071": 633.0,
+        "29093": 1056.0,
+        "29097": 1056.0,
+        "29101": 674.0,
+        "29107": 1520.0,
+        "3828": 2250.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2250.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 1,
+      "id": "3828",
+      "item_volume": 0.75,
+      "name": "Construction Blocks"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3750.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 1,
+      "id": "11399",
+      "item_volume": 0.01,
+      "name": "Morphite"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 60.0,
+      "depth": 1,
+      "id": "11478",
+      "item_volume": 0.04,
+      "name": "R.A.M.- Starship Tech",
+      "unit_mats": {
+        "34": 5.56,
+        "35": 4.44,
+        "36": 2.22,
+        "37": 0.82,
+        "38": 0.36
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1.0,
+      "depth": 1,
+      "id": "20185",
+      "item_volume": 1300000,
+      "name": "Charon",
+      "unit_mats": {
+        "21009": 5.0,
+        "21017": 5.0,
+        "21027": 50.0,
+        "21037": 5.0,
+        "57471": 16.0,
+        "57475": 1.0,
+        "57478": 400.0,
+        "57486": 200.0,
+        "57487": 1.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 30.0,
+      "depth": 1,
+      "id": "21025",
+      "item_volume": 2000.0,
+      "name": "Capital Jump Drive",
+      "unit_mats": {
+        "2876": 1.0,
+        "34": 60000.0,
+        "35": 216000.0,
+        "36": 60000.0,
+        "37": 16875.0,
+        "38": 1688.0,
+        "39": 900.0,
+        "40": 420.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 665.0,
+      "depth": 1,
+      "id": "29055",
+      "item_volume": 10.0,
+      "name": "Capital Gravimetric Sensor Cluster",
+      "unit_mats": {
+        "16671": 2222.0,
+        "16681": 11.0,
+        "16682": 22.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 777.0,
+      "depth": 1,
+      "id": "29059",
+      "item_volume": 10.0,
+      "name": "Capital Graviton Reactor Unit",
+      "unit_mats": {
+        "16671": 889.0,
+        "17317": 22.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 633.0,
+      "depth": 1,
+      "id": "29071",
+      "item_volume": 10.0,
+      "name": "Capital Magpulse Thruster",
+      "unit_mats": {
+        "16671": 1333.0,
+        "16680": 33.0,
+        "16683": 11.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1056.0,
+      "depth": 1,
+      "id": "29093",
+      "item_volume": 10.0,
+      "name": "Capital Quantum Microprocessor",
+      "unit_mats": {
+        "16671": 1667.0,
+        "16680": 56.0,
+        "16681": 22.0,
+        "33362": 22.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1056.0,
+      "depth": 1,
+      "id": "29097",
+      "item_volume": 10.0,
+      "name": "Capital Scalar Capacitor Unit",
+      "unit_mats": {
+        "16671": 2222.0,
+        "16679": 1111.0,
+        "16681": 11.0,
+        "33362": 22.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 674.0,
+      "depth": 1,
+      "id": "29101",
+      "item_volume": 10.0,
+      "name": "Capital Sustained Shield Emitter",
+      "unit_mats": {
+        "16671": 2222.0,
+        "16678": 889.0,
+        "16683": 11.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1520.0,
+      "depth": 1,
+      "id": "29107",
+      "item_volume": 10.0,
+      "name": "Capital Titanium Diborite Armor Plate",
+      "unit_mats": {
+        "16671": 2222.0,
+        "16678": 1667.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 11994024.0,
+      "depth": 2,
+      "id": "16671",
+      "item_volume": 0.01,
+      "name": "Titanium Carbide",
+      "unit_mats": {
+        "16654": 0.01,
+        "16658": 0.01,
+        "4312": 0.0005
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3133026.0,
+      "depth": 2,
+      "id": "16678",
+      "item_volume": 0.05,
+      "name": "Sylramic Fibers",
+      "unit_mats": {
+        "16660": 0.016666666666666666,
+        "16665": 0.016666666666666666,
+        "4247": 0.0008333333333333334
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1173216.0,
+      "depth": 2,
+      "id": "16679",
+      "item_volume": 0.15,
+      "name": "Fullerides",
+      "unit_mats": {
+        "16659": 0.03333333333333333,
+        "16662": 0.03333333333333333,
+        "4051": 0.0016666666666666668
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 80025.0,
+      "depth": 2,
+      "id": "16680",
+      "item_volume": 0.2,
+      "name": "Phenolic Composites",
+      "unit_mats": {
+        "16658": 0.045454545454545456,
+        "16663": 0.045454545454545456,
+        "17959": 0.045454545454545456,
+        "4312": 0.0022727272727272726
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 42163.0,
+      "depth": 2,
+      "id": "16681",
+      "item_volume": 0.25,
+      "name": "Nanotransistors",
+      "unit_mats": {
+        "16661": 0.06666666666666667,
+        "16662": 0.06666666666666667,
+        "16667": 0.06666666666666667,
+        "4051": 0.0033333333333333335
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14630.0,
+      "depth": 2,
+      "id": "16682",
+      "item_volume": 0.6,
+      "name": "Hypersynaptic Fibers",
+      "unit_mats": {
+        "16664": 0.13333333333333333,
+        "16668": 0.13333333333333333,
+        "17959": 0.13333333333333333,
+        "4312": 0.006666666666666667
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14377.0,
+      "depth": 2,
+      "id": "16683",
+      "item_volume": 1.0,
+      "name": "Ferrogel",
+      "unit_mats": {
+        "16665": 0.25,
+        "16666": 0.25,
+        "16669": 0.25,
+        "17960": 0.25,
+        "4246": 0.0125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5.0,
+      "depth": 2,
+      "id": "21009",
+      "item_volume": 2000.0,
+      "name": "Capital Propulsion Engine",
+      "unit_mats": {
+        "2872": 1.0,
+        "34": 40500.0,
+        "35": 146250.0,
+        "36": 40500.0,
+        "37": 11250.0,
+        "38": 1125.0,
+        "39": 570.0,
+        "40": 285.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5.0,
+      "depth": 2,
+      "id": "21017",
+      "item_volume": 2000.0,
+      "name": "Capital Armor Plates",
+      "unit_mats": {
+        "2870": 5.0,
+        "34": 45000.0,
+        "35": 157500.0,
+        "36": 45000.0,
+        "37": 12000.0,
+        "38": 1200.0,
+        "39": 615.0,
+        "40": 308.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 50.0,
+      "depth": 2,
+      "id": "21027",
+      "item_volume": 2000.0,
+      "name": "Capital Cargo Bay",
+      "unit_mats": {
+        "34": 54000.0,
+        "35": 195000.0,
+        "36": 54000.0,
+        "37": 15000.0,
+        "38": 1500.0,
+        "39": 760.0,
+        "40": 380.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5.0,
+      "depth": 2,
+      "id": "21037",
+      "item_volume": 2000.0,
+      "name": "Capital Construction Parts",
+      "unit_mats": {
+        "34": 30000.0,
+        "35": 105000.0,
+        "36": 30000.0,
+        "37": 9000.0,
+        "38": 750.0,
+        "39": 413.0,
+        "40": 210.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "depth": 2,
+      "id": "57471",
+      "item_volume": 16.0,
+      "name": "R-O Trigger Neurolink Conduit",
+      "unit_mats": {
+        "57456": 10.0,
+        "57457": 10.0,
+        "57460": 40.0,
+        "57467": 1.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1.0,
+      "depth": 2,
+      "id": "57475",
+      "item_volume": 100.0,
+      "name": "Gravimetric-FTL Interlink Communicator",
+      "unit_mats": {
+        "17317": 40.0,
+        "2867": 2.0,
+        "2872": 1.0,
+        "2876": 1.0,
+        "30303": 660.0,
+        "30304": 190.0,
+        "30305": 390.0,
+        "30306": 190.0,
+        "30307": 190.0,
+        "30308": 130.0,
+        "30309": 560.0,
+        "30310": 380.0,
+        "30311": 260.0,
+        "33362": 560.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 400.0,
+      "depth": 2,
+      "id": "57478",
+      "item_volume": 16.0,
+      "name": "Auto-Integrity Preservation Seal",
+      "unit_mats": {
+        "2312": 1.3333333333333333,
+        "2463": 1.3333333333333333,
+        "57457": 3.3333333333333335
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 200.0,
+      "depth": 2,
+      "id": "57486",
+      "item_volume": 45.0,
+      "name": "Life Support Backup Unit",
+      "unit_mats": {
+        "2319": 2.6666666666666665,
+        "3775": 2.6666666666666665,
+        "57457": 3.3333333333333335
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1.0,
+      "depth": 2,
+      "id": "57487",
+      "item_volume": 28000.0,
+      "name": "Capital Core Temperature Regulator",
+      "unit_mats": {
+        "2868": 20.0,
+        "2872": 20.0,
+        "57479": 35.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2312",
+      "item_volume": 0.75,
+      "name": "Supertensile Plastics"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2319",
+      "item_volume": 0.75,
+      "name": "Test Cultures"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2463",
+      "item_volume": 0.75,
+      "name": "Nanites"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2867",
+      "item_volume": 50.0,
+      "name": "Broadcast Node"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 20.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2868",
+      "item_volume": 50.0,
+      "name": "Integrity Response Drones"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 25.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2870",
+      "item_volume": 50.0,
+      "name": "Organic Mortar Applicators"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 26.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2872",
+      "item_volume": 50.0,
+      "name": "Self-Harmonizing Power Core"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 31.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "2876",
+      "item_volume": 50.0,
+      "name": "Wetware Mainframe"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 3,
+      "id": "3775",
+      "item_volume": 0.75,
+      "name": "Viral Agent"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 123577.74,
+      "depth": 3,
+      "id": "16658",
+      "item_volume": 0.2,
+      "name": "Silicon Diborite",
+      "unit_mats": {
+        "16635": 0.5,
+        "16636": 0.5,
+        "4312": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 52217.1,
+      "depth": 3,
+      "id": "16660",
+      "item_volume": 0.2,
+      "name": "Ceramic Powder",
+      "unit_mats": {
+        "16635": 0.5,
+        "16636": 0.5,
+        "4246": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 41918.066666666666,
+      "depth": 3,
+      "id": "16662",
+      "item_volume": 0.2,
+      "name": "Platinum Technite",
+      "unit_mats": {
+        "16644": 0.5,
+        "16649": 0.5,
+        "4051": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1950.6666666666667,
+      "depth": 3,
+      "id": "16664",
+      "item_volume": 0.2,
+      "name": "Solerium",
+      "unit_mats": {
+        "16641": 0.5,
+        "16647": 0.5,
+        "4312": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 55811.35,
+      "depth": 3,
+      "id": "16665",
+      "item_volume": 0.2,
+      "name": "Hexite",
+      "unit_mats": {
+        "16641": 0.5,
+        "16644": 0.5,
+        "4051": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3594.25,
+      "depth": 3,
+      "id": "16666",
+      "item_volume": 0.2,
+      "name": "Hyperflurite",
+      "unit_mats": {
+        "16642": 0.5,
+        "16652": 0.5,
+        "4051": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2810.866666666667,
+      "depth": 3,
+      "id": "16667",
+      "item_volume": 0.2,
+      "name": "Neo Mercurite",
+      "unit_mats": {
+        "16646": 0.5,
+        "16651": 0.5,
+        "4247": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 17134.0,
+      "depth": 3,
+      "id": "17317",
+      "item_volume": 1.3,
+      "name": "Fermionic Condensates",
+      "unit_mats": {
+        "16663": 0.5,
+        "16668": 0.5,
+        "17769": 0.5,
+        "17960": 0.5,
+        "4247": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5588.166666666667,
+      "depth": 3,
+      "id": "17959",
+      "item_volume": 0.2,
+      "name": "Vanadium Hafnite",
+      "unit_mats": {
+        "16642": 0.5,
+        "16648": 0.5,
+        "4246": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 660.0,
+      "depth": 3,
+      "id": "30303",
+      "item_volume": 0.1,
+      "name": "Fulleroferrocene",
+      "unit_mats": {
+        "30370": 0.2,
+        "30371": 0.1,
+        "34": 1.0,
+        "4312": 0.005
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 190.0,
+      "depth": 3,
+      "id": "30304",
+      "item_volume": 0.5,
+      "name": "PPD Fullerene Fibers",
+      "unit_mats": {
+        "30370": 1.2,
+        "30371": 0.4,
+        "35": 3.2,
+        "4246": 0.02
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 390.0,
+      "depth": 3,
+      "id": "30305",
+      "item_volume": 0.8,
+      "name": "Fullerene Intercalated Graphite",
+      "unit_mats": {
+        "30371": 0.8333333333333334,
+        "30372": 0.8333333333333334,
+        "36": 5.0,
+        "4246": 0.041666666666666664
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 190.0,
+      "depth": 3,
+      "id": "30306",
+      "item_volume": 0.75,
+      "name": "Methanofullerene",
+      "unit_mats": {
+        "30372": 0.625,
+        "30373": 0.625,
+        "37": 1.875,
+        "4246": 0.03125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 190.0,
+      "depth": 3,
+      "id": "30307",
+      "item_volume": 1.0,
+      "name": "Lanthanum Metallofullerene",
+      "unit_mats": {
+        "30372": 0.8333333333333334,
+        "30374": 0.8333333333333334,
+        "38": 1.6666666666666667,
+        "4312": 0.041666666666666664
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 130.0,
+      "depth": 3,
+      "id": "30308",
+      "item_volume": 0.65,
+      "name": "Scandium Metallofullerene",
+      "unit_mats": {
+        "30373": 0.625,
+        "30375": 0.625,
+        "39": 0.15625,
+        "4247": 0.03125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 560.0,
+      "depth": 3,
+      "id": "30309",
+      "item_volume": 1.5,
+      "name": "Graphene Nanoribbons",
+      "unit_mats": {
+        "30375": 0.8333333333333334,
+        "30376": 0.8333333333333334,
+        "38": 3.3333333333333335,
+        "4051": 0.041666666666666664
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 380.0,
+      "depth": 3,
+      "id": "30310",
+      "item_volume": 0.4,
+      "name": "Carbon-86 Epoxy Resin",
+      "unit_mats": {
+        "30376": 0.625,
+        "30377": 0.625,
+        "39": 0.1875,
+        "4051": 0.03125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 260.0,
+      "depth": 3,
+      "id": "30311",
+      "item_volume": 0.2,
+      "name": "C3-FTM Acid",
+      "unit_mats": {
+        "30374": 1.0,
+        "30378": 1.0,
+        "40": 0.8,
+        "4247": 0.05
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 47024.0,
+      "depth": 3,
+      "id": "33362",
+      "item_volume": 1.0,
+      "name": "Nonlinear Metamaterials",
+      "unit_mats": {
+        "16654": 0.3333333333333333,
+        "16669": 0.3333333333333333,
+        "4051": 0.016666666666666666
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 640.0,
+      "depth": 3,
+      "id": "57460",
+      "item_volume": 4.0,
+      "name": "Axosomatic Neurolink Enhancer",
+      "unit_mats": {
+        "28694": 2.0,
+        "28697": 2.0,
+        "4051": 0.25,
+        "57446": 0.05
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "depth": 3,
+      "id": "57467",
+      "item_volume": 10.0,
+      "name": "Reaction-Orienting Neurolink Stabilizer",
+      "unit_mats": {
+        "25268": 1.0,
+        "25273": 1.0,
+        "4051": 0.5,
+        "57446": 0.1
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 35.0,
+      "depth": 3,
+      "id": "57479",
+      "item_volume": 180.0,
+      "name": "Core Temperature Regulator",
+      "unit_mats": {
+        "2401": 100.0,
+        "3645": 100.0,
+        "57456": 500.0,
+        "57457": 500.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5078493.6,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "34",
+      "item_volume": 0.01,
+      "name": "Tritanium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 18274624.4,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "35",
+      "item_volume": 0.01,
+      "name": "Pyerite"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5079583.2,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "36",
+      "item_volume": 0.01,
+      "name": "Mexallon"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1417905.45,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "37",
+      "item_volume": 0.01,
+      "name": "Isogen"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 143219.93333333332,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "38",
+      "item_volume": 0.01,
+      "name": "Nocxium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 73081.5625,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "39",
+      "item_volume": 0.01,
+      "name": "Zydrine"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 35823.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "40",
+      "item_volume": 0.01,
+      "name": "Megacyte"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3500.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "2401",
+      "item_volume": 0.19,
+      "name": "Chiral Structures"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3500.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "3645",
+      "item_volume": 0.19,
+      "name": "Water"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 4591.208333333334,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "16642",
+      "item_volume": 0.05,
+      "name": "Vanadium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 48864.70833333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "16644",
+      "item_volume": 0.05,
+      "name": "Platinum"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 20959.033333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "16649",
+      "item_volume": 0.05,
+      "name": "Technetium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 135614.90666666668,
+      "depth": 4,
+      "id": "16654",
+      "item_volume": 0.2,
+      "name": "Titanium Chromide",
+      "unit_mats": {
+        "16638": 0.5,
+        "16641": 0.5,
+        "4312": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12204.5,
+      "depth": 4,
+      "id": "16663",
+      "item_volume": 0.2,
+      "name": "Caesarium Cadmide",
+      "unit_mats": {
+        "16643": 0.5,
+        "16647": 0.5,
+        "4312": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 10517.666666666666,
+      "depth": 4,
+      "id": "16668",
+      "item_volume": 0.2,
+      "name": "Dysporite",
+      "unit_mats": {
+        "16646": 0.5,
+        "16650": 0.5,
+        "4247": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 19268.916666666664,
+      "depth": 4,
+      "id": "16669",
+      "item_volume": 0.2,
+      "name": "Ferrofluid",
+      "unit_mats": {
+        "16648": 0.5,
+        "16650": 0.5,
+        "4246": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 8567.0,
+      "depth": 4,
+      "id": "17769",
+      "item_volume": 0.2,
+      "name": "Fluxed Condensates",
+      "unit_mats": {
+        "16651": 0.5,
+        "16653": 0.5,
+        "4312": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12161.25,
+      "depth": 4,
+      "id": "17960",
+      "item_volume": 0.2,
+      "name": "Prometium",
+      "unit_mats": {
+        "16643": 0.5,
+        "16652": 0.5,
+        "4312": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "25268",
+      "item_volume": 10.0,
+      "name": "Amber Cytoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "25273",
+      "item_volume": 10.0,
+      "name": "Golden Cytoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1280.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "28694",
+      "item_volume": 10.0,
+      "name": "Amber Mykoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1280.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "28697",
+      "item_volume": 10.0,
+      "name": "Golden Mykoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 360.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30370",
+      "item_volume": 1.0,
+      "name": "Fullerite-C50"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 467.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30371",
+      "item_volume": 1.0,
+      "name": "Fullerite-C60"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 602.0833333333334,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30372",
+      "item_volume": 1.0,
+      "name": "Fullerite-C70"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 200.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30373",
+      "item_volume": 2.0,
+      "name": "Fullerite-C72"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 418.33333333333337,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30374",
+      "item_volume": 2.0,
+      "name": "Fullerite-C84"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 547.9166666666667,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30375",
+      "item_volume": 2.0,
+      "name": "Fullerite-C28"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 704.1666666666667,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30376",
+      "item_volume": 5.0,
+      "name": "Fullerite-C32"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 237.5,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30377",
+      "item_volume": 5.0,
+      "name": "Fullerite-C320"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 260.0,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "30378",
+      "item_volume": 10.0,
+      "name": "Fullerite-C540"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 33.6,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 4,
+      "id": "57446",
+      "item_volume": 1.0,
+      "name": "AG-Composite Molecular Condenser"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 17660.0,
+      "depth": 4,
+      "id": "57456",
+      "item_volume": 0.1,
+      "name": "Pressurized Oxidizers",
+      "unit_mats": {
+        "16659": 1.0,
+        "16661": 1.0,
+        "57454": 0.005
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 29160.0,
+      "depth": 4,
+      "id": "57457",
+      "item_volume": 0.1,
+      "name": "Reinforced Carbon Fiber",
+      "unit_mats": {
+        "57453": 1.0,
+        "57454": 0.005,
+        "57455": 1.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 67807.45333333334,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16638",
+      "item_volume": 0.05,
+      "name": "Titanium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 96688.46166666667,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16641",
+      "item_volume": 0.05,
+      "name": "Chromium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12182.875,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16643",
+      "item_volume": 0.05,
+      "name": "Cadmium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 6664.266666666666,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16646",
+      "item_volume": 0.05,
+      "name": "Mercury"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 7077.583333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16647",
+      "item_volume": 0.05,
+      "name": "Caesium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12428.541666666666,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16648",
+      "item_volume": 0.05,
+      "name": "Hafnium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14893.291666666664,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16650",
+      "item_volume": 0.05,
+      "name": "Dysprosium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5688.933333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16651",
+      "item_volume": 0.05,
+      "name": "Neodymium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 7877.75,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16652",
+      "item_volume": 0.05,
+      "name": "Promethium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 4283.5,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 5,
+      "id": "16653",
+      "item_volume": 0.05,
+      "name": "Thulium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 56767.2,
+      "depth": 5,
+      "id": "16659",
+      "item_volume": 0.2,
+      "name": "Carbon Polymers",
+      "unit_mats": {
+        "16633": 0.5,
+        "16636": 0.5,
+        "4247": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 20470.86666666667,
+      "depth": 5,
+      "id": "16661",
+      "item_volume": 0.2,
+      "name": "Sulfuric Acid",
+      "unit_mats": {
+        "16634": 0.5,
+        "16635": 0.5,
+        "4051": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 29160.0,
+      "depth": 5,
+      "id": "57453",
+      "item_volume": 0.2,
+      "name": "Carbon Fiber",
+      "unit_mats": {
+        "16633": 0.5,
+        "16635": 0.5,
+        "4246": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 234.1,
+      "depth": 5,
+      "id": "57454",
+      "item_volume": 0.1,
+      "name": "Oxy-Organic Solvents",
+      "unit_mats": {
+        "16633": 200.0,
+        "16634": 200.0,
+        "4312": 0.5
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 29160.0,
+      "depth": 5,
+      "id": "57455",
+      "item_volume": 0.2,
+      "name": "Thermosetting Polymer",
+      "unit_mats": {
+        "16634": 0.5,
+        "16636": 0.5,
+        "4312": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 6127.708333333333,
+      "depth": 6,
+      "id": "4051",
+      "item_volume": 5.0,
+      "name": "Nitrogen Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16275": 0.5,
+        "17888": 11.25,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2861.5545833333335,
+      "depth": 6,
+      "id": "4246",
+      "item_volume": 5.0,
+      "name": "Hydrogen Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16275": 0.5,
+        "17889": 11.25,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 4808.660833333333,
+      "depth": 6,
+      "id": "4247",
+      "item_volume": 5.0,
+      "name": "Helium Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16274": 11.25,
+        "16275": 0.5,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14485.588583333334,
+      "depth": 6,
+      "id": "4312",
+      "item_volume": 5.0,
+      "name": "Oxygen Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16275": 0.5,
+        "17887": 11.25,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 89783.6,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 6,
+      "id": "16633",
+      "item_volume": 0.05,
+      "name": "Hydrocarbons"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 71635.43333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 6,
+      "id": "16634",
+      "item_volume": 0.05,
+      "name": "Atmospheric Gases"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 112712.85333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 6,
+      "id": "16635",
+      "item_volume": 0.05,
+      "name": "Evaporite Deposits"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 130861.01999999999,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 6,
+      "id": "16636",
+      "item_volume": 0.05,
+      "name": "Silicates"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2828.3512333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "44",
+      "item_volume": 0.75,
+      "name": "Enriched Uranium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 15555.931783333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "3683",
+      "item_volume": 0.19,
+      "name": "Oxygen"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2828.3512333333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "3689",
+      "item_volume": 0.75,
+      "name": "Mechanical Parts"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 6363.790275000001,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "9832",
+      "item_volume": 0.75,
+      "name": "Coolant"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 707.0878083333333,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "9848",
+      "item_volume": 3.0,
+      "name": "Robotics"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 120204.92741666667,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "16272",
+      "item_volume": 0.4,
+      "name": "Heavy Water"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 247480.7329166667,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "16273",
+      "item_volume": 0.4,
+      "name": "Liquid Ozone"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 54097.434375,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "16274",
+      "item_volume": 0.03,
+      "name": "Helium Isotopes"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14141.756166666666,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "16275",
+      "item_volume": 3.0,
+      "name": "Strontium Clathrates"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 162962.87156250002,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "17887",
+      "item_volume": 0.03,
+      "name": "Oxygen Isotopes"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 68936.71875,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "17888",
+      "item_volume": 0.03,
+      "name": "Nitrogen Isotopes"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 32192.4890625,
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "depth": 7,
+      "id": "17889",
+      "item_volume": 0.03,
+      "name": "Hydrogen Isotopes"
+    }
+  }
+]

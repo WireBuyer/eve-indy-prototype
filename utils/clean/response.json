@@ -1,0 +1,2428 @@
+[
+  {
+    "data": {
+      "base_node_amount": 5.0,
+      "bg_image": "/type_icons/21009_64.png",
+      "cf_node_amount": 4.5,
+      "cf_unit_mats": {
+        "2872": 1.0,
+        "34": 36450.0,
+        "35": 131625.0,
+        "36": 36450.0,
+        "37": 10125.0,
+        "38": 1012.5,
+        "39": 513.0,
+        "40": 256.5,
+        "57457": 90.0
+      },
+      "depth": 2,
+      "id": "21009",
+      "item_volume": 2000.0,
+      "name": "Capital Propulsion Engine",
+      "unit_mats": {
+        "2872": 1.0,
+        "34": 40500.0,
+        "35": 146250.0,
+        "36": 40500.0,
+        "37": 11250.0,
+        "38": 1125.0,
+        "39": 570.0,
+        "40": 285.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1280.0,
+      "bg_image": "/type_icons/28694_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 1036.8,
+      "depth": 4,
+      "id": "28694",
+      "item_volume": 10.0,
+      "name": "Amber Mykoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5.0,
+      "bg_image": "/type_icons/21017_64.png",
+      "cf_node_amount": 4.5,
+      "cf_unit_mats": {
+        "2870": 4.5,
+        "34": 40500.0,
+        "35": 141750.0,
+        "36": 40500.0,
+        "37": 10800.0,
+        "38": 1080.0,
+        "39": 553.5,
+        "40": 277.2,
+        "57457": 90.0
+      },
+      "depth": 2,
+      "id": "21017",
+      "item_volume": 2000.0,
+      "name": "Capital Armor Plates",
+      "unit_mats": {
+        "2870": 5.0,
+        "34": 45000.0,
+        "35": 157500.0,
+        "36": 45000.0,
+        "37": 12000.0,
+        "38": 1200.0,
+        "39": 615.0,
+        "40": 308.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1280.0,
+      "bg_image": "/type_icons/28697_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 1036.8,
+      "depth": 4,
+      "id": "28697",
+      "item_volume": 10.0,
+      "name": "Golden Mykoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 30.0,
+      "bg_image": "/type_icons/21025_64.png",
+      "cf_node_amount": 30.0,
+      "cf_unit_mats": {
+        "2876": 1.0,
+        "34": 54000.0,
+        "35": 194400.0,
+        "36": 54000.0,
+        "37": 15187.5,
+        "38": 1519.2,
+        "39": 810.0,
+        "40": 378.0,
+        "57457": 90.0
+      },
+      "depth": 1,
+      "id": "21025",
+      "item_volume": 2000.0,
+      "name": "Capital Jump Drive",
+      "unit_mats": {
+        "2876": 1.0,
+        "34": 60000.0,
+        "35": 216000.0,
+        "36": 60000.0,
+        "37": 16875.0,
+        "38": 1688.0,
+        "39": 900.0,
+        "40": 420.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5078493.6,
+      "bg_image": "/type_icons/34_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 4275669.24,
+      "depth": 4,
+      "id": "34",
+      "item_volume": 0.01,
+      "name": "Tritanium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 50.0,
+      "bg_image": "/type_icons/21027_64.png",
+      "cf_node_amount": 45.0,
+      "cf_unit_mats": {
+        "34": 48600.0,
+        "35": 175500.0,
+        "36": 48600.0,
+        "37": 13500.0,
+        "38": 1350.0,
+        "39": 684.0,
+        "40": 342.0,
+        "57457": 90.0
+      },
+      "depth": 2,
+      "id": "21027",
+      "item_volume": 2000.0,
+      "name": "Capital Cargo Bay",
+      "unit_mats": {
+        "34": 54000.0,
+        "35": 195000.0,
+        "36": 54000.0,
+        "37": 15000.0,
+        "38": 1500.0,
+        "39": 760.0,
+        "40": 380.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5079583.2,
+      "bg_image": "/type_icons/36_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 4276649.88,
+      "depth": 4,
+      "id": "36",
+      "item_volume": 0.01,
+      "name": "Mexallon"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 18274624.4,
+      "bg_image": "/type_icons/35_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 15385724.459999999,
+      "depth": 4,
+      "id": "35",
+      "item_volume": 0.01,
+      "name": "Pyerite"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1417905.45,
+      "bg_image": "/type_icons/37_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 1194102.405,
+      "depth": 4,
+      "id": "37",
+      "item_volume": 0.01,
+      "name": "Isogen"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5588.166666666667,
+      "bg_image": "/type_icons/17959_64.png",
+      "cf_node_amount": 5029.35,
+      "cf_unit_mats": { "16642": 0.5, "16648": 0.5, "4246": 0.025 },
+      "depth": 3,
+      "id": "17959",
+      "item_volume": 0.2,
+      "name": "Vanadium Hafnite",
+      "unit_mats": { "16642": 0.5, "16648": 0.5, "4246": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12161.25,
+      "bg_image": "/type_icons/17960_64.png",
+      "cf_node_amount": 10945.125,
+      "cf_unit_mats": { "16643": 0.5, "16652": 0.5, "4312": 0.025 },
+      "depth": 4,
+      "id": "17960",
+      "item_volume": 0.2,
+      "name": "Prometium",
+      "unit_mats": { "16643": 0.5, "16652": 0.5, "4312": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 35823.0,
+      "bg_image": "/type_icons/40_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 30169.350000000002,
+      "depth": 4,
+      "id": "40",
+      "item_volume": 0.01,
+      "name": "Megacyte"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 143219.93333333332,
+      "bg_image": "/type_icons/38_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 120764.19,
+      "depth": 4,
+      "id": "38",
+      "item_volume": 0.01,
+      "name": "Nocxium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 73081.5625,
+      "bg_image": "/type_icons/39_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 61634.30625,
+      "depth": 4,
+      "id": "39",
+      "item_volume": 0.01,
+      "name": "Zydrine"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2828.3512333333333,
+      "bg_image": "/type_icons/44_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 2271.0340440000004,
+      "depth": 7,
+      "id": "44",
+      "item_volume": 0.75,
+      "name": "Enriched Uranium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5.0,
+      "bg_image": "/type_icons/21037_64.png",
+      "cf_node_amount": 4.5,
+      "cf_unit_mats": {
+        "34": 27000.0,
+        "35": 94500.0,
+        "36": 27000.0,
+        "37": 8100.0,
+        "38": 675.0,
+        "39": 371.7,
+        "40": 189.0,
+        "57457": 90.0
+      },
+      "depth": 2,
+      "id": "21037",
+      "item_volume": 2000.0,
+      "name": "Capital Construction Parts",
+      "unit_mats": {
+        "34": 30000.0,
+        "35": 105000.0,
+        "36": 30000.0,
+        "37": 9000.0,
+        "38": 750.0,
+        "39": 413.0,
+        "40": 210.0,
+        "57457": 100.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3500.0,
+      "bg_image": "/type_icons/3645_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 2835.0,
+      "depth": 4,
+      "id": "3645",
+      "item_volume": 0.19,
+      "name": "Water"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 47024.0,
+      "bg_image": "/type_icons/33362_64.png",
+      "cf_node_amount": 42321.6,
+      "cf_unit_mats": {
+        "16654": 0.3333333333333333,
+        "16669": 0.3333333333333333,
+        "4051": 0.016666666666666666
+      },
+      "depth": 3,
+      "id": "33362",
+      "item_volume": 1.0,
+      "name": "Nonlinear Metamaterials",
+      "unit_mats": {
+        "16654": 0.3333333333333333,
+        "16669": 0.3333333333333333,
+        "4051": 0.016666666666666666
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 660.0,
+      "bg_image": "/type_icons/30303_64.png",
+      "cf_node_amount": 594.0,
+      "cf_unit_mats": { "30370": 0.2, "30371": 0.1, "34": 1.0, "4312": 0.005 },
+      "depth": 3,
+      "id": "30303",
+      "item_volume": 0.1,
+      "name": "Fulleroferrocene",
+      "unit_mats": { "30370": 0.2, "30371": 0.1, "34": 1.0, "4312": 0.005 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 190.0,
+      "bg_image": "/type_icons/30304_64.png",
+      "cf_node_amount": 171.0,
+      "cf_unit_mats": { "30370": 1.2, "30371": 0.4, "35": 3.2, "4246": 0.02 },
+      "depth": 3,
+      "id": "30304",
+      "item_volume": 0.5,
+      "name": "PPD Fullerene Fibers",
+      "unit_mats": { "30370": 1.2, "30371": 0.4, "35": 3.2, "4246": 0.02 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 390.0,
+      "bg_image": "/type_icons/30305_64.png",
+      "cf_node_amount": 351.0,
+      "cf_unit_mats": {
+        "30371": 0.8333333333333334,
+        "30372": 0.8333333333333334,
+        "36": 5.0,
+        "4246": 0.041666666666666664
+      },
+      "depth": 3,
+      "id": "30305",
+      "item_volume": 0.8,
+      "name": "Fullerene Intercalated Graphite",
+      "unit_mats": {
+        "30371": 0.8333333333333334,
+        "30372": 0.8333333333333334,
+        "36": 5.0,
+        "4246": 0.041666666666666664
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 190.0,
+      "bg_image": "/type_icons/30306_64.png",
+      "cf_node_amount": 171.0,
+      "cf_unit_mats": {
+        "30372": 0.625,
+        "30373": 0.625,
+        "37": 1.875,
+        "4246": 0.03125
+      },
+      "depth": 3,
+      "id": "30306",
+      "item_volume": 0.75,
+      "name": "Methanofullerene",
+      "unit_mats": {
+        "30372": 0.625,
+        "30373": 0.625,
+        "37": 1.875,
+        "4246": 0.03125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 190.0,
+      "bg_image": "/type_icons/30307_64.png",
+      "cf_node_amount": 171.0,
+      "cf_unit_mats": {
+        "30372": 0.8333333333333334,
+        "30374": 0.8333333333333334,
+        "38": 1.6666666666666667,
+        "4312": 0.041666666666666664
+      },
+      "depth": 3,
+      "id": "30307",
+      "item_volume": 1.0,
+      "name": "Lanthanum Metallofullerene",
+      "unit_mats": {
+        "30372": 0.8333333333333334,
+        "30374": 0.8333333333333334,
+        "38": 1.6666666666666667,
+        "4312": 0.041666666666666664
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 130.0,
+      "bg_image": "/type_icons/30308_64.png",
+      "cf_node_amount": 117.0,
+      "cf_unit_mats": {
+        "30373": 0.625,
+        "30375": 0.625,
+        "39": 0.15625,
+        "4247": 0.03125
+      },
+      "depth": 3,
+      "id": "30308",
+      "item_volume": 0.65,
+      "name": "Scandium Metallofullerene",
+      "unit_mats": {
+        "30373": 0.625,
+        "30375": 0.625,
+        "39": 0.15625,
+        "4247": 0.03125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 560.0,
+      "bg_image": "/type_icons/30309_64.png",
+      "cf_node_amount": 504.0,
+      "cf_unit_mats": {
+        "30375": 0.8333333333333334,
+        "30376": 0.8333333333333334,
+        "38": 3.3333333333333335,
+        "4051": 0.041666666666666664
+      },
+      "depth": 3,
+      "id": "30309",
+      "item_volume": 1.5,
+      "name": "Graphene Nanoribbons",
+      "unit_mats": {
+        "30375": 0.8333333333333334,
+        "30376": 0.8333333333333334,
+        "38": 3.3333333333333335,
+        "4051": 0.041666666666666664
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 380.0,
+      "bg_image": "/type_icons/30310_64.png",
+      "cf_node_amount": 342.0,
+      "cf_unit_mats": {
+        "30376": 0.625,
+        "30377": 0.625,
+        "39": 0.1875,
+        "4051": 0.03125
+      },
+      "depth": 3,
+      "id": "30310",
+      "item_volume": 0.4,
+      "name": "Carbon-86 Epoxy Resin",
+      "unit_mats": {
+        "30376": 0.625,
+        "30377": 0.625,
+        "39": 0.1875,
+        "4051": 0.03125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 260.0,
+      "bg_image": "/type_icons/30311_64.png",
+      "cf_node_amount": 234.0,
+      "cf_unit_mats": { "30374": 1.0, "30378": 1.0, "40": 0.8, "4247": 0.05 },
+      "depth": 3,
+      "id": "30311",
+      "item_volume": 0.2,
+      "name": "C3-FTM Acid",
+      "unit_mats": { "30374": 1.0, "30378": 1.0, "40": 0.8, "4247": 0.05 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 6363.790275000001,
+      "bg_image": "/type_icons/9832_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 5109.826599,
+      "depth": 7,
+      "id": "9832",
+      "item_volume": 0.75,
+      "name": "Coolant"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2828.3512333333333,
+      "bg_image": "/type_icons/3689_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 2271.0340440000004,
+      "depth": 7,
+      "id": "3689",
+      "item_volume": 0.75,
+      "name": "Mechanical Parts"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 15555.931783333333,
+      "bg_image": "/type_icons/3683_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 12490.687242,
+      "depth": 7,
+      "id": "3683",
+      "item_volume": 0.19,
+      "name": "Oxygen"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 33.6,
+      "bg_image": "/type_icons/57446_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 27.36,
+      "depth": 4,
+      "id": "57446",
+      "item_volume": 1.0,
+      "name": "AG-Composite Molecular Condenser"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 29160.0,
+      "bg_image": "/type_icons/57453_64.png",
+      "cf_node_amount": 23889.6,
+      "cf_unit_mats": { "16633": 0.5, "16635": 0.5, "4246": 0.025 },
+      "depth": 5,
+      "id": "57453",
+      "item_volume": 0.2,
+      "name": "Carbon Fiber",
+      "unit_mats": { "16633": 0.5, "16635": 0.5, "4246": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 234.1,
+      "bg_image": "/type_icons/57454_64.png",
+      "cf_node_amount": 190.971,
+      "cf_unit_mats": { "16633": 200.0, "16634": 200.0, "4312": 0.5 },
+      "depth": 5,
+      "id": "57454",
+      "item_volume": 0.1,
+      "name": "Oxy-Organic Solvents",
+      "unit_mats": { "16633": 200.0, "16634": 200.0, "4312": 0.5 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 29160.0,
+      "bg_image": "/type_icons/57455_64.png",
+      "cf_node_amount": 23889.6,
+      "cf_unit_mats": { "16634": 0.5, "16636": 0.5, "4312": 0.025 },
+      "depth": 5,
+      "id": "57455",
+      "item_volume": 0.2,
+      "name": "Thermosetting Polymer",
+      "unit_mats": { "16634": 0.5, "16636": 0.5, "4312": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 17660.0,
+      "bg_image": "/type_icons/57456_64.png",
+      "cf_node_amount": 14304.6,
+      "cf_unit_mats": { "16659": 1.0, "16661": 1.0, "57454": 0.005 },
+      "depth": 4,
+      "id": "57456",
+      "item_volume": 0.1,
+      "name": "Pressurized Oxidizers",
+      "unit_mats": { "16659": 1.0, "16661": 1.0, "57454": 0.005 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 29160.0,
+      "bg_image": "/type_icons/57457_64.png",
+      "cf_node_amount": 23889.6,
+      "cf_unit_mats": { "57453": 1.0, "57454": 0.005, "57455": 1.0 },
+      "depth": 4,
+      "id": "57457",
+      "item_volume": 0.1,
+      "name": "Reinforced Carbon Fiber",
+      "unit_mats": { "57453": 1.0, "57454": 0.005, "57455": 1.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 640.0,
+      "bg_image": "/type_icons/57460_64.png",
+      "cf_node_amount": 518.4,
+      "cf_unit_mats": {
+        "28694": 2.0,
+        "28697": 2.0,
+        "4051": 0.25,
+        "57446": 0.05
+      },
+      "depth": 3,
+      "id": "57460",
+      "item_volume": 4.0,
+      "name": "Axosomatic Neurolink Enhancer",
+      "unit_mats": { "28694": 2.0, "28697": 2.0, "4051": 0.25, "57446": 0.05 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 707.0878083333333,
+      "bg_image": "/type_icons/9848_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 630.84279,
+      "depth": 7,
+      "id": "9848",
+      "item_volume": 3.0,
+      "name": "Robotics"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "bg_image": "/type_icons/57467_64.png",
+      "cf_node_amount": 14.4,
+      "cf_unit_mats": { "25268": 1.0, "25273": 1.0, "4051": 0.5, "57446": 0.1 },
+      "depth": 3,
+      "id": "57467",
+      "item_volume": 10.0,
+      "name": "Reaction-Orienting Neurolink Stabilizer",
+      "unit_mats": { "25268": 1.0, "25273": 1.0, "4051": 0.5, "57446": 0.1 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "bg_image": "/type_icons/57471_64.png",
+      "cf_node_amount": 14.4,
+      "cf_unit_mats": {
+        "57456": 9.0,
+        "57457": 9.0,
+        "57460": 36.0,
+        "57467": 1.0
+      },
+      "depth": 2,
+      "id": "57471",
+      "item_volume": 16.0,
+      "name": "R-O Trigger Neurolink Conduit",
+      "unit_mats": { "57456": 10.0, "57457": 10.0, "57460": 40.0, "57467": 1.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1.0,
+      "bg_image": "/type_icons/57475_64.png",
+      "cf_node_amount": 1.0,
+      "cf_unit_mats": {
+        "17317": 36.0,
+        "2867": 1.8,
+        "2872": 1.0,
+        "2876": 1.0,
+        "30303": 594.0,
+        "30304": 171.0,
+        "30305": 351.0,
+        "30306": 171.0,
+        "30307": 171.0,
+        "30308": 117.0,
+        "30309": 504.0,
+        "30310": 342.0,
+        "30311": 234.0,
+        "33362": 504.0
+      },
+      "depth": 2,
+      "id": "57475",
+      "item_volume": 100.0,
+      "name": "Gravimetric-FTL Interlink Communicator",
+      "unit_mats": {
+        "17317": 40.0,
+        "2867": 2.0,
+        "2872": 1.0,
+        "2876": 1.0,
+        "30303": 660.0,
+        "30304": 190.0,
+        "30305": 390.0,
+        "30306": 190.0,
+        "30307": 190.0,
+        "30308": 130.0,
+        "30309": 560.0,
+        "30310": 380.0,
+        "30311": 260.0,
+        "33362": 560.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 400.0,
+      "bg_image": "/type_icons/57478_64.png",
+      "cf_node_amount": 360.0,
+      "cf_unit_mats": { "2312": 1.2, "2463": 1.2, "57457": 3.0 },
+      "depth": 2,
+      "id": "57478",
+      "item_volume": 16.0,
+      "name": "Auto-Integrity Preservation Seal",
+      "unit_mats": {
+        "2312": 1.3333333333333333,
+        "2463": 1.3333333333333333,
+        "57457": 3.3333333333333335
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3750.0,
+      "bg_image": "/type_icons/11399_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 3750.0,
+      "depth": 1,
+      "id": "11399",
+      "item_volume": 0.01,
+      "name": "Morphite"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 35.0,
+      "bg_image": "/type_icons/57479_64.png",
+      "cf_node_amount": 31.5,
+      "cf_unit_mats": {
+        "2401": 90.0,
+        "3645": 90.0,
+        "57456": 450.0,
+        "57457": 450.0
+      },
+      "depth": 3,
+      "id": "57479",
+      "item_volume": 180.0,
+      "name": "Core Temperature Regulator",
+      "unit_mats": {
+        "2401": 100.0,
+        "3645": 100.0,
+        "57456": 500.0,
+        "57457": 500.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 200.0,
+      "bg_image": "/type_icons/57486_64.png",
+      "cf_node_amount": 180.0,
+      "cf_unit_mats": { "2319": 2.4, "3775": 2.4, "57457": 3.0 },
+      "depth": 2,
+      "id": "57486",
+      "item_volume": 45.0,
+      "name": "Life Support Backup Unit",
+      "unit_mats": {
+        "2319": 2.6666666666666665,
+        "3775": 2.6666666666666665,
+        "57457": 3.3333333333333335
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1.0,
+      "bg_image": "/type_icons/57487_64.png",
+      "cf_node_amount": 1.0,
+      "cf_unit_mats": { "2868": 18.0, "2872": 18.0, "57479": 31.5 },
+      "depth": 2,
+      "id": "57487",
+      "item_volume": 28000.0,
+      "name": "Capital Core Temperature Regulator",
+      "unit_mats": { "2868": 20.0, "2872": 20.0, "57479": 35.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2861.5545833333335,
+      "bg_image": "/type_icons/4246_64.png",
+      "cf_node_amount": 2516.539125,
+      "cf_unit_mats": {
+        "16272": 3.825,
+        "16273": 7.875,
+        "16275": 0.45,
+        "17889": 10.125,
+        "3683": 0.49500000000000005,
+        "3689": 0.09000000000000001,
+        "44": 0.09000000000000001,
+        "9832": 0.2025,
+        "9848": 0.025
+      },
+      "depth": 6,
+      "id": "4246",
+      "item_volume": 5.0,
+      "name": "Hydrogen Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16275": 0.5,
+        "17889": 11.25,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 4808.660833333333,
+      "bg_image": "/type_icons/4247_64.png",
+      "cf_node_amount": 4288.059749999999,
+      "cf_unit_mats": {
+        "16272": 3.825,
+        "16273": 7.875,
+        "16274": 10.125,
+        "16275": 0.45,
+        "3683": 0.49500000000000005,
+        "3689": 0.09000000000000001,
+        "44": 0.09000000000000001,
+        "9832": 0.2025,
+        "9848": 0.025
+      },
+      "depth": 6,
+      "id": "4247",
+      "item_volume": 5.0,
+      "name": "Helium Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16274": 11.25,
+        "16275": 0.5,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 360.0,
+      "bg_image": "/type_icons/30370_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 324.0,
+      "depth": 4,
+      "id": "30370",
+      "item_volume": 1.0,
+      "name": "Fullerite-C50"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 467.0,
+      "bg_image": "/type_icons/30371_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 420.29999999999995,
+      "depth": 4,
+      "id": "30371",
+      "item_volume": 1.0,
+      "name": "Fullerite-C60"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 602.0833333333334,
+      "bg_image": "/type_icons/30372_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 541.875,
+      "depth": 4,
+      "id": "30372",
+      "item_volume": 1.0,
+      "name": "Fullerite-C70"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 200.0,
+      "bg_image": "/type_icons/30373_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 180.0,
+      "depth": 4,
+      "id": "30373",
+      "item_volume": 2.0,
+      "name": "Fullerite-C72"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 418.33333333333337,
+      "bg_image": "/type_icons/30374_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 376.5,
+      "depth": 4,
+      "id": "30374",
+      "item_volume": 2.0,
+      "name": "Fullerite-C84"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 547.9166666666667,
+      "bg_image": "/type_icons/30375_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 493.125,
+      "depth": 4,
+      "id": "30375",
+      "item_volume": 2.0,
+      "name": "Fullerite-C28"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 704.1666666666667,
+      "bg_image": "/type_icons/30376_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 633.75,
+      "depth": 4,
+      "id": "30376",
+      "item_volume": 5.0,
+      "name": "Fullerite-C32"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 237.5,
+      "bg_image": "/type_icons/30377_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 213.75,
+      "depth": 4,
+      "id": "30377",
+      "item_volume": 5.0,
+      "name": "Fullerite-C320"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 260.0,
+      "bg_image": "/type_icons/30378_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 234.0,
+      "depth": 4,
+      "id": "30378",
+      "item_volume": 10.0,
+      "name": "Fullerite-C540"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1,
+      "bg_image": "/type_icons/28844_64.png",
+      "cf_node_amount": 1,
+      "cf_unit_mats": {
+        "11399": 3375.0,
+        "11478": 54.0,
+        "20185": 1.0,
+        "21025": 27.0,
+        "29055": 598.5,
+        "29059": 699.3000000000001,
+        "29071": 569.7,
+        "29093": 950.4,
+        "29097": 950.4,
+        "29101": 606.6,
+        "29107": 1368.0,
+        "3828": 2025.0
+      },
+      "depth": 0,
+      "end_node": "x",
+      "id": "28844",
+      "item_volume": 1300000,
+      "name": "Rhea",
+      "unit_mats": {
+        "11399": 3750.0,
+        "11478": 60.0,
+        "20185": 1.0,
+        "21025": 30.0,
+        "29055": 665.0,
+        "29059": 777.0,
+        "29071": 633.0,
+        "29093": 1056.0,
+        "29097": 1056.0,
+        "29101": 674.0,
+        "29107": 1520.0,
+        "3828": 2250.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "bg_image": "/type_icons/25268_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 14.4,
+      "depth": 4,
+      "id": "25268",
+      "item_volume": 10.0,
+      "name": "Amber Cytoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 16.0,
+      "bg_image": "/type_icons/25273_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 14.4,
+      "depth": 4,
+      "id": "25273",
+      "item_volume": 10.0,
+      "name": "Golden Cytoserocin"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "bg_image": "/type_icons/3775_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 432.0,
+      "depth": 3,
+      "id": "3775",
+      "item_volume": 0.75,
+      "name": "Viral Agent"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 60.0,
+      "bg_image": "/type_icons/11478_64.png",
+      "cf_node_amount": 60.0,
+      "cf_unit_mats": {
+        "34": 5.004,
+        "35": 3.9960000000000004,
+        "36": 1.9980000000000002,
+        "37": 0.738,
+        "38": 0.324
+      },
+      "depth": 1,
+      "id": "11478",
+      "item_volume": 0.04,
+      "name": "R.A.M.- Starship Tech",
+      "unit_mats": {
+        "34": 5.56,
+        "35": 4.44,
+        "36": 2.22,
+        "37": 0.82,
+        "38": 0.36
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14485.588583333334,
+      "bg_image": "/type_icons/4312_64.png",
+      "cf_node_amount": 12968.310224999997,
+      "cf_unit_mats": {
+        "16272": 3.825,
+        "16273": 7.875,
+        "16275": 0.45,
+        "17887": 10.125,
+        "3683": 0.49500000000000005,
+        "3689": 0.09000000000000001,
+        "44": 0.09000000000000001,
+        "9832": 0.2025,
+        "9848": 0.025
+      },
+      "depth": 6,
+      "id": "4312",
+      "item_volume": 5.0,
+      "name": "Oxygen Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16275": 0.5,
+        "17887": 11.25,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1.0,
+      "bg_image": "/type_icons/20185_64.png",
+      "cf_node_amount": 1.0,
+      "cf_unit_mats": {
+        "21009": 4.5,
+        "21017": 4.5,
+        "21027": 45.0,
+        "21037": 4.5,
+        "57471": 14.4,
+        "57475": 1.0,
+        "57478": 360.0,
+        "57486": 180.0,
+        "57487": 1.0
+      },
+      "depth": 1,
+      "id": "20185",
+      "item_volume": 1300000,
+      "name": "Charon",
+      "unit_mats": {
+        "21009": 5.0,
+        "21017": 5.0,
+        "21027": 50.0,
+        "21037": 5.0,
+        "57471": 16.0,
+        "57475": 1.0,
+        "57478": 400.0,
+        "57486": 200.0,
+        "57487": 1.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2250.0,
+      "bg_image": "/type_icons/3828_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 2250.0,
+      "depth": 1,
+      "id": "3828",
+      "item_volume": 0.75,
+      "name": "Construction Blocks"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 89783.6,
+      "bg_image": "/type_icons/16633_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 74889.54000000001,
+      "depth": 6,
+      "id": "16633",
+      "item_volume": 0.05,
+      "name": "Hydrocarbons"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 71635.43333333333,
+      "bg_image": "/type_icons/16634_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 58556.19,
+      "depth": 6,
+      "id": "16634",
+      "item_volume": 0.05,
+      "name": "Atmospheric Gases"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 112712.85333333333,
+      "bg_image": "/type_icons/16635_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 99469.668,
+      "depth": 6,
+      "id": "16635",
+      "item_volume": 0.05,
+      "name": "Evaporite Deposits"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 130861.01999999999,
+      "bg_image": "/type_icons/16636_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 115803.01800000001,
+      "depth": 6,
+      "id": "16636",
+      "item_volume": 0.05,
+      "name": "Silicates"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 67807.45333333334,
+      "bg_image": "/type_icons/16638_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 61026.708,
+      "depth": 5,
+      "id": "16638",
+      "item_volume": 0.05,
+      "name": "Titanium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 96688.46166666667,
+      "bg_image": "/type_icons/16641_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 87019.6155,
+      "depth": 5,
+      "id": "16641",
+      "item_volume": 0.05,
+      "name": "Chromium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 4591.208333333334,
+      "bg_image": "/type_icons/16642_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 4132.0875,
+      "depth": 4,
+      "id": "16642",
+      "item_volume": 0.05,
+      "name": "Vanadium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12182.875,
+      "bg_image": "/type_icons/16643_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 10964.5875,
+      "depth": 5,
+      "id": "16643",
+      "item_volume": 0.05,
+      "name": "Cadmium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 48864.70833333333,
+      "bg_image": "/type_icons/16644_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 43978.2375,
+      "depth": 4,
+      "id": "16644",
+      "item_volume": 0.05,
+      "name": "Platinum"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 6664.266666666666,
+      "bg_image": "/type_icons/16646_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 5997.84,
+      "depth": 5,
+      "id": "16646",
+      "item_volume": 0.05,
+      "name": "Mercury"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 7077.583333333333,
+      "bg_image": "/type_icons/16647_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 6369.825,
+      "depth": 5,
+      "id": "16647",
+      "item_volume": 0.05,
+      "name": "Caesium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12428.541666666666,
+      "bg_image": "/type_icons/16648_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 11185.6875,
+      "depth": 5,
+      "id": "16648",
+      "item_volume": 0.05,
+      "name": "Hafnium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "bg_image": "/type_icons/2312_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 432.0,
+      "depth": 3,
+      "id": "2312",
+      "item_volume": 0.75,
+      "name": "Supertensile Plastics"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 20959.033333333333,
+      "bg_image": "/type_icons/16649_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 18863.13,
+      "depth": 4,
+      "id": "16649",
+      "item_volume": 0.05,
+      "name": "Technetium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 5688.933333333333,
+      "bg_image": "/type_icons/16651_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 5120.04,
+      "depth": 5,
+      "id": "16651",
+      "item_volume": 0.05,
+      "name": "Neodymium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 7877.75,
+      "bg_image": "/type_icons/16652_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 7089.975,
+      "depth": 5,
+      "id": "16652",
+      "item_volume": 0.05,
+      "name": "Promethium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14893.291666666664,
+      "bg_image": "/type_icons/16650_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 13403.962499999998,
+      "depth": 5,
+      "id": "16650",
+      "item_volume": 0.05,
+      "name": "Dysprosium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 135614.90666666668,
+      "bg_image": "/type_icons/16654_64.png",
+      "cf_node_amount": 122053.416,
+      "cf_unit_mats": { "16638": 0.5, "16641": 0.5, "4312": 0.025 },
+      "depth": 4,
+      "id": "16654",
+      "item_volume": 0.2,
+      "name": "Titanium Chromide",
+      "unit_mats": { "16638": 0.5, "16641": 0.5, "4312": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "bg_image": "/type_icons/2319_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 432.0,
+      "depth": 3,
+      "id": "2319",
+      "item_volume": 0.75,
+      "name": "Test Cultures"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 4283.5,
+      "bg_image": "/type_icons/16653_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 3855.15,
+      "depth": 5,
+      "id": "16653",
+      "item_volume": 0.05,
+      "name": "Thulium"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 123577.74,
+      "bg_image": "/type_icons/16658_64.png",
+      "cf_node_amount": 111219.966,
+      "cf_unit_mats": { "16635": 0.5, "16636": 0.5, "4312": 0.025 },
+      "depth": 3,
+      "id": "16658",
+      "item_volume": 0.2,
+      "name": "Silicon Diborite",
+      "unit_mats": { "16635": 0.5, "16636": 0.5, "4312": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 56767.2,
+      "bg_image": "/type_icons/16659_64.png",
+      "cf_node_amount": 49501.08,
+      "cf_unit_mats": { "16633": 0.5, "16636": 0.5, "4247": 0.025 },
+      "depth": 5,
+      "id": "16659",
+      "item_volume": 0.2,
+      "name": "Carbon Polymers",
+      "unit_mats": { "16633": 0.5, "16636": 0.5, "4247": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 52217.1,
+      "bg_image": "/type_icons/16660_64.png",
+      "cf_node_amount": 46995.39,
+      "cf_unit_mats": { "16635": 0.5, "16636": 0.5, "4246": 0.025 },
+      "depth": 3,
+      "id": "16660",
+      "item_volume": 0.2,
+      "name": "Ceramic Powder",
+      "unit_mats": { "16635": 0.5, "16636": 0.5, "4246": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 20470.86666666667,
+      "bg_image": "/type_icons/16661_64.png",
+      "cf_node_amount": 16834.38,
+      "cf_unit_mats": { "16634": 0.5, "16635": 0.5, "4051": 0.025 },
+      "depth": 5,
+      "id": "16661",
+      "item_volume": 0.2,
+      "name": "Sulfuric Acid",
+      "unit_mats": { "16634": 0.5, "16635": 0.5, "4051": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 41918.066666666666,
+      "bg_image": "/type_icons/16662_64.png",
+      "cf_node_amount": 37726.26,
+      "cf_unit_mats": { "16644": 0.5, "16649": 0.5, "4051": 0.025 },
+      "depth": 3,
+      "id": "16662",
+      "item_volume": 0.2,
+      "name": "Platinum Technite",
+      "unit_mats": { "16644": 0.5, "16649": 0.5, "4051": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 12204.5,
+      "bg_image": "/type_icons/16663_64.png",
+      "cf_node_amount": 10984.05,
+      "cf_unit_mats": { "16643": 0.5, "16647": 0.5, "4312": 0.025 },
+      "depth": 4,
+      "id": "16663",
+      "item_volume": 0.2,
+      "name": "Caesarium Cadmide",
+      "unit_mats": { "16643": 0.5, "16647": 0.5, "4312": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1950.6666666666667,
+      "bg_image": "/type_icons/16664_64.png",
+      "cf_node_amount": 1755.6,
+      "cf_unit_mats": { "16641": 0.5, "16647": 0.5, "4312": 0.025 },
+      "depth": 3,
+      "id": "16664",
+      "item_volume": 0.2,
+      "name": "Solerium",
+      "unit_mats": { "16641": 0.5, "16647": 0.5, "4312": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 55811.35,
+      "bg_image": "/type_icons/16665_64.png",
+      "cf_node_amount": 50230.215,
+      "cf_unit_mats": { "16641": 0.5, "16644": 0.5, "4051": 0.025 },
+      "depth": 3,
+      "id": "16665",
+      "item_volume": 0.2,
+      "name": "Hexite",
+      "unit_mats": { "16641": 0.5, "16644": 0.5, "4051": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3594.25,
+      "bg_image": "/type_icons/16666_64.png",
+      "cf_node_amount": 3234.825,
+      "cf_unit_mats": { "16642": 0.5, "16652": 0.5, "4051": 0.025 },
+      "depth": 3,
+      "id": "16666",
+      "item_volume": 0.2,
+      "name": "Hyperflurite",
+      "unit_mats": { "16642": 0.5, "16652": 0.5, "4051": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2810.866666666667,
+      "bg_image": "/type_icons/16667_64.png",
+      "cf_node_amount": 2529.7799999999997,
+      "cf_unit_mats": { "16646": 0.5, "16651": 0.5, "4247": 0.025 },
+      "depth": 3,
+      "id": "16667",
+      "item_volume": 0.2,
+      "name": "Neo Mercurite",
+      "unit_mats": { "16646": 0.5, "16651": 0.5, "4247": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 10517.666666666666,
+      "bg_image": "/type_icons/16668_64.png",
+      "cf_node_amount": 9465.9,
+      "cf_unit_mats": { "16646": 0.5, "16650": 0.5, "4247": 0.025 },
+      "depth": 4,
+      "id": "16668",
+      "item_volume": 0.2,
+      "name": "Dysporite",
+      "unit_mats": { "16646": 0.5, "16650": 0.5, "4247": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 19268.916666666664,
+      "bg_image": "/type_icons/16669_64.png",
+      "cf_node_amount": 17342.024999999998,
+      "cf_unit_mats": { "16648": 0.5, "16650": 0.5, "4246": 0.025 },
+      "depth": 4,
+      "id": "16669",
+      "item_volume": 0.2,
+      "name": "Ferrofluid",
+      "unit_mats": { "16648": 0.5, "16650": 0.5, "4246": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 11994024.0,
+      "bg_image": "/type_icons/16671_64.png",
+      "cf_node_amount": 10794621.6,
+      "cf_unit_mats": { "16654": 0.01, "16658": 0.01, "4312": 0.0005 },
+      "depth": 2,
+      "id": "16671",
+      "item_volume": 0.01,
+      "name": "Titanium Carbide",
+      "unit_mats": { "16654": 0.01, "16658": 0.01, "4312": 0.0005 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3133026.0,
+      "bg_image": "/type_icons/16678_64.png",
+      "cf_node_amount": 2819723.4,
+      "cf_unit_mats": {
+        "16660": 0.016666666666666666,
+        "16665": 0.016666666666666666,
+        "4247": 0.0008333333333333334
+      },
+      "depth": 2,
+      "id": "16678",
+      "item_volume": 0.05,
+      "name": "Sylramic Fibers",
+      "unit_mats": {
+        "16660": 0.016666666666666666,
+        "16665": 0.016666666666666666,
+        "4247": 0.0008333333333333334
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1173216.0,
+      "bg_image": "/type_icons/16679_64.png",
+      "cf_node_amount": 1055894.4000000001,
+      "cf_unit_mats": {
+        "16659": 0.03333333333333333,
+        "16662": 0.03333333333333333,
+        "4051": 0.0016666666666666668
+      },
+      "depth": 2,
+      "id": "16679",
+      "item_volume": 0.15,
+      "name": "Fullerides",
+      "unit_mats": {
+        "16659": 0.03333333333333333,
+        "16662": 0.03333333333333333,
+        "4051": 0.0016666666666666668
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 80025.0,
+      "bg_image": "/type_icons/16680_64.png",
+      "cf_node_amount": 72022.5,
+      "cf_unit_mats": {
+        "16658": 0.045454545454545456,
+        "16663": 0.045454545454545456,
+        "17959": 0.045454545454545456,
+        "4312": 0.0022727272727272726
+      },
+      "depth": 2,
+      "id": "16680",
+      "item_volume": 0.2,
+      "name": "Phenolic Composites",
+      "unit_mats": {
+        "16658": 0.045454545454545456,
+        "16663": 0.045454545454545456,
+        "17959": 0.045454545454545456,
+        "4312": 0.0022727272727272726
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 42163.0,
+      "bg_image": "/type_icons/16681_64.png",
+      "cf_node_amount": 37946.7,
+      "cf_unit_mats": {
+        "16661": 0.06666666666666667,
+        "16662": 0.06666666666666667,
+        "16667": 0.06666666666666667,
+        "4051": 0.0033333333333333335
+      },
+      "depth": 2,
+      "id": "16681",
+      "item_volume": 0.25,
+      "name": "Nanotransistors",
+      "unit_mats": {
+        "16661": 0.06666666666666667,
+        "16662": 0.06666666666666667,
+        "16667": 0.06666666666666667,
+        "4051": 0.0033333333333333335
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14630.0,
+      "bg_image": "/type_icons/16682_64.png",
+      "cf_node_amount": 13167.0,
+      "cf_unit_mats": {
+        "16664": 0.13333333333333333,
+        "16668": 0.13333333333333333,
+        "17959": 0.13333333333333333,
+        "4312": 0.006666666666666667
+      },
+      "depth": 2,
+      "id": "16682",
+      "item_volume": 0.6,
+      "name": "Hypersynaptic Fibers",
+      "unit_mats": {
+        "16664": 0.13333333333333333,
+        "16668": 0.13333333333333333,
+        "17959": 0.13333333333333333,
+        "4312": 0.006666666666666667
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14377.0,
+      "bg_image": "/type_icons/16683_64.png",
+      "cf_node_amount": 12939.3,
+      "cf_unit_mats": {
+        "16665": 0.25,
+        "16666": 0.25,
+        "16669": 0.25,
+        "17960": 0.25,
+        "4246": 0.0125
+      },
+      "depth": 2,
+      "id": "16683",
+      "item_volume": 1.0,
+      "name": "Ferrogel",
+      "unit_mats": {
+        "16665": 0.25,
+        "16666": 0.25,
+        "16669": 0.25,
+        "17960": 0.25,
+        "4246": 0.0125
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 2.0,
+      "bg_image": "/type_icons/2867_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 1.8,
+      "depth": 3,
+      "id": "2867",
+      "item_volume": 50.0,
+      "name": "Broadcast Node"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 20.0,
+      "bg_image": "/type_icons/2868_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 18.0,
+      "depth": 3,
+      "id": "2868",
+      "item_volume": 50.0,
+      "name": "Integrity Response Drones"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 25.0,
+      "bg_image": "/type_icons/2870_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 20.25,
+      "depth": 3,
+      "id": "2870",
+      "item_volume": 50.0,
+      "name": "Organic Mortar Applicators"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 26.0,
+      "bg_image": "/type_icons/2872_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 23.5,
+      "depth": 3,
+      "id": "2872",
+      "item_volume": 50.0,
+      "name": "Self-Harmonizing Power Core"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 31.0,
+      "bg_image": "/type_icons/2876_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 31.0,
+      "depth": 3,
+      "id": "2876",
+      "item_volume": 50.0,
+      "name": "Wetware Mainframe"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 3500.0,
+      "bg_image": "/type_icons/2401_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 2835.0,
+      "depth": 4,
+      "id": "2401",
+      "item_volume": 0.19,
+      "name": "Chiral Structures"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 8567.0,
+      "bg_image": "/type_icons/17769_64.png",
+      "cf_node_amount": 7710.3,
+      "cf_unit_mats": { "16651": 0.5, "16653": 0.5, "4312": 0.025 },
+      "depth": 4,
+      "id": "17769",
+      "item_volume": 0.2,
+      "name": "Fluxed Condensates",
+      "unit_mats": { "16651": 0.5, "16653": 0.5, "4312": 0.025 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 665.0,
+      "bg_image": "/type_icons/29055_64.png",
+      "cf_node_amount": 665.0,
+      "cf_unit_mats": { "16671": 1999.8, "16681": 9.9, "16682": 19.8 },
+      "depth": 1,
+      "id": "29055",
+      "item_volume": 10.0,
+      "name": "Capital Gravimetric Sensor Cluster",
+      "unit_mats": { "16671": 2222.0, "16681": 11.0, "16682": 22.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 777.0,
+      "bg_image": "/type_icons/29059_64.png",
+      "cf_node_amount": 777.0,
+      "cf_unit_mats": { "16671": 800.1, "17317": 19.8 },
+      "depth": 1,
+      "id": "29059",
+      "item_volume": 10.0,
+      "name": "Capital Graviton Reactor Unit",
+      "unit_mats": { "16671": 889.0, "17317": 22.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 633.0,
+      "bg_image": "/type_icons/29071_64.png",
+      "cf_node_amount": 633.0,
+      "cf_unit_mats": { "16671": 1199.7, "16680": 29.7, "16683": 9.9 },
+      "depth": 1,
+      "id": "29071",
+      "item_volume": 10.0,
+      "name": "Capital Magpulse Thruster",
+      "unit_mats": { "16671": 1333.0, "16680": 33.0, "16683": 11.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 120204.92741666667,
+      "bg_image": "/type_icons/16272_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 96518.94687,
+      "depth": 7,
+      "id": "16272",
+      "item_volume": 0.4,
+      "name": "Heavy Water"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 247480.7329166667,
+      "bg_image": "/type_icons/16273_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 198715.47884999996,
+      "depth": 7,
+      "id": "16273",
+      "item_volume": 0.4,
+      "name": "Liquid Ozone"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 54097.434375,
+      "bg_image": "/type_icons/16274_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 43416.60496874999,
+      "depth": 7,
+      "id": "16274",
+      "item_volume": 0.03,
+      "name": "Helium Isotopes"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 14141.756166666666,
+      "bg_image": "/type_icons/16275_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 11355.17022,
+      "depth": 7,
+      "id": "16275",
+      "item_volume": 3.0,
+      "name": "Strontium Clathrates"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 533.3333333333333,
+      "bg_image": "/type_icons/2463_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 432.0,
+      "depth": 3,
+      "id": "2463",
+      "item_volume": 0.75,
+      "name": "Nanites"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1056.0,
+      "bg_image": "/type_icons/29093_64.png",
+      "cf_node_amount": 1056.0,
+      "cf_unit_mats": {
+        "16671": 1500.3,
+        "16680": 50.4,
+        "16681": 19.8,
+        "33362": 19.8
+      },
+      "depth": 1,
+      "id": "29093",
+      "item_volume": 10.0,
+      "name": "Capital Quantum Microprocessor",
+      "unit_mats": {
+        "16671": 1667.0,
+        "16680": 56.0,
+        "16681": 22.0,
+        "33362": 22.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 17134.0,
+      "bg_image": "/type_icons/17317_64.png",
+      "cf_node_amount": 15420.6,
+      "cf_unit_mats": {
+        "16663": 0.5,
+        "16668": 0.5,
+        "17769": 0.5,
+        "17960": 0.5,
+        "4247": 0.025
+      },
+      "depth": 3,
+      "id": "17317",
+      "item_volume": 1.3,
+      "name": "Fermionic Condensates",
+      "unit_mats": {
+        "16663": 0.5,
+        "16668": 0.5,
+        "17769": 0.5,
+        "17960": 0.5,
+        "4247": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1056.0,
+      "bg_image": "/type_icons/29097_64.png",
+      "cf_node_amount": 1056.0,
+      "cf_unit_mats": {
+        "16671": 1999.8,
+        "16679": 999.9,
+        "16681": 9.9,
+        "33362": 19.8
+      },
+      "depth": 1,
+      "id": "29097",
+      "item_volume": 10.0,
+      "name": "Capital Scalar Capacitor Unit",
+      "unit_mats": {
+        "16671": 2222.0,
+        "16679": 1111.0,
+        "16681": 11.0,
+        "33362": 22.0
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 674.0,
+      "bg_image": "/type_icons/29101_64.png",
+      "cf_node_amount": 674.0,
+      "cf_unit_mats": { "16671": 1999.8, "16678": 800.1, "16683": 9.9 },
+      "depth": 1,
+      "id": "29101",
+      "item_volume": 10.0,
+      "name": "Capital Sustained Shield Emitter",
+      "unit_mats": { "16671": 2222.0, "16678": 889.0, "16683": 11.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 1520.0,
+      "bg_image": "/type_icons/29107_64.png",
+      "cf_node_amount": 1520.0,
+      "cf_unit_mats": { "16671": 1999.8, "16678": 1500.3 },
+      "depth": 1,
+      "id": "29107",
+      "item_volume": 10.0,
+      "name": "Capital Titanium Diborite Armor Plate",
+      "unit_mats": { "16671": 2222.0, "16678": 1667.0 }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 6127.708333333333,
+      "bg_image": "/type_icons/4051_64.png",
+      "cf_node_amount": 5460.802499999999,
+      "cf_unit_mats": {
+        "16272": 3.825,
+        "16273": 7.875,
+        "16275": 0.45,
+        "17888": 10.125,
+        "3683": 0.49500000000000005,
+        "3689": 0.09000000000000001,
+        "44": 0.09000000000000001,
+        "9832": 0.2025,
+        "9848": 0.025
+      },
+      "depth": 6,
+      "id": "4051",
+      "item_volume": 5.0,
+      "name": "Nitrogen Fuel Block",
+      "unit_mats": {
+        "16272": 4.25,
+        "16273": 8.75,
+        "16275": 0.5,
+        "17888": 11.25,
+        "3683": 0.55,
+        "3689": 0.1,
+        "44": 0.1,
+        "9832": 0.225,
+        "9848": 0.025
+      }
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 162962.87156250002,
+      "bg_image": "/type_icons/17887_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 131304.141028125,
+      "depth": 7,
+      "id": "17887",
+      "item_volume": 0.03,
+      "name": "Oxygen Isotopes"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 68936.71875,
+      "bg_image": "/type_icons/17888_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 55290.62531249999,
+      "depth": 7,
+      "id": "17888",
+      "item_volume": 0.03,
+      "name": "Nitrogen Isotopes"
+    }
+  },
+  {
+    "data": {
+      "base_node_amount": 32192.4890625,
+      "bg_image": "/type_icons/17889_64.png",
+      "buy_node": "x",
+      "cf_buy_node": "x",
+      "cf_node_amount": 25479.958640625002,
+      "depth": 7,
+      "id": "17889",
+      "item_volume": 0.03,
+      "name": "Hydrogen Isotopes"
+    }
+  },
+  { "data": { "id": "20185 28844", "source": "20185", "target": "28844" } },
+  { "data": { "id": "21025 28844", "source": "21025", "target": "28844" } },
+  { "data": { "id": "11478 28844", "source": "11478", "target": "28844" } },
+  { "data": { "id": "29071 28844", "source": "29071", "target": "28844" } },
+  { "data": { "id": "29055 28844", "source": "29055", "target": "28844" } },
+  { "data": { "id": "29101 28844", "source": "29101", "target": "28844" } },
+  { "data": { "id": "29059 28844", "source": "29059", "target": "28844" } },
+  { "data": { "id": "29093 28844", "source": "29093", "target": "28844" } },
+  { "data": { "id": "29097 28844", "source": "29097", "target": "28844" } },
+  { "data": { "id": "29107 28844", "source": "29107", "target": "28844" } },
+  { "data": { "id": "3828 28844", "source": "3828", "target": "28844" } },
+  { "data": { "id": "11399 28844", "source": "11399", "target": "28844" } },
+  { "data": { "id": "16680 29093", "source": "16680", "target": "29093" } },
+  { "data": { "id": "16680 29071", "source": "16680", "target": "29071" } },
+  { "data": { "id": "16681 29097", "source": "16681", "target": "29097" } },
+  { "data": { "id": "16681 29093", "source": "16681", "target": "29093" } },
+  { "data": { "id": "16681 29055", "source": "16681", "target": "29055" } },
+  { "data": { "id": "33362 29097", "source": "33362", "target": "29097" } },
+  { "data": { "id": "33362 57475", "source": "33362", "target": "57475" } },
+  { "data": { "id": "33362 29093", "source": "33362", "target": "29093" } },
+  { "data": { "id": "16671 29059", "source": "16671", "target": "29059" } },
+  { "data": { "id": "16671 29093", "source": "16671", "target": "29093" } },
+  { "data": { "id": "16671 29097", "source": "16671", "target": "29097" } },
+  { "data": { "id": "16671 29101", "source": "16671", "target": "29101" } },
+  { "data": { "id": "16671 29071", "source": "16671", "target": "29071" } },
+  { "data": { "id": "16671 29107", "source": "16671", "target": "29107" } },
+  { "data": { "id": "16671 29055", "source": "16671", "target": "29055" } },
+  { "data": { "id": "4312 30307", "source": "4312", "target": "30307" } },
+  { "data": { "id": "4312 16680", "source": "4312", "target": "16680" } },
+  { "data": { "id": "4312 17960", "source": "4312", "target": "17960" } },
+  { "data": { "id": "4312 16682", "source": "4312", "target": "16682" } },
+  { "data": { "id": "4312 17769", "source": "4312", "target": "17769" } },
+  { "data": { "id": "4312 16654", "source": "4312", "target": "16654" } },
+  { "data": { "id": "4312 30303", "source": "4312", "target": "30303" } },
+  { "data": { "id": "4312 57454", "source": "4312", "target": "57454" } },
+  { "data": { "id": "4312 57455", "source": "4312", "target": "57455" } },
+  { "data": { "id": "4312 16658", "source": "4312", "target": "16658" } },
+  { "data": { "id": "4312 16663", "source": "4312", "target": "16663" } },
+  { "data": { "id": "4312 16664", "source": "4312", "target": "16664" } },
+  { "data": { "id": "4312 16671", "source": "4312", "target": "16671" } },
+  { "data": { "id": "16658 16680", "source": "16658", "target": "16680" } },
+  { "data": { "id": "16658 16671", "source": "16658", "target": "16671" } },
+  { "data": { "id": "16663 16680", "source": "16663", "target": "16680" } },
+  { "data": { "id": "16663 17317", "source": "16663", "target": "17317" } },
+  { "data": { "id": "17959 16680", "source": "17959", "target": "16680" } },
+  { "data": { "id": "17959 16682", "source": "17959", "target": "16682" } },
+  { "data": { "id": "16683 29101", "source": "16683", "target": "29101" } },
+  { "data": { "id": "16683 29071", "source": "16683", "target": "29071" } },
+  { "data": { "id": "16635 16658", "source": "16635", "target": "16658" } },
+  { "data": { "id": "16635 16660", "source": "16635", "target": "16660" } },
+  { "data": { "id": "16635 57453", "source": "16635", "target": "57453" } },
+  { "data": { "id": "16635 16661", "source": "16635", "target": "16661" } },
+  { "data": { "id": "16636 16658", "source": "16636", "target": "16658" } },
+  { "data": { "id": "16636 16659", "source": "16636", "target": "16659" } },
+  { "data": { "id": "16636 16660", "source": "16636", "target": "16660" } },
+  { "data": { "id": "16636 57455", "source": "16636", "target": "57455" } },
+  { "data": { "id": "16643 17960", "source": "16643", "target": "17960" } },
+  { "data": { "id": "16643 16663", "source": "16643", "target": "16663" } },
+  { "data": { "id": "16647 16664", "source": "16647", "target": "16664" } },
+  { "data": { "id": "16647 16663", "source": "16647", "target": "16663" } },
+  { "data": { "id": "16654 33362", "source": "16654", "target": "33362" } },
+  { "data": { "id": "16654 16671", "source": "16654", "target": "16671" } },
+  { "data": { "id": "2876 21025", "source": "2876", "target": "21025" } },
+  { "data": { "id": "2876 57475", "source": "2876", "target": "57475" } },
+  { "data": { "id": "57457 21025", "source": "57457", "target": "21025" } },
+  { "data": { "id": "57457 21027", "source": "57457", "target": "21027" } },
+  { "data": { "id": "57457 57478", "source": "57457", "target": "57478" } },
+  { "data": { "id": "57457 57479", "source": "57457", "target": "57479" } },
+  { "data": { "id": "57457 21037", "source": "57457", "target": "21037" } },
+  { "data": { "id": "57457 57486", "source": "57457", "target": "57486" } },
+  { "data": { "id": "57457 21009", "source": "57457", "target": "21009" } },
+  { "data": { "id": "57457 21017", "source": "57457", "target": "21017" } },
+  { "data": { "id": "57457 57471", "source": "57457", "target": "57471" } },
+  { "data": { "id": "40 21025", "source": "40", "target": "21025" } },
+  { "data": { "id": "40 21027", "source": "40", "target": "21027" } },
+  { "data": { "id": "40 30311", "source": "40", "target": "30311" } },
+  { "data": { "id": "40 21037", "source": "40", "target": "21037" } },
+  { "data": { "id": "40 21009", "source": "40", "target": "21009" } },
+  { "data": { "id": "40 21017", "source": "40", "target": "21017" } },
+  { "data": { "id": "39 21025", "source": "39", "target": "21025" } },
+  { "data": { "id": "39 21027", "source": "39", "target": "21027" } },
+  { "data": { "id": "39 30308", "source": "39", "target": "30308" } },
+  { "data": { "id": "39 30310", "source": "39", "target": "30310" } },
+  { "data": { "id": "39 21037", "source": "39", "target": "21037" } },
+  { "data": { "id": "39 21009", "source": "39", "target": "21009" } },
+  { "data": { "id": "39 21017", "source": "39", "target": "21017" } },
+  { "data": { "id": "38 21025", "source": "38", "target": "21025" } },
+  { "data": { "id": "38 21027", "source": "38", "target": "21027" } },
+  { "data": { "id": "38 30307", "source": "38", "target": "30307" } },
+  { "data": { "id": "38 30309", "source": "38", "target": "30309" } },
+  { "data": { "id": "38 21037", "source": "38", "target": "21037" } },
+  { "data": { "id": "38 21009", "source": "38", "target": "21009" } },
+  { "data": { "id": "38 11478", "source": "38", "target": "11478" } },
+  { "data": { "id": "38 21017", "source": "38", "target": "21017" } },
+  { "data": { "id": "37 21025", "source": "37", "target": "21025" } },
+  { "data": { "id": "37 30306", "source": "37", "target": "30306" } },
+  { "data": { "id": "37 21027", "source": "37", "target": "21027" } },
+  { "data": { "id": "37 21037", "source": "37", "target": "21037" } },
+  { "data": { "id": "37 21009", "source": "37", "target": "21009" } },
+  { "data": { "id": "37 11478", "source": "37", "target": "11478" } },
+  { "data": { "id": "37 21017", "source": "37", "target": "21017" } },
+  { "data": { "id": "34 21025", "source": "34", "target": "21025" } },
+  { "data": { "id": "34 21027", "source": "34", "target": "21027" } },
+  { "data": { "id": "34 21037", "source": "34", "target": "21037" } },
+  { "data": { "id": "34 21009", "source": "34", "target": "21009" } },
+  { "data": { "id": "34 11478", "source": "34", "target": "11478" } },
+  { "data": { "id": "34 21017", "source": "34", "target": "21017" } },
+  { "data": { "id": "34 30303", "source": "34", "target": "30303" } },
+  { "data": { "id": "36 21025", "source": "36", "target": "21025" } },
+  { "data": { "id": "36 30305", "source": "36", "target": "30305" } },
+  { "data": { "id": "36 21027", "source": "36", "target": "21027" } },
+  { "data": { "id": "36 21037", "source": "36", "target": "21037" } },
+  { "data": { "id": "36 21009", "source": "36", "target": "21009" } },
+  { "data": { "id": "36 11478", "source": "36", "target": "11478" } },
+  { "data": { "id": "36 21017", "source": "36", "target": "21017" } },
+  { "data": { "id": "35 30304", "source": "35", "target": "30304" } },
+  { "data": { "id": "35 21025", "source": "35", "target": "21025" } },
+  { "data": { "id": "35 21027", "source": "35", "target": "21027" } },
+  { "data": { "id": "35 21037", "source": "35", "target": "21037" } },
+  { "data": { "id": "35 21009", "source": "35", "target": "21009" } },
+  { "data": { "id": "35 11478", "source": "35", "target": "11478" } },
+  { "data": { "id": "35 21017", "source": "35", "target": "21017" } },
+  { "data": { "id": "4246 30304", "source": "4246", "target": "30304" } },
+  { "data": { "id": "4246 30305", "source": "4246", "target": "30305" } },
+  { "data": { "id": "4246 30306", "source": "4246", "target": "30306" } },
+  { "data": { "id": "4246 17959", "source": "4246", "target": "17959" } },
+  { "data": { "id": "4246 16683", "source": "4246", "target": "16683" } },
+  { "data": { "id": "4246 57453", "source": "4246", "target": "57453" } },
+  { "data": { "id": "4246 16660", "source": "4246", "target": "16660" } },
+  { "data": { "id": "4246 16669", "source": "4246", "target": "16669" } },
+  { "data": { "id": "16642 16666", "source": "16642", "target": "16666" } },
+  { "data": { "id": "16642 17959", "source": "16642", "target": "17959" } },
+  { "data": { "id": "16648 16669", "source": "16648", "target": "16669" } },
+  { "data": { "id": "16648 17959", "source": "16648", "target": "17959" } },
+  { "data": { "id": "16679 29097", "source": "16679", "target": "29097" } },
+  { "data": { "id": "4051 30309", "source": "4051", "target": "30309" } },
+  { "data": { "id": "4051 30310", "source": "4051", "target": "30310" } },
+  { "data": { "id": "4051 16679", "source": "4051", "target": "16679" } },
+  { "data": { "id": "4051 16681", "source": "4051", "target": "16681" } },
+  { "data": { "id": "4051 33362", "source": "4051", "target": "33362" } },
+  { "data": { "id": "4051 57460", "source": "4051", "target": "57460" } },
+  { "data": { "id": "4051 16661", "source": "4051", "target": "16661" } },
+  { "data": { "id": "4051 16662", "source": "4051", "target": "16662" } },
+  { "data": { "id": "4051 16665", "source": "4051", "target": "16665" } },
+  { "data": { "id": "4051 16666", "source": "4051", "target": "16666" } },
+  { "data": { "id": "4051 57467", "source": "4051", "target": "57467" } },
+  { "data": { "id": "16661 57456", "source": "16661", "target": "57456" } },
+  { "data": { "id": "16661 16681", "source": "16661", "target": "16681" } },
+  { "data": { "id": "16662 16681", "source": "16662", "target": "16681" } },
+  { "data": { "id": "16662 16679", "source": "16662", "target": "16679" } },
+  { "data": { "id": "16667 16681", "source": "16667", "target": "16681" } },
+  { "data": { "id": "16665 16683", "source": "16665", "target": "16683" } },
+  { "data": { "id": "16665 16678", "source": "16665", "target": "16678" } },
+  { "data": { "id": "16666 16683", "source": "16666", "target": "16683" } },
+  { "data": { "id": "16669 33362", "source": "16669", "target": "33362" } },
+  { "data": { "id": "16669 16683", "source": "16669", "target": "16683" } },
+  { "data": { "id": "17960 16683", "source": "17960", "target": "16683" } },
+  { "data": { "id": "17960 17317", "source": "17960", "target": "17317" } },
+  { "data": { "id": "16678 29107", "source": "16678", "target": "29107" } },
+  { "data": { "id": "16678 29101", "source": "16678", "target": "29101" } },
+  { "data": { "id": "9848 4312", "source": "9848", "target": "4312" } },
+  { "data": { "id": "9848 4051", "source": "9848", "target": "4051" } },
+  { "data": { "id": "9848 4246", "source": "9848", "target": "4246" } },
+  { "data": { "id": "9848 4247", "source": "9848", "target": "4247" } },
+  { "data": { "id": "44 4312", "source": "44", "target": "4312" } },
+  { "data": { "id": "44 4051", "source": "44", "target": "4051" } },
+  { "data": { "id": "44 4246", "source": "44", "target": "4246" } },
+  { "data": { "id": "44 4247", "source": "44", "target": "4247" } },
+  { "data": { "id": "3689 4312", "source": "3689", "target": "4312" } },
+  { "data": { "id": "3689 4051", "source": "3689", "target": "4051" } },
+  { "data": { "id": "3689 4246", "source": "3689", "target": "4246" } },
+  { "data": { "id": "3689 4247", "source": "3689", "target": "4247" } },
+  { "data": { "id": "9832 4312", "source": "9832", "target": "4312" } },
+  { "data": { "id": "9832 4051", "source": "9832", "target": "4051" } },
+  { "data": { "id": "9832 4246", "source": "9832", "target": "4246" } },
+  { "data": { "id": "9832 4247", "source": "9832", "target": "4247" } },
+  { "data": { "id": "16275 4312", "source": "16275", "target": "4312" } },
+  { "data": { "id": "16275 4051", "source": "16275", "target": "4051" } },
+  { "data": { "id": "16275 4246", "source": "16275", "target": "4246" } },
+  { "data": { "id": "16275 4247", "source": "16275", "target": "4247" } },
+  { "data": { "id": "3683 4312", "source": "3683", "target": "4312" } },
+  { "data": { "id": "3683 4051", "source": "3683", "target": "4051" } },
+  { "data": { "id": "3683 4246", "source": "3683", "target": "4246" } },
+  { "data": { "id": "3683 4247", "source": "3683", "target": "4247" } },
+  { "data": { "id": "16272 4312", "source": "16272", "target": "4312" } },
+  { "data": { "id": "16272 4051", "source": "16272", "target": "4051" } },
+  { "data": { "id": "16272 4246", "source": "16272", "target": "4246" } },
+  { "data": { "id": "16272 4247", "source": "16272", "target": "4247" } },
+  { "data": { "id": "16273 4312", "source": "16273", "target": "4312" } },
+  { "data": { "id": "16273 4051", "source": "16273", "target": "4051" } },
+  { "data": { "id": "16273 4246", "source": "16273", "target": "4246" } },
+  { "data": { "id": "16273 4247", "source": "16273", "target": "4247" } },
+  { "data": { "id": "17888 4051", "source": "17888", "target": "4051" } },
+  { "data": { "id": "17887 4312", "source": "17887", "target": "4312" } },
+  { "data": { "id": "21009 20185", "source": "21009", "target": "20185" } },
+  { "data": { "id": "21017 20185", "source": "21017", "target": "20185" } },
+  { "data": { "id": "21027 20185", "source": "21027", "target": "20185" } },
+  { "data": { "id": "21037 20185", "source": "21037", "target": "20185" } },
+  { "data": { "id": "57471 20185", "source": "57471", "target": "20185" } },
+  { "data": { "id": "57475 20185", "source": "57475", "target": "20185" } },
+  { "data": { "id": "57478 20185", "source": "57478", "target": "20185" } },
+  { "data": { "id": "57486 20185", "source": "57486", "target": "20185" } },
+  { "data": { "id": "57487 20185", "source": "57487", "target": "20185" } },
+  { "data": { "id": "57453 57457", "source": "57453", "target": "57457" } },
+  { "data": { "id": "57454 57456", "source": "57454", "target": "57456" } },
+  { "data": { "id": "57454 57457", "source": "57454", "target": "57457" } },
+  { "data": { "id": "57455 57457", "source": "57455", "target": "57457" } },
+  { "data": { "id": "16682 29055", "source": "16682", "target": "29055" } },
+  { "data": { "id": "17317 29059", "source": "17317", "target": "29059" } },
+  { "data": { "id": "17317 57475", "source": "17317", "target": "57475" } },
+  { "data": { "id": "2872 21009", "source": "2872", "target": "21009" } },
+  { "data": { "id": "2872 57475", "source": "2872", "target": "57475" } },
+  { "data": { "id": "2872 57487", "source": "2872", "target": "57487" } },
+  { "data": { "id": "2867 57475", "source": "2867", "target": "57475" } },
+  { "data": { "id": "30308 57475", "source": "30308", "target": "57475" } },
+  { "data": { "id": "30304 57475", "source": "30304", "target": "57475" } },
+  { "data": { "id": "30306 57475", "source": "30306", "target": "57475" } },
+  { "data": { "id": "30307 57475", "source": "30307", "target": "57475" } },
+  { "data": { "id": "30311 57475", "source": "30311", "target": "57475" } },
+  { "data": { "id": "30310 57475", "source": "30310", "target": "57475" } },
+  { "data": { "id": "30305 57475", "source": "30305", "target": "57475" } },
+  { "data": { "id": "30309 57475", "source": "30309", "target": "57475" } },
+  { "data": { "id": "30303 57475", "source": "30303", "target": "57475" } },
+  { "data": { "id": "2312 57478", "source": "2312", "target": "57478" } },
+  { "data": { "id": "2463 57478", "source": "2463", "target": "57478" } },
+  { "data": { "id": "16638 16654", "source": "16638", "target": "16654" } },
+  { "data": { "id": "16641 16664", "source": "16641", "target": "16664" } },
+  { "data": { "id": "16641 16665", "source": "16641", "target": "16665" } },
+  { "data": { "id": "16641 16654", "source": "16641", "target": "16654" } },
+  { "data": { "id": "16634 16661", "source": "16634", "target": "16661" } },
+  { "data": { "id": "16634 57454", "source": "16634", "target": "57454" } },
+  { "data": { "id": "16634 57455", "source": "16634", "target": "57455" } },
+  { "data": { "id": "16644 16665", "source": "16644", "target": "16665" } },
+  { "data": { "id": "16644 16662", "source": "16644", "target": "16662" } },
+  { "data": { "id": "16649 16662", "source": "16649", "target": "16662" } },
+  { "data": { "id": "16652 17960", "source": "16652", "target": "17960" } },
+  { "data": { "id": "16652 16666", "source": "16652", "target": "16666" } },
+  { "data": { "id": "4247 30308", "source": "4247", "target": "30308" } },
+  { "data": { "id": "4247 17317", "source": "4247", "target": "17317" } },
+  { "data": { "id": "4247 16678", "source": "4247", "target": "16678" } },
+  { "data": { "id": "4247 30311", "source": "4247", "target": "30311" } },
+  { "data": { "id": "4247 16659", "source": "4247", "target": "16659" } },
+  { "data": { "id": "4247 16667", "source": "4247", "target": "16667" } },
+  { "data": { "id": "4247 16668", "source": "4247", "target": "16668" } },
+  { "data": { "id": "16646 16667", "source": "16646", "target": "16667" } },
+  { "data": { "id": "16646 16668", "source": "16646", "target": "16668" } },
+  { "data": { "id": "16651 17769", "source": "16651", "target": "17769" } },
+  { "data": { "id": "16651 16667", "source": "16651", "target": "16667" } },
+  { "data": { "id": "2870 21017", "source": "2870", "target": "21017" } },
+  { "data": { "id": "16650 16668", "source": "16650", "target": "16668" } },
+  { "data": { "id": "16650 16669", "source": "16650", "target": "16669" } },
+  { "data": { "id": "16659 57456", "source": "16659", "target": "57456" } },
+  { "data": { "id": "16659 16679", "source": "16659", "target": "16679" } },
+  { "data": { "id": "16660 16678", "source": "16660", "target": "16678" } },
+  { "data": { "id": "16664 16682", "source": "16664", "target": "16682" } },
+  { "data": { "id": "16668 16682", "source": "16668", "target": "16682" } },
+  { "data": { "id": "16668 17317", "source": "16668", "target": "17317" } },
+  { "data": { "id": "30371 30304", "source": "30371", "target": "30304" } },
+  { "data": { "id": "30371 30305", "source": "30371", "target": "30305" } },
+  { "data": { "id": "30371 30303", "source": "30371", "target": "30303" } },
+  { "data": { "id": "30370 30304", "source": "30370", "target": "30304" } },
+  { "data": { "id": "30370 30303", "source": "30370", "target": "30303" } },
+  { "data": { "id": "30372 30305", "source": "30372", "target": "30305" } },
+  { "data": { "id": "30372 30306", "source": "30372", "target": "30306" } },
+  { "data": { "id": "30372 30307", "source": "30372", "target": "30307" } },
+  { "data": { "id": "30373 30306", "source": "30373", "target": "30306" } },
+  { "data": { "id": "30373 30308", "source": "30373", "target": "30308" } },
+  { "data": { "id": "30374 30307", "source": "30374", "target": "30307" } },
+  { "data": { "id": "30374 30311", "source": "30374", "target": "30311" } },
+  { "data": { "id": "30375 30308", "source": "30375", "target": "30308" } },
+  { "data": { "id": "30375 30309", "source": "30375", "target": "30309" } },
+  { "data": { "id": "30376 30309", "source": "30376", "target": "30309" } },
+  { "data": { "id": "30376 30310", "source": "30376", "target": "30310" } },
+  { "data": { "id": "30377 30310", "source": "30377", "target": "30310" } },
+  { "data": { "id": "30378 30311", "source": "30378", "target": "30311" } },
+  { "data": { "id": "16633 16659", "source": "16633", "target": "16659" } },
+  { "data": { "id": "16633 57453", "source": "16633", "target": "57453" } },
+  { "data": { "id": "16633 57454", "source": "16633", "target": "57454" } },
+  { "data": { "id": "57456 57479", "source": "57456", "target": "57479" } },
+  { "data": { "id": "57456 57471", "source": "57456", "target": "57471" } },
+  { "data": { "id": "57460 57471", "source": "57460", "target": "57471" } },
+  { "data": { "id": "57467 57471", "source": "57467", "target": "57471" } },
+  { "data": { "id": "2319 57486", "source": "2319", "target": "57486" } },
+  { "data": { "id": "3775 57486", "source": "3775", "target": "57486" } },
+  { "data": { "id": "2868 57487", "source": "2868", "target": "57487" } },
+  { "data": { "id": "57479 57487", "source": "57479", "target": "57487" } },
+  { "data": { "id": "17889 4246", "source": "17889", "target": "4246" } },
+  { "data": { "id": "16274 4247", "source": "16274", "target": "4247" } },
+  { "data": { "id": "17769 17317", "source": "17769", "target": "17317" } },
+  { "data": { "id": "16653 17769", "source": "16653", "target": "17769" } },
+  { "data": { "id": "28694 57460", "source": "28694", "target": "57460" } },
+  { "data": { "id": "28697 57460", "source": "28697", "target": "57460" } },
+  { "data": { "id": "57446 57467", "source": "57446", "target": "57467" } },
+  { "data": { "id": "57446 57460", "source": "57446", "target": "57460" } },
+  { "data": { "id": "25268 57467", "source": "25268", "target": "57467" } },
+  { "data": { "id": "25273 57467", "source": "25273", "target": "57467" } },
+  { "data": { "id": "2401 57479", "source": "2401", "target": "57479" } },
+  { "data": { "id": "3645 57479", "source": "3645", "target": "57479" } }
+]
