@@ -1,0 +1,205 @@
+from collections import defaultdict
+
+from model import Blueprint, BomAggregate, BomSnapshot
+
+
+def format_duration(seconds: float) -> str:
+    total_seconds = int(round(seconds))
+    days, remainder = divmod(total_seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, secs = divmod(remainder, 60)
+
+    parts = []
+    if days:
+        parts.append(f"{days}d")
+    if hours or parts:
+        parts.append(f"{hours}h")
+    if minutes or parts:
+        parts.append(f"{minutes}m")
+    parts.append(f"{secs}s")
+    return " ".join(parts)
+
+
+def fmt(quantity: float) -> str:
+    return f"{int(quantity):,}" if float(quantity).is_integer() else f"{quantity:,.3f}"
+
+
+def format_runs(runs: float | None) -> str:
+    return "auto" if runs is None else fmt(runs)
+
+
+def format_job_cell(material_efficiency: int, time_efficiency: int, runs: float | None, prints: int) -> str:
+    return (
+        f"ME {material_efficiency} | TE {time_efficiency} | "
+        f"runs {format_runs(runs)} | prints {prints}"
+    )
+
+
+def build_qty_cell(quantity: float, is_base_material: bool = False, is_bought: bool = False) -> str:
+    tags = []
+    if is_base_material:
+        tags.append("[BASE]")
+    if is_bought:
+        tags.append("[BUY]")
+    suffix = f" {' '.join(tags)}" if tags else ""
+    return f"qty {fmt(quantity)}{suffix}"
+
+
+def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
+    if not rows:
+        print("  (none)")
+        return
+
+    name_width = max(len(name) for name, _, _, _ in rows)
+    show_detail = any(detail for _, detail, _, _ in rows)
+    show_qty = any(qty for _, _, qty, _ in rows)
+    show_time = any(time_cell for _, _, _, time_cell in rows)
+
+    detail_width = max((len(detail) for _, detail, _, _ in rows), default=0)
+    qty_width = max((len(qty) for _, _, qty, _ in rows), default=0)
+
+    for name, detail, qty, time_cell in rows:
+        parts = [f"  {name:<{name_width}}"]
+        if show_detail:
+            parts.append(f"{detail:<{detail_width}}")
+        if show_qty:
+            parts.append(f"{qty:<{qty_width}}")
+        if show_time:
+            parts.append(time_cell)
+        print(" | ".join(parts))
+
+
+def print_blueprint_settings(snapshot: BomSnapshot) -> None:
+    print("\nBlueprints in tree:")
+    blueprints_by_depth = defaultdict(list)
+    for usage in snapshot.used_blueprints.values():
+        blueprints_by_depth[usage.min_depth].append(usage)
+
+    for depth in sorted(blueprints_by_depth):
+        print(f"\nDepth {depth}:")
+        rows: list[tuple[str, str, str, str]] = []
+        for usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry.blueprint_option.name):
+            blueprint = usage.configured_blueprint
+            rows.append(
+                (
+                    usage.blueprint_option.name,
+                    f"output {fmt(usage.total_planned_output_quantity)}",
+                    f"time {format_duration(usage.total_time_seconds)}",
+                    format_job_cell(
+                        blueprint.material_efficiency,
+                        blueprint.time_efficiency,
+                        blueprint.runs,
+                        blueprint.prints,
+                    ),
+                )
+            )
+        print_table_rows(rows)
+
+
+def aggregate_detail_cell(aggregate: BomAggregate) -> str:
+    if aggregate.is_bought or aggregate.configured_blueprint is None:
+        return ""
+    if aggregate.mixed_blueprint_config:
+        return "config mixed"
+
+    blueprint = aggregate.configured_blueprint
+    return format_job_cell(
+        blueprint.material_efficiency,
+        blueprint.time_efficiency,
+        blueprint.runs,
+        blueprint.prints,
+    )
+
+
+def print_depth_summary(snapshot: BomSnapshot) -> None:
+    print("\nDepth 0:")
+    root_rows: list[tuple[str, str, str, str]] = []
+    for root in snapshot.roots:
+        root_rows.append(
+            (
+                root.name,
+                f"output {fmt(root.planned_output_quantity)}",
+                f"time {format_duration(root.total_time_seconds)}",
+                format_job_cell(root.material_efficiency, root.time_efficiency, root.runs, root.prints),
+            )
+        )
+    print_table_rows(root_rows)
+
+    layers = defaultdict(list)
+    for type_id, depth in snapshot.depths.items():
+        layers[depth].append(type_id)
+
+    max_depth = max(layers.keys()) if layers else 0
+    for depth in range(1, max_depth + 1):
+        items = layers.get(depth, [])
+        if not items:
+            continue
+
+        print(f"\nDepth {depth}:")
+        rows: list[tuple[str, str, str, str]] = []
+        for type_id in sorted(items):
+            aggregate = snapshot.aggregates[type_id]
+            rows.append(
+                (
+                    aggregate.name,
+                    build_qty_cell(aggregate.quantity, aggregate.is_base_material, aggregate.is_bought),
+                    f"time {format_duration(aggregate.total_time_seconds)}" if aggregate.total_time_seconds else "",
+                    aggregate_detail_cell(aggregate),
+                )
+            )
+        print_table_rows(rows)
+
+
+def print_top_level_blueprints(idx, blueprints: list[Blueprint]) -> None:
+    print("Top-level blueprints:")
+    rows: list[tuple[str, str, str, str]] = []
+    for blueprint in blueprints:
+        blueprint_typeid = idx.find_type_id_by_name(blueprint.name)
+        label = blueprint_typeid if blueprint_typeid is not None else "unknown"
+        rows.append(
+            (
+                blueprint.name,
+                f"typeID {label}",
+                "",
+                format_job_cell(
+                    blueprint.material_efficiency,
+                    blueprint.time_efficiency,
+                    blueprint.runs,
+                    blueprint.prints,
+                ),
+            )
+        )
+    print_table_rows(rows)
+
+
+def print_blueprint_updates(blueprint_updates: dict[str, Blueprint]) -> None:
+    if not blueprint_updates:
+        return
+
+    print("\nApplied blueprint overrides:")
+    rows: list[tuple[str, str, str, str]] = []
+    for blueprint in sorted(blueprint_updates.values(), key=lambda entry: entry.name):
+        rows.append(
+            (
+                blueprint.name,
+                "",
+                "",
+                format_job_cell(
+                    blueprint.material_efficiency,
+                    blueprint.time_efficiency,
+                    blueprint.runs,
+                    blueprint.prints,
+                ),
+            )
+        )
+    print_table_rows(rows)
+
+
+def print_buy_components(buy_components: set[str]) -> None:
+    if not buy_components:
+        return
+
+    print("\nBuy decisions:")
+    rows = [(name, "", "[BUY]", "") for name in sorted(buy_components)]
+    print_table_rows(rows)
+

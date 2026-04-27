@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 
 @dataclass(frozen=True)
@@ -97,6 +97,7 @@ class BlueprintOption:
 class BomRequest:
     top_level_blueprints: List[Blueprint] = field(default_factory=list)
     blueprint_settings: Dict[str, Blueprint] = field(default_factory=dict)
+    buy_components: Set[str] = field(default_factory=set)
     material_rounding_mode: str = "continuous"
 
     def blueprint_for(self, blueprint_name: str) -> Blueprint:
@@ -109,6 +110,7 @@ class BomRequest:
         return BomRequest(
             top_level_blueprints=list(self.top_level_blueprints),
             blueprint_settings=dict(self.blueprint_settings),
+            buy_components=set(self.buy_components),
             material_rounding_mode=self.material_rounding_mode,
         )
 
@@ -125,6 +127,8 @@ class BomNode:
     selected_blueprint: Optional[BlueprintOption] = None
     configured_blueprint: Optional[Blueprint] = None
     available_blueprints: List[BlueprintOption] = field(default_factory=list)
+    is_base_material: bool = False
+    is_bought: bool = False
     material_efficiency: int = 0
     time_efficiency: int = 0
     output_per_run: Optional[float] = None
@@ -146,6 +150,8 @@ class BomAggregate:
     configured_blueprint: Optional[Blueprint] = None
     total_time_seconds: float = 0.0
     mixed_blueprint_config: bool = False
+    is_base_material: bool = False
+    is_bought: bool = False
 
 
 @dataclass
@@ -154,6 +160,8 @@ class BlueprintUsage:
     blueprint_option: BlueprintOption
     configured_blueprint: Blueprint
     occurrences: int = 0
+    min_depth: int = 0
+    max_depth: int = 0
     total_runs: float = 0.0
     total_planned_output_quantity: float = 0.0
     total_time_seconds: float = 0.0

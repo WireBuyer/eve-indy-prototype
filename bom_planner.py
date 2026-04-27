@@ -111,6 +111,8 @@ class BomPlanner:
 
         stack.add(blueprint_typeid)
         for child_index, material in enumerate(self.idx.inputs(blueprint_typeid, activity)):
+            child_product_name = self.idx.type_name(material.material_typeid)
+            should_buy = child_product_name in request.buy_components
             base_quantity = float(material.quantity) * runs * effective_blueprint.prints
             adjusted_quantity = self._apply_material_efficiency(
                 quantity_per_run=float(material.quantity),
@@ -122,15 +124,17 @@ class BomPlanner:
             )
 
             child_blueprint_row = select_blueprint_for_production(self.idx.blueprints_for(material.material_typeid))
-            if child_blueprint_row is None:
+            if child_blueprint_row is None or should_buy:
                 child_node = BomNode(
                     node_id=f"{node_id}.{child_index}",
                     type_id=material.material_typeid,
-                    name=self.idx.type_name(material.material_typeid),
+                    name=child_product_name,
                     required_quantity=adjusted_quantity,
                     planned_output_quantity=adjusted_quantity,
                     depth=depth + 1,
                     base_material_quantity=base_quantity,
+                    is_base_material=child_blueprint_row is None,
+                    is_bought=should_buy,
                 )
             else:
                 child_blueprint_name = self.idx.type_name(child_blueprint_row.type_id)
@@ -152,7 +156,12 @@ class BomPlanner:
         return node
 
     def _collect_used_blueprints(self, node: BomNode, used_blueprints: Dict[str, BlueprintUsage]) -> None:
-        if node.selected_blueprint is not None and node.configured_blueprint is not None and node.runs is not None:
+        if (
+            not node.is_bought
+            and node.selected_blueprint is not None
+            and node.configured_blueprint is not None
+            and node.runs is not None
+        ):
             usage_key = self._blueprint_usage_key(node.selected_blueprint, node.configured_blueprint)
             entry = used_blueprints.get(usage_key)
             if entry is None:
@@ -161,12 +170,16 @@ class BomPlanner:
                     blueprint_option=node.selected_blueprint,
                     configured_blueprint=node.configured_blueprint,
                     occurrences=1,
+                    min_depth=node.depth,
+                    max_depth=node.depth,
                     total_runs=node.runs * node.prints,
                     total_planned_output_quantity=node.planned_output_quantity,
                     total_time_seconds=node.total_time_seconds,
                 )
             else:
                 entry.occurrences += 1
+                entry.min_depth = min(entry.min_depth, node.depth)
+                entry.max_depth = max(entry.max_depth, node.depth)
                 entry.total_runs += node.runs * node.prints
                 entry.total_planned_output_quantity += node.planned_output_quantity
                 entry.total_time_seconds += node.total_time_seconds
@@ -194,12 +207,16 @@ class BomPlanner:
                     selected_blueprint=node.selected_blueprint,
                     configured_blueprint=node.configured_blueprint,
                     total_time_seconds=node.total_time_seconds,
+                    is_base_material=node.is_base_material,
+                    is_bought=node.is_bought,
                 )
             else:
                 existing.quantity += node.required_quantity
                 existing.total_time_seconds += node.total_time_seconds
                 existing.min_depth = min(existing.min_depth, node.depth)
                 existing.max_depth = max(existing.max_depth, node.depth)
+                existing.is_base_material = existing.is_base_material and node.is_base_material
+                existing.is_bought = existing.is_bought or node.is_bought
                 if existing.selected_blueprint is None and node.selected_blueprint is not None:
                     existing.selected_blueprint = node.selected_blueprint
                 if existing.configured_blueprint is None and node.configured_blueprint is not None:
@@ -301,10 +318,12 @@ class BomPlannerSession:
         top_level_blueprints: list[Blueprint],
         material_rounding_mode: str = "continuous",
         blueprint_updates: Optional[Dict[str, Blueprint]] = None,
+        buy_components: Optional[set[str]] = None,
     ):
         self.planner = BomPlanner(idx)
         self.request = BomRequest(
             top_level_blueprints=list(top_level_blueprints),
+            buy_components=set(buy_components or set()),
             material_rounding_mode=material_rounding_mode,
         )
         if blueprint_updates:
@@ -318,6 +337,9 @@ class BomPlannerSession:
 
     def set_top_level_blueprints(self, top_level_blueprints: list[Blueprint]) -> None:
         self.request.top_level_blueprints = list(top_level_blueprints)
+
+    def set_buy_components(self, buy_components: set[str]) -> None:
+        self.request.buy_components = set(buy_components)
 
     def update_blueprint(self, blueprint: Blueprint) -> BomSnapshot:
         self.set_blueprint(blueprint)

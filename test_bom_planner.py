@@ -18,6 +18,7 @@ class BomPlannerTests(unittest.TestCase):
         cls.reinforced_carbon_fiber = cls.idx.find_type_id_by_name("Reinforced Carbon Fiber")
         cls.tritanium = cls.idx.find_type_id_by_name("Tritanium")
         cls.fulleroferrocene = cls.idx.find_type_id_by_name("Fulleroferrocene")
+        cls.wetware_mainframe = cls.idx.find_type_id_by_name("Wetware Mainframe")
 
     def test_root_me_reduces_direct_manufacturing_inputs(self):
         base_session = BomPlannerSession(self.idx, [Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
@@ -118,6 +119,19 @@ class BomPlannerTests(unittest.TestCase):
 
         self.assertEqual(base_snapshot.root.total_time_seconds, base_time)
         self.assertEqual(updated_snapshot.root.total_time_seconds, base_time * 0.8)
+
+    def test_buy_decision_stops_recursion_for_that_component(self):
+        session = BomPlannerSession(
+            self.idx,
+            [Blueprint("Rhea Blueprint", 0, 0, 1, 1)],
+            buy_components={"Capital Jump Drive"},
+        )
+        snapshot = session.snapshot()
+
+        self.assertTrue(snapshot.aggregates[self.capital_jump_drive].is_bought)
+        self.assertEqual(snapshot.aggregates[self.capital_jump_drive].quantity, 30.0)
+        self.assertNotIn(self.jump_drive_blueprint_name, {usage.blueprint_option.name for usage in snapshot.used_blueprints.values()})
+        self.assertEqual(snapshot.aggregates[self.wetware_mainframe].quantity, 1.0)
 
 
 if __name__ == "__main__":
