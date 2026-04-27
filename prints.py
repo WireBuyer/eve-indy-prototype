@@ -45,6 +45,14 @@ def build_qty_cell(quantity: float, is_base_material: bool = False, is_bought: b
     return f"qty {fmt(quantity)}{suffix}"
 
 
+def is_bought(snapshot: BomSnapshot, name: str) -> bool:
+    return name in snapshot.request.buy_components
+
+
+def is_base_material(snapshot: BomSnapshot, aggregate: BomAggregate) -> bool:
+    return aggregate.recipe is None and not is_bought(snapshot, aggregate.name)
+
+
 def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
     if not rows:
         print("  (none)")
@@ -78,11 +86,11 @@ def print_blueprint_settings(snapshot: BomSnapshot) -> None:
     for depth in sorted(blueprints_by_depth):
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
-        for usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry.blueprint_option.name):
-            blueprint = usage.configured_blueprint
+        for usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry.recipe.blueprint_name):
+            blueprint = usage.recipe.blueprint
             rows.append(
                 (
-                    usage.blueprint_option.name,
+                    usage.recipe.blueprint_name,
                     f"output {fmt(usage.total_planned_output_quantity)}",
                     f"time {format_duration(usage.total_time_seconds)}",
                     format_job_cell(
@@ -96,13 +104,13 @@ def print_blueprint_settings(snapshot: BomSnapshot) -> None:
         print_table_rows(rows)
 
 
-def aggregate_detail_cell(aggregate: BomAggregate) -> str:
-    if aggregate.is_bought or aggregate.configured_blueprint is None:
+def aggregate_detail_cell(snapshot: BomSnapshot, aggregate: BomAggregate) -> str:
+    if is_bought(snapshot, aggregate.name) or aggregate.blueprint is None:
         return ""
     if aggregate.mixed_blueprint_config:
         return "config mixed"
 
-    blueprint = aggregate.configured_blueprint
+    blueprint = aggregate.blueprint
     return format_job_cell(
         blueprint.material_efficiency,
         blueprint.time_efficiency,
@@ -142,9 +150,13 @@ def print_depth_summary(snapshot: BomSnapshot) -> None:
             rows.append(
                 (
                     aggregate.name,
-                    build_qty_cell(aggregate.quantity, aggregate.is_base_material, aggregate.is_bought),
+                    build_qty_cell(
+                        aggregate.quantity,
+                        is_base_material=is_base_material(snapshot, aggregate),
+                        is_bought=is_bought(snapshot, aggregate.name),
+                    ),
                     f"time {format_duration(aggregate.total_time_seconds)}" if aggregate.total_time_seconds else "",
-                    aggregate_detail_cell(aggregate),
+                    aggregate_detail_cell(snapshot, aggregate),
                 )
             )
         print_table_rows(rows)

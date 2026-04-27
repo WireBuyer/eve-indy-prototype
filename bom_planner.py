@@ -1,331 +1,188 @@
 from __future__ import annotations
 
-import math
-from typing import Dict, Iterable, Optional, Set
+from typing import Dict, Iterator, Optional, Set
 
 from industry_index import IndustryIndex
-from model import Blueprint, BlueprintOption, BlueprintUsage, BomAggregate, BomNode, BomRequest, BomSnapshot
-
-
-MANUFACTURING_ACTIVITY = 1
-
-
-def select_blueprint_for_production(blueprints: Iterable) -> Optional:
-    """Prefer manufacturing blueprints, otherwise use the first available option."""
-    blueprints = list(blueprints)
-    if not blueprints:
-        return None
-    for blueprint in blueprints:
-        if blueprint.activity == MANUFACTURING_ACTIVITY:
-            return blueprint
-    return blueprints[0]
+from model import (
+    Blueprint,
+    BlueprintRecipe,
+    BlueprintUsage,
+    BomAggregate,
+    BomNode,
+    PlanConfig,
+    BomSnapshot,
+)
 
 
 class BomPlanner:
-    """Builds a stable BOM tree snapshot from top-level blueprint jobs and overrides."""
-
     def __init__(self, idx: IndustryIndex):
         self.idx = idx
 
-    def build_snapshot(self, request: BomRequest) -> BomSnapshot:
+    def build_snapshot(self, request: PlanConfig) -> BomSnapshot:
         snapshot_request = request.copy()
-        roots = []
-        for root_index, configured_blueprint in enumerate(snapshot_request.top_level_blueprints):
-            blueprint_typeid = self._resolve_blueprint_typeid(configured_blueprint.name)
-            roots.append(
-                self._build_node_from_blueprint(
-                    blueprint_typeid=blueprint_typeid,
-                    configured_blueprint=configured_blueprint,
-                    required_quantity=None,
-                    depth=0,
-                    node_id=str(root_index),
-                    request=snapshot_request,
-                    stack=set(),
-                )
-            )
-
-        depths: Dict[int, int] = {}
-        aggregates: Dict[int, BomAggregate] = {}
-        used_blueprints: Dict[str, BlueprintUsage] = {}
-
-        for root in roots:
-            self._collect_used_blueprints(root, used_blueprints)
-            self._collect_aggregates(root, depths, aggregates, include_current_node=False)
-
+        roots = [
+            self._build_root(blueprint, index, snapshot_request)
+            for index, blueprint in enumerate(snapshot_request.top_level_blueprints)
+        ]
         return BomSnapshot(
             request=snapshot_request,
             roots=roots,
-            depths=depths,
-            aggregates=aggregates,
-            used_blueprints=used_blueprints,
+            aggregates=self._collect_aggregates(roots),
+            used_blueprints=self._collect_blueprint_usage(roots),
         )
 
-    def _build_node_from_blueprint(
+    def _build_root(self, blueprint: Blueprint, root_index: int, request: PlanConfig) -> BomNode:
+        recipe = self._recipe_for_blueprint_name(blueprint.name, blueprint)
+        return self._build_node(recipe, required_quantity=None, depth=0, node_id=str(root_index), request=request, stack=set())
+
+    def _build_node(
         self,
-        blueprint_typeid: int,
-        configured_blueprint: Blueprint,
+        recipe: BlueprintRecipe,
         required_quantity: Optional[float],
         depth: int,
         node_id: str,
-        request: BomRequest,
+        request: PlanConfig,
         stack: Set[int],
     ) -> BomNode:
-        activity = self.idx.activity_for(blueprint_typeid)
-        outputs = self.idx.outputs(blueprint_typeid, activity)
-        if not outputs:
-            raise ValueError(f"Blueprint {blueprint_typeid} does not have a production activity.")
-
-        primary_product = outputs[0]
-        selected_blueprint = self._to_blueprint_option(primary_product)
-        available_blueprints = self._blueprint_options_for_product(primary_product.product_typeid)
-        effective_blueprint = self._effective_blueprint(configured_blueprint, activity)
-        output_per_run = float(primary_product.quantity)
-        fallback_runs = self._fallback_runs(required_quantity, output_per_run, effective_blueprint.prints)
-        runs = effective_blueprint.resolved_runs(fallback_runs)
-        planned_output_quantity = output_per_run * runs * effective_blueprint.prints
-        node_required_quantity = planned_output_quantity if required_quantity is None else float(required_quantity)
-        activity_time_per_run = self.idx.activity_time(blueprint_typeid, activity) or 0.0
-        total_time_seconds = self._total_time_seconds(activity_time_per_run, runs, effective_blueprint, activity)
-
-        node = BomNode(
+        node = BomNode.build(
             node_id=node_id,
-            type_id=primary_product.product_typeid,
-            name=self.idx.type_name(primary_product.product_typeid),
-            required_quantity=node_required_quantity,
-            planned_output_quantity=planned_output_quantity,
             depth=depth,
-            selected_blueprint=selected_blueprint,
-            configured_blueprint=effective_blueprint,
-            available_blueprints=available_blueprints,
-            material_efficiency=effective_blueprint.material_efficiency,
-            time_efficiency=effective_blueprint.time_efficiency,
-            output_per_run=output_per_run,
-            runs=runs,
-            prints=effective_blueprint.prints,
-            activity_time_per_run=activity_time_per_run,
-            total_time_seconds=total_time_seconds,
+            required_quantity=required_quantity,
+            recipe=recipe,
         )
 
-        if blueprint_typeid in stack:
+        if recipe.blueprint_type_id in stack:
             return node
 
-        stack.add(blueprint_typeid)
-        for child_index, material in enumerate(self.idx.inputs(blueprint_typeid, activity)):
-            child_product_name = self.idx.type_name(material.material_typeid)
-            should_buy = child_product_name in request.buy_components
-            base_quantity = float(material.quantity) * runs * effective_blueprint.prints
-            adjusted_quantity = self._apply_material_efficiency(
-                quantity_per_run=float(material.quantity),
-                runs=runs,
-                prints=effective_blueprint.prints,
-                configured_blueprint=effective_blueprint,
-                activity=activity,
-                rounding_mode=request.material_rounding_mode,
-            )
-
-            child_blueprint_row = select_blueprint_for_production(self.idx.blueprints_for(material.material_typeid))
-            if child_blueprint_row is None or should_buy:
-                child_node = BomNode(
-                    node_id=f"{node_id}.{child_index}",
-                    type_id=material.material_typeid,
-                    name=child_product_name,
-                    required_quantity=adjusted_quantity,
-                    planned_output_quantity=adjusted_quantity,
-                    depth=depth + 1,
-                    base_material_quantity=base_quantity,
-                    is_base_material=child_blueprint_row is None,
-                    is_bought=should_buy,
-                )
-            else:
-                child_blueprint_name = self.idx.type_name(child_blueprint_row.type_id)
-                child_blueprint = request.blueprint_for(child_blueprint_name)
-                child_node = self._build_node_from_blueprint(
-                    blueprint_typeid=child_blueprint_row.type_id,
-                    configured_blueprint=child_blueprint,
-                    required_quantity=adjusted_quantity,
-                    depth=depth + 1,
-                    node_id=f"{node_id}.{child_index}",
-                    request=request,
-                    stack=stack,
-                )
-                child_node.base_material_quantity = base_quantity
-
-            node.children.append(child_node)
-        stack.remove(blueprint_typeid)
-
+        stack.add(recipe.blueprint_type_id)
+        node.children.extend(self._build_children(node, request, stack))
+        stack.remove(recipe.blueprint_type_id)
         return node
 
-    def _collect_used_blueprints(self, node: BomNode, used_blueprints: Dict[str, BlueprintUsage]) -> None:
-        if (
-            not node.is_bought
-            and node.selected_blueprint is not None
-            and node.configured_blueprint is not None
-            and node.runs is not None
-        ):
-            usage_key = self._blueprint_usage_key(node.selected_blueprint, node.configured_blueprint)
-            entry = used_blueprints.get(usage_key)
-            if entry is None:
-                used_blueprints[usage_key] = BlueprintUsage(
-                    usage_key=usage_key,
-                    blueprint_option=node.selected_blueprint,
-                    configured_blueprint=node.configured_blueprint,
-                    occurrences=1,
-                    min_depth=node.depth,
-                    max_depth=node.depth,
-                    total_runs=node.runs * node.prints,
-                    total_planned_output_quantity=node.planned_output_quantity,
-                    total_time_seconds=node.total_time_seconds,
-                )
-            else:
-                entry.occurrences += 1
-                entry.min_depth = min(entry.min_depth, node.depth)
-                entry.max_depth = max(entry.max_depth, node.depth)
-                entry.total_runs += node.runs * node.prints
-                entry.total_planned_output_quantity += node.planned_output_quantity
-                entry.total_time_seconds += node.total_time_seconds
+    def _build_children(self, parent: BomNode, request: PlanConfig, stack: Set[int]) -> list[BomNode]:
+        recipe = parent.recipe
+        if recipe is None or parent.runs is None:
+            return []
 
-        for child in node.children:
-            self._collect_used_blueprints(child, used_blueprints)
+        children = []
+        materials = self.idx.inputs(recipe.blueprint_type_id, recipe.activity)
+        for child_index, material in enumerate(materials):
+            child_name = self.idx.type_name(material.material_typeid)
+            quantity = recipe.material_quantity(float(material.quantity), parent.runs)
+            base_quantity = recipe.base_material_quantity(float(material.quantity), parent.runs)
+            child_node_id = f"{parent.node_id}.{child_index}"
 
-    def _collect_aggregates(
+            if child_name in request.buy_components:
+                children.append(self._leaf_node(child_node_id, material.material_typeid, child_name, parent.depth + 1, quantity, base_quantity))
+                continue
+
+            child_blueprint_row = self._blueprint_row_for_product(material.material_typeid)
+            if child_blueprint_row is None:
+                children.append(self._leaf_node(child_node_id, material.material_typeid, child_name, parent.depth + 1, quantity, base_quantity))
+                continue
+
+            child_blueprint_name = self.idx.type_name(child_blueprint_row.type_id)
+            child_recipe = self._recipe_from_row(
+                child_blueprint_row,
+                request.blueprint_for(child_blueprint_name),
+            )
+            child_node = self._build_node(
+                child_recipe,
+                required_quantity=quantity,
+                depth=parent.depth + 1,
+                node_id=child_node_id,
+                request=request,
+                stack=stack,
+            )
+            child_node.base_material_quantity = base_quantity
+            children.append(child_node)
+        return children
+
+    def _leaf_node(
         self,
-        node: BomNode,
-        depths: Dict[int, int],
-        aggregates: Dict[int, BomAggregate],
-        include_current_node: bool = True,
-    ) -> None:
-        if include_current_node:
-            depths[node.type_id] = max(depths.get(node.type_id, 0), node.depth)
-            existing = aggregates.get(node.type_id)
-            if existing is None:
-                aggregates[node.type_id] = BomAggregate(
-                    type_id=node.type_id,
-                    name=node.name,
-                    quantity=node.required_quantity,
-                    min_depth=node.depth,
-                    max_depth=node.depth,
-                    selected_blueprint=node.selected_blueprint,
-                    configured_blueprint=node.configured_blueprint,
-                    total_time_seconds=node.total_time_seconds,
-                    is_base_material=node.is_base_material,
-                    is_bought=node.is_bought,
-                )
-            else:
-                existing.quantity += node.required_quantity
-                existing.total_time_seconds += node.total_time_seconds
-                existing.min_depth = min(existing.min_depth, node.depth)
-                existing.max_depth = max(existing.max_depth, node.depth)
-                existing.is_base_material = existing.is_base_material and node.is_base_material
-                existing.is_bought = existing.is_bought or node.is_bought
-                if existing.selected_blueprint is None and node.selected_blueprint is not None:
-                    existing.selected_blueprint = node.selected_blueprint
-                if existing.configured_blueprint is None and node.configured_blueprint is not None:
-                    existing.configured_blueprint = node.configured_blueprint
-                elif (
-                    existing.configured_blueprint is not None
-                    and node.configured_blueprint is not None
-                    and existing.configured_blueprint != node.configured_blueprint
-                ):
-                    existing.mixed_blueprint_config = True
-
-        for child in node.children:
-            self._collect_aggregates(child, depths, aggregates, include_current_node=True)
-
-    def _blueprint_options_for_product(self, product_typeid: int) -> list[BlueprintOption]:
-        return [self._to_blueprint_option(blueprint) for blueprint in self.idx.blueprints_for(product_typeid)]
-
-    def _to_blueprint_option(self, blueprint_product) -> BlueprintOption:
-        return BlueprintOption(
-            type_id=blueprint_product.type_id,
-            name=self.idx.type_name(blueprint_product.type_id),
-            activity=blueprint_product.activity,
-            product_typeid=blueprint_product.product_typeid,
-            product_name=self.idx.type_name(blueprint_product.product_typeid),
-            output_per_run=blueprint_product.quantity,
+        node_id: str,
+        type_id: int,
+        name: str,
+        depth: int,
+        quantity: float,
+        base_material_quantity: float,
+    ) -> BomNode:
+        return BomNode.leaf(
+            node_id=node_id,
+            type_id=type_id,
+            name=name,
+            depth=depth,
+            quantity=quantity,
+            base_material_quantity=base_material_quantity,
         )
 
-    def _resolve_blueprint_typeid(self, blueprint_name: str) -> int:
+    def _collect_blueprint_usage(self, roots: list[BomNode]) -> Dict[str, BlueprintUsage]:
+        used_blueprints: Dict[str, BlueprintUsage] = {}
+        for root in roots:
+            for node in self._iter_nodes(root):
+                if node.recipe is None:
+                    continue
+                usage = used_blueprints.get(node.recipe.usage_key)
+                if usage is None:
+                    used_blueprints[node.recipe.usage_key] = BlueprintUsage.from_node(node)
+                else:
+                    usage.absorb(node)
+        return used_blueprints
+
+    def _collect_aggregates(self, roots: list[BomNode]) -> Dict[int, BomAggregate]:
+        aggregates: Dict[int, BomAggregate] = {}
+        for root in roots:
+            for node in self._iter_nodes(root, include_root=False):
+                aggregate = aggregates.get(node.type_id)
+                if aggregate is None:
+                    aggregates[node.type_id] = BomAggregate.from_node(node)
+                else:
+                    aggregate.absorb(node)
+        return aggregates
+
+    def _iter_nodes(self, node: BomNode, include_root: bool = True) -> Iterator[BomNode]:
+        if include_root:
+            yield node
+        for child in node.children:
+            yield from self._iter_nodes(child, include_root=True)
+
+    def _recipe_for_blueprint_name(self, blueprint_name: str, blueprint: Blueprint) -> BlueprintRecipe:
         blueprint_typeid = self.idx.find_type_id_by_name(blueprint_name)
         if blueprint_typeid is None:
             raise ValueError(f"Blueprint not found: {blueprint_name}")
-        return blueprint_typeid
 
-    def _effective_blueprint(self, configured_blueprint: Blueprint, activity: Optional[int]) -> Blueprint:
-        if activity != MANUFACTURING_ACTIVITY:
-            return Blueprint(
-                configured_blueprint.name,
-                0,
-                0,
-                configured_blueprint.runs,
-                configured_blueprint.prints,
-            )
-        return configured_blueprint
+        activity = self.idx.activity_for(blueprint_typeid)
+        outputs = self.idx.outputs(blueprint_typeid, activity)
+        if not outputs:
+            raise ValueError(f"Blueprint {blueprint_name} does not have a production activity.")
+        return self._recipe_from_row(outputs[0], blueprint)
 
-    def _blueprint_usage_key(self, blueprint_option: BlueprintOption, configured_blueprint: Blueprint) -> str:
-        runs_key = "auto" if configured_blueprint.runs is None else configured_blueprint.runs
-        return (
-            f"{blueprint_option.type_id}:{configured_blueprint.material_efficiency}:"
-            f"{configured_blueprint.time_efficiency}:{runs_key}:{configured_blueprint.prints}"
+    def _blueprint_row_for_product(self, product_typeid: int):
+        return self.idx.production_blueprint_for(product_typeid)
+
+    def _recipe_from_row(self, blueprint_product, blueprint: Blueprint) -> BlueprintRecipe:
+        effective_blueprint = blueprint.effective_for_activity(blueprint_product.activity)
+        return BlueprintRecipe(
+            blueprint_type_id=blueprint_product.type_id,
+            blueprint_name=self.idx.type_name(blueprint_product.type_id),
+            activity=blueprint_product.activity,
+            product_type_id=blueprint_product.product_typeid,
+            product_name=self.idx.type_name(blueprint_product.product_typeid),
+            output_per_run=float(blueprint_product.quantity),
+            time_per_run=self.idx.activity_time(blueprint_product.type_id, blueprint_product.activity) or 0.0,
+            blueprint=effective_blueprint,
         )
-
-    def _fallback_runs(self, required_quantity: Optional[float], output_per_run: float, prints: int) -> float:
-        if required_quantity is None:
-            return 1.0
-        total_output_per_run_batch = output_per_run * prints
-        if total_output_per_run_batch == 0:
-            return float(required_quantity)
-        return float(required_quantity) / total_output_per_run_batch
-
-    def _apply_material_efficiency(
-        self,
-        quantity_per_run: float,
-        runs: float,
-        prints: int,
-        configured_blueprint: Blueprint,
-        activity: Optional[int],
-        rounding_mode: str,
-    ) -> float:
-        base_quantity = quantity_per_run * runs
-        if activity != MANUFACTURING_ACTIVITY:
-            return base_quantity * prints
-        if quantity_per_run <= 1.0:
-            return base_quantity * prints
-
-        reduced_quantity = base_quantity * (1.0 - (configured_blueprint.material_efficiency / 100.0))
-        if rounding_mode == "job_ceiling":
-            reduced_quantity = float(math.ceil(reduced_quantity))
-        return reduced_quantity * prints
-
-    def _total_time_seconds(
-        self,
-        activity_time_per_run: float,
-        runs: float,
-        configured_blueprint: Blueprint,
-        activity: Optional[int],
-    ) -> float:
-        total_time_seconds = activity_time_per_run * runs * configured_blueprint.prints
-        if activity != MANUFACTURING_ACTIVITY:
-            return total_time_seconds
-        return total_time_seconds * (1.0 - (configured_blueprint.time_efficiency / 100.0))
 
 
 class BomPlannerSession:
-    """Mutable planner state that mirrors small PATCH-style API updates."""
-
-    def __init__(
-        self,
-        idx: IndustryIndex,
-        top_level_blueprints: list[Blueprint],
-        material_rounding_mode: str = "continuous",
-        blueprint_updates: Optional[Dict[str, Blueprint]] = None,
-        buy_components: Optional[set[str]] = None,
+    def __init__(        self,        idx: IndustryIndex,        top_level_blueprints: list[Blueprint],        blueprint_updates: Optional[Dict[str, Blueprint]] = None,buy_components: Optional[set[str]] = None,
     ):
         self.planner = BomPlanner(idx)
-        self.request = BomRequest(
+        self.request = PlanConfig(
             top_level_blueprints=list(top_level_blueprints),
             buy_components=set(buy_components or set()),
-            material_rounding_mode=material_rounding_mode,
         )
+        # this should be part of the constructor
         if blueprint_updates:
             self.request.blueprint_settings.update(dict(blueprint_updates))
 

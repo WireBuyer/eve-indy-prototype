@@ -27,8 +27,8 @@ class BomPlannerTests(unittest.TestCase):
         base_snapshot = base_session.snapshot()
         updated_snapshot = updated_session.snapshot()
 
-        self.assertEqual(base_snapshot.root.configured_blueprint.material_efficiency, 0)
-        self.assertEqual(updated_snapshot.root.configured_blueprint.material_efficiency, 10)
+        self.assertEqual(base_snapshot.root.blueprint.material_efficiency, 0)
+        self.assertEqual(updated_snapshot.root.blueprint.material_efficiency, 10)
         self.assertEqual(base_snapshot.aggregates[self.capital_jump_drive].quantity, 30.0)
         self.assertEqual(updated_snapshot.aggregates[self.capital_jump_drive].quantity, 27.0)
         self.assertEqual(base_snapshot.aggregates[self.charon].quantity, 1.0)
@@ -50,10 +50,10 @@ class BomPlannerTests(unittest.TestCase):
         updated_usage = next(
             usage
             for usage in updated_snapshot.used_blueprints.values()
-            if usage.blueprint_option.name == self.jump_drive_blueprint_name
+            if usage.recipe.blueprint_name == self.jump_drive_blueprint_name
         )
-        self.assertEqual(updated_usage.configured_blueprint.material_efficiency, 10)
-        self.assertEqual(updated_usage.configured_blueprint.time_efficiency, 20)
+        self.assertEqual(updated_usage.recipe.blueprint.material_efficiency, 10)
+        self.assertEqual(updated_usage.recipe.blueprint.time_efficiency, 20)
         self.assertEqual(base_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 29160.0)
         self.assertEqual(updated_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28860.0)
         self.assertEqual(base_snapshot.aggregates[self.tritanium].quantity, 5078493.6)
@@ -75,10 +75,10 @@ class BomPlannerTests(unittest.TestCase):
         ferrogel_usage = next(
             usage
             for usage in updated_snapshot.used_blueprints.values()
-            if usage.blueprint_option.name == self.ferrogel_formula_name
+            if usage.recipe.blueprint_name == self.ferrogel_formula_name
         )
-        self.assertEqual(ferrogel_usage.configured_blueprint.material_efficiency, 0)
-        self.assertEqual(ferrogel_usage.configured_blueprint.time_efficiency, 0)
+        self.assertEqual(ferrogel_usage.recipe.blueprint.material_efficiency, 0)
+        self.assertEqual(ferrogel_usage.recipe.blueprint.time_efficiency, 0)
         self.assertEqual(base_snapshot.aggregates[self.fulleroferrocene].quantity, 660.0)
         self.assertEqual(updated_snapshot.aggregates[self.fulleroferrocene].quantity, 660.0)
 
@@ -128,9 +128,10 @@ class BomPlannerTests(unittest.TestCase):
         )
         snapshot = session.snapshot()
 
-        self.assertTrue(snapshot.aggregates[self.capital_jump_drive].is_bought)
+        self.assertIn("Capital Jump Drive", snapshot.request.buy_components)
+        self.assertIsNone(snapshot.aggregates[self.capital_jump_drive].recipe)
         self.assertEqual(snapshot.aggregates[self.capital_jump_drive].quantity, 30.0)
-        self.assertNotIn(self.jump_drive_blueprint_name, {usage.blueprint_option.name for usage in snapshot.used_blueprints.values()})
+        self.assertNotIn(self.jump_drive_blueprint_name, {usage.recipe.blueprint_name for usage in snapshot.used_blueprints.values()})
         self.assertEqual(snapshot.aggregates[self.wetware_mainframe].quantity, 1.0)
 
 

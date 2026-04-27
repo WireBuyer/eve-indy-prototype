@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from model import TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
+from model import MANUFACTURING_ACTIVITY, BlueprintActivityTime, BlueprintProduct, MaterialRow, TypeInfo
 
 
 class IndustryIndex:
@@ -60,6 +60,15 @@ class IndustryIndex:
 
     def blueprints_for(self, product_typeid: int) -> List[BlueprintProduct]:
         return list(self._bp_by_product.get(product_typeid, []))
+
+    def production_blueprint_for(self, product_typeid: int) -> Optional[BlueprintProduct]:
+        blueprints = self.blueprints_for(product_typeid)
+        if not blueprints:
+            return None
+        for blueprint in blueprints:
+            if blueprint.activity == MANUFACTURING_ACTIVITY:
+                return blueprint
+        return blueprints[0]
 
     def activity_time(self, blueprint_typeid: int, activity: int) -> Optional[float]:
         row = self._activity_times.get((blueprint_typeid, activity))

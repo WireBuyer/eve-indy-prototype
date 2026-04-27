@@ -1,0 +1,41 @@
+Depth 0:
+  Raven | output 1 | time 4h 0m 0s | ME 10 | TE 20 | runs 1 | prints 1
+
+Depth 1:
+  Tritanium                        | qty 4,680,000 [BASE] |                 | 
+  Pyerite                          | qty 2,340,000 [BASE] |                 | 
+  Mexallon                         | qty 351,000 [BASE]   |                 | 
+  Isogen                           | qty 117,000 [BASE]   |                 | 
+  Nocxium                          | qty 14,040 [BASE]    |                 | 
+  Zydrine                          | qty 3,510 [BASE]     |                 | 
+  Megacyte                         | qty 1,755 [BASE]     |                 | 
+  Auto-Integrity Preservation Seal | qty 135              | time 22h 30m 0s | ME 0 | TE 0 | runs auto | prints 1
+  Core Temperature Regulator       | qty 1                | time 2h 13m 20s | ME 0 | TE 0 | runs auto | prints 1
+  Life Support Backup Unit         | qty 67.500           | time 11h 15m 0s | ME 0 | TE 0 | runs auto | prints 1
+
+Depth 2:
+  Supertensile Plastics   | qty 180 [BASE] |                  | 
+  Test Cultures           | qty 180 [BASE] |                  | 
+  Chiral Structures       | qty 100 [BASE] |                  | 
+  Nanites                 | qty 180 [BASE] |                  | 
+  Water                   | qty 100 [BASE] |                  | 
+  Viral Agent             | qty 180 [BASE] |                  | 
+  Pressurized Oxidizers   | qty 500        | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
+  Reinforced Carbon Fiber | qty 1,175      | time 17h 37m 30s | ME 0 | TE 0 | runs auto | prints 1
+
+Depth 3:
+  Carbon Polymers       | qty 500   | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
+  Sulfuric Acid         | qty 500   | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
+  Carbon Fiber          | qty 1,175 | time 17h 37m 30s | ME 0 | TE 0 | runs auto | prints 1
+  Oxy-Organic Solvents  | qty 8.375 | time 2h 30m 45s  | ME 0 | TE 0 | runs auto | prints 1
+  Thermosetting Polymer | qty 1,175 | time 17h 37m 30s | ME 0 | TE 0 | runs auto | prints 1
+
+Depth 4:
+  Nitrogen Fuel Block | qty 12.500 [BUY]    
+  Hydrogen Fuel Block | qty 29.375 [BUY]    
+  Helium Fuel Block   | qty 12.500 [BUY]    
+  Oxygen Fuel Block   | qty 33.562 [BUY]    
+  Hydrocarbons        | qty 2,512.500 [BASE]
+  Atmospheric Gases   | qty 2,512.500 [BASE]
+  Evaporite Deposits  | qty 837.500 [BASE]  
+  Silicates           | qty 837.500 [BASE]  
