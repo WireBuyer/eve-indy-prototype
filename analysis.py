@@ -8,7 +8,8 @@ from model import AggregateEntry, Blueprint, BomRequest, DepthInfo
 def aggregate_all(
     blueprint_typeid: int,
     idx: IndustryIndex,
-    desired_output_units: float = 1.0,
+    runs: float = 1.0,
+    prints: int = 1,
     depth: int = 0,
     stack=None,
     aggregates=None,
@@ -17,8 +18,7 @@ def aggregate_all(
     planner = BomPlanner(idx)
     snapshot = planner.build_snapshot(
         BomRequest(
-            top_level_blueprints=[Blueprint(blueprint_name, 0)],
-            desired_output_units=desired_output_units,
+            top_level_blueprints=[Blueprint(blueprint_name, 0, 0, runs, prints)],
         )
     )
 
@@ -31,7 +31,7 @@ def aggregate_all(
 def compute_max_depths(root_bp_typeid: int, idx: IndustryIndex) -> DepthInfo:
     blueprint_name = idx.type_name(root_bp_typeid)
     planner = BomPlanner(idx)
-    snapshot = planner.build_snapshot(BomRequest(top_level_blueprints=[Blueprint(blueprint_name, 0)]))
+    snapshot = planner.build_snapshot(BomRequest(top_level_blueprints=[Blueprint(blueprint_name)]))
 
     blueprint_for_material = {}
     for aggregate in snapshot.aggregates.values():

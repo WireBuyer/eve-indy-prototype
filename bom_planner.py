@@ -22,7 +22,7 @@ def select_blueprint_for_production(blueprints: Iterable) -> Optional:
 
 
 class BomPlanner:
-    """Builds a stable BOM tree snapshot from top-level blueprints and ME overrides."""
+    """Builds a stable BOM tree snapshot from top-level blueprint jobs and overrides."""
 
     def __init__(self, idx: IndustryIndex):
         self.idx = idx
@@ -36,7 +36,7 @@ class BomPlanner:
                 self._build_node_from_blueprint(
                     blueprint_typeid=blueprint_typeid,
                     configured_blueprint=configured_blueprint,
-                    required_output_units=snapshot_request.desired_output_units,
+                    required_quantity=None,
                     depth=0,
                     node_id=str(root_index),
                     request=snapshot_request,
@@ -64,7 +64,7 @@ class BomPlanner:
         self,
         blueprint_typeid: int,
         configured_blueprint: Blueprint,
-        required_output_units: float,
+        required_quantity: Optional[float],
         depth: int,
         node_id: str,
         request: BomRequest,
@@ -79,21 +79,31 @@ class BomPlanner:
         selected_blueprint = self._to_blueprint_option(primary_product)
         available_blueprints = self._blueprint_options_for_product(primary_product.product_typeid)
         effective_blueprint = self._effective_blueprint(configured_blueprint, activity)
-        output_per_run = primary_product.quantity
-        runs_required = required_output_units if output_per_run == 0 else float(required_output_units) / float(output_per_run)
+        output_per_run = float(primary_product.quantity)
+        fallback_runs = self._fallback_runs(required_quantity, output_per_run, effective_blueprint.prints)
+        runs = effective_blueprint.resolved_runs(fallback_runs)
+        planned_output_quantity = output_per_run * runs * effective_blueprint.prints
+        node_required_quantity = planned_output_quantity if required_quantity is None else float(required_quantity)
+        activity_time_per_run = self.idx.activity_time(blueprint_typeid, activity) or 0.0
+        total_time_seconds = self._total_time_seconds(activity_time_per_run, runs, effective_blueprint, activity)
 
         node = BomNode(
             node_id=node_id,
             type_id=primary_product.product_typeid,
             name=self.idx.type_name(primary_product.product_typeid),
-            required_quantity=float(required_output_units),
+            required_quantity=node_required_quantity,
+            planned_output_quantity=planned_output_quantity,
             depth=depth,
             selected_blueprint=selected_blueprint,
             configured_blueprint=effective_blueprint,
             available_blueprints=available_blueprints,
             material_efficiency=effective_blueprint.material_efficiency,
+            time_efficiency=effective_blueprint.time_efficiency,
             output_per_run=output_per_run,
-            runs_required=runs_required,
+            runs=runs,
+            prints=effective_blueprint.prints,
+            activity_time_per_run=activity_time_per_run,
+            total_time_seconds=total_time_seconds,
         )
 
         if blueprint_typeid in stack:
@@ -101,10 +111,11 @@ class BomPlanner:
 
         stack.add(blueprint_typeid)
         for child_index, material in enumerate(self.idx.inputs(blueprint_typeid, activity)):
-            base_quantity = float(material.quantity) * runs_required
+            base_quantity = float(material.quantity) * runs * effective_blueprint.prints
             adjusted_quantity = self._apply_material_efficiency(
                 quantity_per_run=float(material.quantity),
-                runs_required=runs_required,
+                runs=runs,
+                prints=effective_blueprint.prints,
                 configured_blueprint=effective_blueprint,
                 activity=activity,
                 rounding_mode=request.material_rounding_mode,
@@ -117,6 +128,7 @@ class BomPlanner:
                     type_id=material.material_typeid,
                     name=self.idx.type_name(material.material_typeid),
                     required_quantity=adjusted_quantity,
+                    planned_output_quantity=adjusted_quantity,
                     depth=depth + 1,
                     base_material_quantity=base_quantity,
                 )
@@ -126,7 +138,7 @@ class BomPlanner:
                 child_node = self._build_node_from_blueprint(
                     blueprint_typeid=child_blueprint_row.type_id,
                     configured_blueprint=child_blueprint,
-                    required_output_units=adjusted_quantity,
+                    required_quantity=adjusted_quantity,
                     depth=depth + 1,
                     node_id=f"{node_id}.{child_index}",
                     request=request,
@@ -140,7 +152,7 @@ class BomPlanner:
         return node
 
     def _collect_used_blueprints(self, node: BomNode, used_blueprints: Dict[str, BlueprintUsage]) -> None:
-        if node.selected_blueprint is not None and node.configured_blueprint is not None:
+        if node.selected_blueprint is not None and node.configured_blueprint is not None and node.runs is not None:
             usage_key = self._blueprint_usage_key(node.selected_blueprint, node.configured_blueprint)
             entry = used_blueprints.get(usage_key)
             if entry is None:
@@ -149,9 +161,15 @@ class BomPlanner:
                     blueprint_option=node.selected_blueprint,
                     configured_blueprint=node.configured_blueprint,
                     occurrences=1,
+                    total_runs=node.runs * node.prints,
+                    total_planned_output_quantity=node.planned_output_quantity,
+                    total_time_seconds=node.total_time_seconds,
                 )
             else:
                 entry.occurrences += 1
+                entry.total_runs += node.runs * node.prints
+                entry.total_planned_output_quantity += node.planned_output_quantity
+                entry.total_time_seconds += node.total_time_seconds
 
         for child in node.children:
             self._collect_used_blueprints(child, used_blueprints)
@@ -174,13 +192,24 @@ class BomPlanner:
                     min_depth=node.depth,
                     max_depth=node.depth,
                     selected_blueprint=node.selected_blueprint,
+                    configured_blueprint=node.configured_blueprint,
+                    total_time_seconds=node.total_time_seconds,
                 )
             else:
                 existing.quantity += node.required_quantity
+                existing.total_time_seconds += node.total_time_seconds
                 existing.min_depth = min(existing.min_depth, node.depth)
                 existing.max_depth = max(existing.max_depth, node.depth)
                 if existing.selected_blueprint is None and node.selected_blueprint is not None:
                     existing.selected_blueprint = node.selected_blueprint
+                if existing.configured_blueprint is None and node.configured_blueprint is not None:
+                    existing.configured_blueprint = node.configured_blueprint
+                elif (
+                    existing.configured_blueprint is not None
+                    and node.configured_blueprint is not None
+                    and existing.configured_blueprint != node.configured_blueprint
+                ):
+                    existing.mixed_blueprint_config = True
 
         for child in node.children:
             self._collect_aggregates(child, depths, aggregates, include_current_node=True)
@@ -206,30 +235,61 @@ class BomPlanner:
 
     def _effective_blueprint(self, configured_blueprint: Blueprint, activity: Optional[int]) -> Blueprint:
         if activity != MANUFACTURING_ACTIVITY:
-            return Blueprint(configured_blueprint.name, 0)
+            return Blueprint(
+                configured_blueprint.name,
+                0,
+                0,
+                configured_blueprint.runs,
+                configured_blueprint.prints,
+            )
         return configured_blueprint
 
     def _blueprint_usage_key(self, blueprint_option: BlueprintOption, configured_blueprint: Blueprint) -> str:
-        return f"{blueprint_option.type_id}:{configured_blueprint.material_efficiency}"
+        runs_key = "auto" if configured_blueprint.runs is None else configured_blueprint.runs
+        return (
+            f"{blueprint_option.type_id}:{configured_blueprint.material_efficiency}:"
+            f"{configured_blueprint.time_efficiency}:{runs_key}:{configured_blueprint.prints}"
+        )
+
+    def _fallback_runs(self, required_quantity: Optional[float], output_per_run: float, prints: int) -> float:
+        if required_quantity is None:
+            return 1.0
+        total_output_per_run_batch = output_per_run * prints
+        if total_output_per_run_batch == 0:
+            return float(required_quantity)
+        return float(required_quantity) / total_output_per_run_batch
 
     def _apply_material_efficiency(
         self,
         quantity_per_run: float,
-        runs_required: float,
+        runs: float,
+        prints: int,
         configured_blueprint: Blueprint,
         activity: Optional[int],
         rounding_mode: str,
     ) -> float:
-        base_quantity = quantity_per_run * runs_required
+        base_quantity = quantity_per_run * runs
         if activity != MANUFACTURING_ACTIVITY:
-            return base_quantity
+            return base_quantity * prints
         if quantity_per_run <= 1.0:
-            return base_quantity
+            return base_quantity * prints
 
         reduced_quantity = base_quantity * (1.0 - (configured_blueprint.material_efficiency / 100.0))
         if rounding_mode == "job_ceiling":
-            return float(math.ceil(reduced_quantity))
-        return reduced_quantity
+            reduced_quantity = float(math.ceil(reduced_quantity))
+        return reduced_quantity * prints
+
+    def _total_time_seconds(
+        self,
+        activity_time_per_run: float,
+        runs: float,
+        configured_blueprint: Blueprint,
+        activity: Optional[int],
+    ) -> float:
+        total_time_seconds = activity_time_per_run * runs * configured_blueprint.prints
+        if activity != MANUFACTURING_ACTIVITY:
+            return total_time_seconds
+        return total_time_seconds * (1.0 - (configured_blueprint.time_efficiency / 100.0))
 
 
 class BomPlannerSession:
@@ -239,14 +299,12 @@ class BomPlannerSession:
         self,
         idx: IndustryIndex,
         top_level_blueprints: list[Blueprint],
-        desired_output_units: float = 1.0,
         material_rounding_mode: str = "continuous",
         blueprint_updates: Optional[Dict[str, Blueprint]] = None,
     ):
         self.planner = BomPlanner(idx)
         self.request = BomRequest(
             top_level_blueprints=list(top_level_blueprints),
-            desired_output_units=desired_output_units,
             material_rounding_mode=material_rounding_mode,
         )
         if blueprint_updates:

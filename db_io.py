@@ -2,7 +2,7 @@ import sqlite3
 from collections import defaultdict
 from typing import Tuple, Dict
 
-from model import TypeInfo, BlueprintProduct, MaterialRow, ActivityRow
+from model import TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
 from industry_index import IndustryIndex
 
 
@@ -14,7 +14,7 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
     - bp_products: (blueprint_typeID, activityID) -> list of `BlueprintProduct` (blueprint outputs)
     - bp_by_product: productTypeID -> list of `BlueprintProduct` (reverse index: which blueprints produce a product)
     - materials: (blueprint_typeID, activityID) -> list of `MaterialRow` (blueprint inputs)
-    - activity_times: (typeID, activityID) -> `ActivityRow` (time row for that blueprint/activity)
+    - activity_times: (typeID, activityID) -> `BlueprintActivityTime` (time row for that blueprint/activity)
     """
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -60,13 +60,13 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
     # Load industryActivity - blueprint activity times
     # table columns: typeID, activityID, time
     cur.execute('SELECT typeID, activityID, time FROM "industryActivity"')
-    # use a single dict keyed by (typeID, activityID) -> ActivityRow to match other maps
+    # use a single dict keyed by (typeID, activityID) -> BlueprintActivityTime to match other maps
     activity_times = {}
     for typeID, activityID, time in cur.fetchall():
         tid = int(typeID)
         act = int(activityID)
         t = float(time) if time is not None else None
-        activity_times[(tid, act)] = ActivityRow(type_id=tid, activity=act, time=t)
+        activity_times[(tid, act)] = BlueprintActivityTime(type_id=tid, activity=act, time=t)
 
     conn.close()
     # return an index object that hides tuple-key usage

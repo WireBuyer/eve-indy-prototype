@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from model import TypeInfo, BlueprintProduct, MaterialRow, ActivityRow
+from model import TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
 
 
 class IndustryIndex:
@@ -15,7 +15,7 @@ class IndustryIndex:
                  bp_products: Dict[tuple, List[BlueprintProduct]],
                  bp_by_product: Dict[int, List[BlueprintProduct]],
                  materials: Dict[tuple, List[MaterialRow]],
-                 activity_times: Dict[tuple, ActivityRow]):
+                 activity_times: Dict[tuple, BlueprintActivityTime]):
         self._inv_types = inv_types
         self._bp_products = bp_products
         self._bp_by_product = bp_by_product
