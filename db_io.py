@@ -1,6 +1,5 @@
 import sqlite3
 from collections import defaultdict
-from typing import Tuple, Dict
 
 from model import TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
 from industry_index import IndustryIndex

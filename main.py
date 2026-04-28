@@ -1,10 +1,10 @@
-from bom_planner import BomPlannerSession
+from bom_planner import BomPlanner
 from db_io import load_tables
-from model import Blueprint
+from model import Blueprint, PlanConfig
 
 from prints import print_depth_summary
 
-
+# Selection of what to make
 TOP_LEVEL_BLUEPRINTS = [
     # Blueprint("Heron Blueprint", 0, 0, 1, 1),
     Blueprint("Raven Blueprint", 10, 20, 1, 1),
@@ -31,15 +31,14 @@ BUY_COMPONENTS = {
 
 def main():
     idx = load_tables("eve.db")
-    # passs in the idx and our plan config
-    session = BomPlannerSession(
-        idx,
-        top_level_blueprints=TOP_LEVEL_BLUEPRINTS,
-        blueprint_updates=BLUEPRINT_ME_UPDATES,
-        buy_components=BUY_COMPONENTS,
+    planner = BomPlanner(idx)
+    snapshot = planner.build_snapshot(
+        PlanConfig(
+            top_level_blueprints=TOP_LEVEL_BLUEPRINTS,
+            blueprint_settings=BLUEPRINT_ME_UPDATES,
+            buy_components=BUY_COMPONENTS,
+        )
     )
-    # run the planner
-    snapshot = session.snapshot()
 
     # print_top_level_blueprints(idx, TOP_LEVEL_BLUEPRINTS)
     # print_blueprint_updates(BLUEPRINT_ME_UPDATES)

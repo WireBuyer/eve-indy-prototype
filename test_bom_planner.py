@@ -1,14 +1,15 @@
 import unittest
 
-from bom_planner import BomPlannerSession
+from bom_planner import BomPlanner
 from db_io import load_tables
-from model import Blueprint
+from model import Blueprint, PlanConfig
 
 
 class BomPlannerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.idx = load_tables("eve.db")
+        cls.planner = BomPlanner(cls.idx)
         cls.rhea_blueprint_typeid = cls.idx.find_type_id_by_name("Rhea Blueprint")
         cls.jump_drive_blueprint_name = "Capital Jump Drive Blueprint"
         cls.ferrogel_formula_name = "Ferrogel Reaction Formula"
@@ -20,12 +21,18 @@ class BomPlannerTests(unittest.TestCase):
         cls.fulleroferrocene = cls.idx.find_type_id_by_name("Fulleroferrocene")
         cls.wetware_mainframe = cls.idx.find_type_id_by_name("Wetware Mainframe")
 
-    def test_root_me_reduces_direct_manufacturing_inputs(self):
-        base_session = BomPlannerSession(self.idx, [Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
-        updated_session = BomPlannerSession(self.idx, [Blueprint("Rhea Blueprint", 10, 0, 1, 1)])
+    def build_snapshot(self, blueprints, blueprint_settings=None, buy_components=None):
+        return self.planner.build_snapshot(
+            PlanConfig(
+                top_level_blueprints=blueprints,
+                blueprint_settings=blueprint_settings,
+                buy_components=buy_components,
+            )
+        )
 
-        base_snapshot = base_session.snapshot()
-        updated_snapshot = updated_session.snapshot()
+    def test_root_me_reduces_direct_manufacturing_inputs(self):
+        base_snapshot = self.build_snapshot([Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
+        updated_snapshot = self.build_snapshot([Blueprint("Rhea Blueprint", 10, 0, 1, 1)])
 
         self.assertEqual(base_snapshot.root.blueprint.material_efficiency, 0)
         self.assertEqual(updated_snapshot.root.blueprint.material_efficiency, 10)
@@ -35,17 +42,13 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(updated_snapshot.aggregates[self.charon].quantity, 1.0)
 
     def test_child_blueprint_override_rebuilds_descendants_inline(self):
-        base_session = BomPlannerSession(self.idx, [Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
-        updated_session = BomPlannerSession(
-            self.idx,
+        base_snapshot = self.build_snapshot([Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
+        updated_snapshot = self.build_snapshot(
             [Blueprint("Rhea Blueprint", 0, 0, 1, 1)],
-            blueprint_updates={
+            blueprint_settings={
                 self.jump_drive_blueprint_name: Blueprint(self.jump_drive_blueprint_name, 10, 20),
             },
         )
-
-        base_snapshot = base_session.snapshot()
-        updated_snapshot = updated_session.snapshot()
 
         updated_usage = next(
             usage
@@ -60,17 +63,13 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(updated_snapshot.aggregates[self.tritanium].quantity, 4898493.6)
 
     def test_reaction_formula_me_and_te_are_ignored(self):
-        base_session = BomPlannerSession(self.idx, [Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
-        updated_session = BomPlannerSession(
-            self.idx,
+        base_snapshot = self.build_snapshot([Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
+        updated_snapshot = self.build_snapshot(
             [Blueprint("Rhea Blueprint", 0, 0, 1, 1)],
-            blueprint_updates={
+            blueprint_settings={
                 self.ferrogel_formula_name: Blueprint(self.ferrogel_formula_name, 10, 20),
             },
         )
-
-        base_snapshot = base_session.snapshot()
-        updated_snapshot = updated_session.snapshot()
 
         ferrogel_usage = next(
             usage
@@ -83,11 +82,9 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(updated_snapshot.aggregates[self.fulleroferrocene].quantity, 660.0)
 
     def test_runs_and_prints_drive_output_quantity(self):
-        session = BomPlannerSession(
-            self.idx,
+        snapshot = self.build_snapshot(
             [Blueprint("Rhea Blueprint", 0, 0, 2, 3)],
         )
-        snapshot = session.snapshot()
 
         self.assertEqual(snapshot.root.runs, 2.0)
         self.assertEqual(snapshot.root.prints, 3)
@@ -95,14 +92,12 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(snapshot.aggregates[self.capital_jump_drive].quantity, 180.0)
 
     def test_multiple_top_level_blueprints_can_use_different_job_sizes(self):
-        session = BomPlannerSession(
-            self.idx,
+        snapshot = self.build_snapshot(
             [
                 Blueprint("Rhea Blueprint", 0, 0, 1, 1),
                 Blueprint("Rhea Blueprint", 10, 0, 2, 2),
             ],
         )
-        snapshot = session.snapshot()
 
         self.assertEqual(len(snapshot.roots), 2)
         self.assertEqual(snapshot.roots[0].planned_output_quantity, 1.0)
@@ -110,23 +105,18 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(snapshot.aggregates[self.capital_jump_drive].quantity, 138.0)
 
     def test_time_efficiency_reduces_total_time(self):
-        base_session = BomPlannerSession(self.idx, [Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
-        updated_session = BomPlannerSession(self.idx, [Blueprint("Rhea Blueprint", 0, 20, 1, 1)])
-
-        base_snapshot = base_session.snapshot()
-        updated_snapshot = updated_session.snapshot()
+        base_snapshot = self.build_snapshot([Blueprint("Rhea Blueprint", 0, 0, 1, 1)])
+        updated_snapshot = self.build_snapshot([Blueprint("Rhea Blueprint", 0, 20, 1, 1)])
         base_time = self.idx.activity_time(self.rhea_blueprint_typeid, 1)
 
         self.assertEqual(base_snapshot.root.total_time_seconds, base_time)
         self.assertEqual(updated_snapshot.root.total_time_seconds, base_time * 0.8)
 
     def test_buy_decision_stops_recursion_for_that_component(self):
-        session = BomPlannerSession(
-            self.idx,
+        snapshot = self.build_snapshot(
             [Blueprint("Rhea Blueprint", 0, 0, 1, 1)],
             buy_components={"Capital Jump Drive"},
         )
-        snapshot = session.snapshot()
 
         self.assertIn("Capital Jump Drive", snapshot.request.buy_components)
         self.assertIsNone(snapshot.aggregates[self.capital_jump_drive].recipe)
