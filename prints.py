@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from model import Blueprint, BomAggregate, BomSnapshot
+from model import BlueprintSettings, BomAggregate, BomSnapshot
 
 
 def format_duration(seconds: float) -> str:
@@ -50,7 +50,7 @@ def is_bought(snapshot: BomSnapshot, name: str) -> bool:
 
 
 def is_base_material(snapshot: BomSnapshot, aggregate: BomAggregate) -> bool:
-    return aggregate.recipe is None and not is_bought(snapshot, aggregate.name)
+    return aggregate.production is None and not is_bought(snapshot, aggregate.name)
 
 
 def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
@@ -80,24 +80,24 @@ def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
 def print_blueprint_settings(snapshot: BomSnapshot) -> None:
     print("\nBlueprints in tree:")
     blueprints_by_depth = defaultdict(list)
-    for usage in snapshot.used_blueprints.values():
+    for usage in snapshot.used_blueprints:
         blueprints_by_depth[usage.min_depth].append(usage)
 
     for depth in sorted(blueprints_by_depth):
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
-        for usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry.recipe.blueprint_name):
-            blueprint = usage.recipe.blueprint
+        for usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry.production.blueprint_name):
+            settings = usage.production.settings
             rows.append(
                 (
-                    usage.recipe.blueprint_name,
+                    usage.production.blueprint_name,
                     f"output {fmt(usage.total_planned_output_quantity)}",
                     f"time {format_duration(usage.total_time_seconds)}",
                     format_job_cell(
-                        blueprint.material_efficiency,
-                        blueprint.time_efficiency,
-                        blueprint.runs,
-                        blueprint.prints,
+                        settings.material_efficiency,
+                        settings.time_efficiency,
+                        settings.runs,
+                        settings.prints,
                     ),
                 )
             )
@@ -105,17 +105,17 @@ def print_blueprint_settings(snapshot: BomSnapshot) -> None:
 
 
 def aggregate_detail_cell(snapshot: BomSnapshot, aggregate: BomAggregate) -> str:
-    if is_bought(snapshot, aggregate.name) or aggregate.blueprint is None:
+    if is_bought(snapshot, aggregate.name) or aggregate.blueprint_settings is None:
         return ""
-    if aggregate.mixed_blueprint_config:
+    if aggregate.mixed_blueprint_settings:
         return "config mixed"
 
-    blueprint = aggregate.blueprint
+    settings = aggregate.blueprint_settings
     return format_job_cell(
-        blueprint.material_efficiency,
-        blueprint.time_efficiency,
-        blueprint.runs,
-        blueprint.prints,
+        settings.material_efficiency,
+        settings.time_efficiency,
+        settings.runs,
+        settings.prints,
     )
 
 
@@ -162,7 +162,7 @@ def print_depth_summary(snapshot: BomSnapshot) -> None:
         print_table_rows(rows)
 
 
-def print_top_level_blueprints(idx, blueprints: list[Blueprint]) -> None:
+def print_top_level_blueprints(idx, blueprints: list[BlueprintSettings]) -> None:
     print("Top-level blueprints:")
     rows: list[tuple[str, str, str, str]] = []
     for blueprint in blueprints:
@@ -184,7 +184,7 @@ def print_top_level_blueprints(idx, blueprints: list[Blueprint]) -> None:
     print_table_rows(rows)
 
 
-def print_blueprint_updates(blueprint_updates: dict[str, Blueprint]) -> None:
+def print_blueprint_updates(blueprint_updates: dict[str, BlueprintSettings]) -> None:
     if not blueprint_updates:
         return
 

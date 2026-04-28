@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from bom_planner import BomPlanner
 from industry_index import IndustryIndex
-from model import Blueprint, PlanConfig
+from model import BlueprintSettings, PlanConfig
 
 
 @dataclass(frozen=True)
@@ -69,7 +69,7 @@ def _snapshot_for_blueprint(
     return planner.build_snapshot(
         PlanConfig(
             top_level_blueprints=[
-                Blueprint(
+                BlueprintSettings(
                     name=idx.type_name(blueprint_type_id),
                     runs=runs,
                     prints=prints,

@@ -40,11 +40,9 @@ class BlueprintActivityTime:
     activity: int
     time: float
 
-def _clamp(value: int, minimum: int, maximum: int) -> int:
-    return max(minimum, min(maximum, int(value)))
 
 @dataclass(frozen=True)
-class Blueprint:
+class BlueprintSettings:
     name: str
     material_efficiency: int = 0
     time_efficiency: int = 0
@@ -64,32 +62,9 @@ class Blueprint:
             raise ValueError("runs must be positive when provided")
         object.__setattr__(self, "runs", runs)
 
-    def effective_for_activity(self, activity: int | None) -> Blueprint:
-        if activity == MANUFACTURING_ACTIVITY:
-            return self
-        return Blueprint(name=self.name, runs=self.runs, prints=self.prints)
-
-    def resolve_runs(self, required_quantity: float | None, output_per_run: float) -> float:
-        if self.runs is not None:
-            return self.runs
-        if required_quantity is None:
-            return 1.0
-
-        output_per_job = output_per_run * self.prints
-        if output_per_job <= 0:
-            return float(required_quantity)
-        return float(required_quantity) / output_per_job
-
-    def usage_key(self, blueprint_type_id: int) -> str:
-        runs_key = "auto" if self.runs is None else self.runs
-        return (
-            f"{blueprint_type_id}:{self.material_efficiency}:"
-            f"{self.time_efficiency}:{runs_key}:{self.prints}"
-        )
-
 
 @dataclass(frozen=True)
-class BlueprintRecipe:
+class ProductionPlan:
     blueprint_type_id: int
     blueprint_name: str
     activity: int
@@ -97,38 +72,39 @@ class BlueprintRecipe:
     product_name: str
     output_per_run: float
     time_per_run: float
-    blueprint: Blueprint
+    settings: BlueprintSettings
 
-    def resolve_runs(self, required_quantity: float | None) -> float:
-        return self.blueprint.resolve_runs(required_quantity, self.output_per_run)
+    def runs_for(self, required_quantity: float | None) -> float:
+        if self.settings.runs is not None:
+            return self.settings.runs
+        if required_quantity is None:
+            return 1.0
+
+        output_per_job = self.output_per_run * self.settings.prints
+        if output_per_job <= 0:
+            return float(required_quantity)
+        return float(required_quantity) / output_per_job
 
     def planned_output(self, runs: float) -> float:
-        return self.output_per_run * runs * self.blueprint.prints
-
-    def base_material_quantity(self, quantity_per_run: float, runs: float) -> float:
-        return float(quantity_per_run) * runs * self.blueprint.prints
+        return self.output_per_run * runs * self.settings.prints
 
     def material_quantity(self, quantity_per_run: float, runs: float) -> float:
-        quantity = self.base_material_quantity(quantity_per_run, runs)
-        if self.activity != MANUFACTURING_ACTIVITY or quantity_per_run <= 1.0:
-            return quantity
-        return quantity * (1.0 - (self.blueprint.material_efficiency / 100.0))
+        quantity = float(quantity_per_run) * runs * self.settings.prints
+        if self.activity == MANUFACTURING_ACTIVITY and quantity_per_run > 1.0:
+            return quantity * (1.0 - (self.settings.material_efficiency / 100.0))
+        return quantity
 
     def total_time(self, runs: float) -> float:
-        seconds = self.time_per_run * runs * self.blueprint.prints
-        if self.activity != MANUFACTURING_ACTIVITY:
-            return seconds
-        return seconds * (1.0 - (self.blueprint.time_efficiency / 100.0))
-
-    @property
-    def usage_key(self) -> str:
-        return self.blueprint.usage_key(self.blueprint_type_id)
+        seconds = self.time_per_run * runs * self.settings.prints
+        if self.activity == MANUFACTURING_ACTIVITY:
+            return seconds * (1.0 - (self.settings.time_efficiency / 100.0))
+        return seconds
 
 
 @dataclass
 class PlanConfig:
-    top_level_blueprints: list[Blueprint] = field(default_factory=list)
-    blueprint_settings: dict[str, Blueprint] = field(default_factory=dict)
+    top_level_blueprints: list[BlueprintSettings] = field(default_factory=list)
+    blueprint_settings: dict[str, BlueprintSettings] = field(default_factory=dict)
     buy_components: set[str] = field(default_factory=set)
 
     def __post_init__(self) -> None:
@@ -136,11 +112,8 @@ class PlanConfig:
         self.blueprint_settings = dict(self.blueprint_settings or {})
         self.buy_components = set(self.buy_components or set())
 
-    def blueprint_for(self, blueprint_name: str) -> Blueprint:
-        return self.blueprint_settings.get(blueprint_name, Blueprint(blueprint_name))
-
-    def set_blueprint(self, blueprint: Blueprint) -> None:
-        self.blueprint_settings[blueprint.name] = blueprint
+    def settings_for(self, blueprint_name: str) -> BlueprintSettings:
+        return self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
 
     def copy(self) -> PlanConfig:
         return PlanConfig(
@@ -156,79 +129,46 @@ class BomNode:
     type_id: int
     name: str
     depth: int
-    required_quantity: float
-    planned_output_quantity: float
+    quantity: float
+    production: ProductionPlan | None = None
     runs: float | None = None
-    total_time_seconds: float = 0.0
-    base_material_quantity: float | None = None
-    recipe: BlueprintRecipe | None = None
     children: list[BomNode] = field(default_factory=list)
 
-    @classmethod
-    def from_recipe(
-        cls,
-        node_id: str,
-        depth: int,
-        required_quantity: float | None,
-        recipe: BlueprintRecipe,
-    ) -> BomNode:
-        runs = recipe.resolve_runs(required_quantity)
-        planned_output = recipe.planned_output(runs)
-        return cls(
-            node_id=node_id,
-            type_id=recipe.product_type_id,
-            name=recipe.product_name,
-            depth=depth,
-            required_quantity=planned_output if required_quantity is None else float(required_quantity),
-            planned_output_quantity=planned_output,
-            runs=runs,
-            total_time_seconds=recipe.total_time(runs),
-            recipe=recipe,
-        )
-
-    @classmethod
-    def leaf(
-        cls,
-        node_id: str,
-        type_id: int,
-        name: str,
-        depth: int,
-        quantity: float,
-        base_material_quantity: float | None,
-    ) -> BomNode:
-        return cls(
-            node_id=node_id,
-            type_id=type_id,
-            name=name,
-            depth=depth,
-            required_quantity=quantity,
-            planned_output_quantity=quantity,
-            base_material_quantity=base_material_quantity,
-        )
+    @property
+    def planned_output_quantity(self) -> float:
+        if self.production is None or self.runs is None:
+            return self.quantity
+        return self.production.planned_output(self.runs)
 
     @property
-    def blueprint(self) -> Blueprint | None:
-        return self.recipe.blueprint if self.recipe is not None else None
+    def total_time_seconds(self) -> float:
+        if self.production is None or self.runs is None:
+            return 0.0
+        return self.production.total_time(self.runs)
+
+    @property
+    def blueprint_settings(self) -> BlueprintSettings | None:
+        return self.production.settings if self.production is not None else None
 
     @property
     def blueprint_name(self) -> str | None:
-        return self.recipe.blueprint_name if self.recipe is not None else None
+        return self.production.blueprint_name if self.production is not None else None
 
     @property
     def blueprint_type_id(self) -> int | None:
-        return self.recipe.blueprint_type_id if self.recipe is not None else None
+        return self.production.blueprint_type_id if self.production is not None else None
 
     @property
     def material_efficiency(self) -> int:
-        return self.blueprint.material_efficiency if self.blueprint is not None else 0
+        return self.blueprint_settings.material_efficiency if self.blueprint_settings is not None else 0
 
     @property
     def time_efficiency(self) -> int:
-        return self.blueprint.time_efficiency if self.blueprint is not None else 0
+        return self.blueprint_settings.time_efficiency if self.blueprint_settings is not None else 0
 
     @property
     def prints(self) -> int:
-        return self.blueprint.prints if self.blueprint is not None else 1
+        return self.blueprint_settings.prints if self.blueprint_settings is not None else 1
 
     @property
     def total_runs(self) -> float:
@@ -242,48 +182,47 @@ class BomAggregate:
     quantity: float
     min_depth: int
     max_depth: int
-    recipe: BlueprintRecipe | None = None
+    production: ProductionPlan | None = None
     total_time_seconds: float = 0.0
-    mixed_blueprint_config: bool = False
+    mixed_blueprint_settings: bool = False
 
     @classmethod
     def from_node(cls, node: BomNode) -> BomAggregate:
         return cls(
             type_id=node.type_id,
             name=node.name,
-            quantity=node.required_quantity,
+            quantity=node.quantity,
             min_depth=node.depth,
             max_depth=node.depth,
-            recipe=node.recipe,
+            production=node.production,
             total_time_seconds=node.total_time_seconds,
         )
 
     def absorb(self, node: BomNode) -> None:
-        self.quantity += node.required_quantity
+        self.quantity += node.quantity
         self.total_time_seconds += node.total_time_seconds
         self.min_depth = min(self.min_depth, node.depth)
         self.max_depth = max(self.max_depth, node.depth)
 
-        if node.recipe is None:
+        if node.production is None:
             return
-        if self.recipe is None:
-            self.recipe = node.recipe
-        elif self.recipe.usage_key != node.recipe.usage_key:
-            self.mixed_blueprint_config = True
+        if self.production is None:
+            self.production = node.production
+        elif self.production != node.production:
+            self.mixed_blueprint_settings = True
 
     @property
-    def blueprint(self) -> Blueprint | None:
-        return self.recipe.blueprint if self.recipe is not None else None
+    def blueprint_settings(self) -> BlueprintSettings | None:
+        return self.production.settings if self.production is not None else None
 
     @property
     def blueprint_type_id(self) -> int | None:
-        return self.recipe.blueprint_type_id if self.recipe is not None else None
+        return self.production.blueprint_type_id if self.production is not None else None
 
 
 @dataclass
 class BlueprintUsage:
-    usage_key: str
-    recipe: BlueprintRecipe
+    production: ProductionPlan
     occurrences: int = 0
     min_depth: int = 0
     max_depth: int = 0
@@ -293,11 +232,10 @@ class BlueprintUsage:
 
     @classmethod
     def from_node(cls, node: BomNode) -> BlueprintUsage:
-        if node.recipe is None:
+        if node.production is None:
             raise ValueError("Blueprint usage can only be created from buildable nodes")
         return cls(
-            usage_key=node.recipe.usage_key,
-            recipe=node.recipe,
+            production=node.production,
             occurrences=1,
             min_depth=node.depth,
             max_depth=node.depth,
@@ -320,7 +258,7 @@ class BomSnapshot:
     request: PlanConfig
     roots: list[BomNode]
     aggregates: dict[int, BomAggregate]
-    used_blueprints: dict[str, BlueprintUsage]
+    used_blueprints: list[BlueprintUsage]
 
     @property
     def root(self) -> BomNode | None:
@@ -332,5 +270,8 @@ class BomSnapshot:
 
     @property
     def total_time_seconds(self) -> float:
-        return sum(usage.total_time_seconds for usage in self.used_blueprints.values())
+        return sum(usage.total_time_seconds for usage in self.used_blueprints)
 
+
+def _clamp(value: int, minimum: int, maximum: int) -> int:
+    return max(minimum, min(maximum, int(value)))
