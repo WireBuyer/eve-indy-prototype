@@ -23,17 +23,39 @@ class BomPlanner:
 
     def build_snapshot(self, request: PlanConfig) -> BomSnapshot:
         plan = request.copy()
-        roots = [
-            self._build_node(
-                production=self._production_for_settings(settings),
+        roots: list[BomNode] = []
+        selected_product_type_ids: set[int] = set()
+        descendant_product_type_ids: set[int] = set()
+
+        for root_index, settings in enumerate(plan.top_level_blueprints):
+            production = self._production_for_settings(settings)
+            if production.product_type_id in descendant_product_type_ids:
+                raise ValueError(
+                    f"{production.blueprint_name} cannot be selected because "
+                    f"{production.product_name} is already required by another selection."
+                )
+
+            root = self._build_node(
+                production=production,
                 required_quantity=None,
                 depth=0,
                 node_id=str(root_index),
                 plan=plan,
                 active_blueprints=set(),
             )
-            for root_index, settings in enumerate(plan.top_level_blueprints)
-        ]
+            root_descendants = {node.type_id for node in _iter_nodes(root.children)}
+            conflicting_roots = selected_product_type_ids.intersection(root_descendants)
+            if conflicting_roots:
+                conflict_name = self.idx.type_name(next(iter(conflicting_roots)))
+                raise ValueError(
+                    f"{production.blueprint_name} cannot be selected because "
+                    f"it requires an existing top-level selection: {conflict_name}."
+                )
+
+            roots.append(root)
+            selected_product_type_ids.add(root.type_id)
+            descendant_product_type_ids.update(root_descendants)
+
         aggregates, used_blueprints = self._summarize(roots)
         return BomSnapshot(
             request=plan,

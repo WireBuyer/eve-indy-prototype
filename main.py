@@ -16,7 +16,8 @@ TOP_LEVEL_BLUEPRINTS = [
 BLUEPRINT_ME_UPDATES = {
     # "Life Support Backup Unit Blueprint": BlueprintSettings("Life Support Backup Unit Blueprint", 10, 20),
     # "Capital Jump Drive Blueprint": BlueprintSettings("Capital Jump Drive Blueprint", 10, 20),
-    # "Life Support Backup Unit": BlueprintSettings("Life Support Backup Unit", 10, 20),
+    "Life Support Backup Unit Blueprint": BlueprintSettings("Life Support Backup Unit Blueprint", 10, 20),
+    "Auto-Integrity Preservation Seal Blueprint": BlueprintSettings("Auto-Integrity Preservation Seal Blueprint", 10, 20),
 }
 
 # Default behavior is build. If a component name appears here, it will be bought and not built,

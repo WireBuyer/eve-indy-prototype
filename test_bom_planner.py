@@ -13,6 +13,7 @@ class BomPlannerTests(unittest.TestCase):
         cls.rhea_blueprint_typeid = cls.idx.find_type_id_by_name("Rhea Blueprint")
         cls.jump_drive_blueprint_name = "Capital Jump Drive Blueprint"
         cls.ferrogel_formula_name = "Ferrogel Reaction Formula"
+        cls.auto_integrity_seal_blueprint_name = "Auto-Integrity Preservation Seal Blueprint"
 
         cls.capital_jump_drive = cls.idx.find_type_id_by_name("Capital Jump Drive")
         cls.charon = cls.idx.find_type_id_by_name("Charon")
@@ -90,6 +91,36 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(snapshot.root.prints, 3)
         self.assertEqual(snapshot.root.planned_output_quantity, 6.0)
         self.assertEqual(snapshot.aggregates[self.capital_jump_drive].quantity, 180.0)
+
+    def test_top_level_selection_cannot_duplicate_a_child_requirement(self):
+        with self.assertRaisesRegex(ValueError, "already required by another selection"):
+            self.build_snapshot(
+                [
+                    BlueprintSettings("Raven Blueprint", 0, 0, 1, 1),
+                    BlueprintSettings(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1),
+                ],
+            )
+
+    def test_top_level_selection_cannot_absorb_existing_selection_as_child(self):
+        with self.assertRaisesRegex(ValueError, "requires an existing top-level selection"):
+            self.build_snapshot(
+                [
+                    BlueprintSettings(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1),
+                    BlueprintSettings("Raven Blueprint", 0, 0, 1, 1),
+                ],
+            )
+
+    def test_top_level_selection_allows_unrelated_component_blueprint(self):
+        snapshot = self.build_snapshot(
+            [
+                BlueprintSettings("Heron Blueprint", 0, 0, 1, 1),
+                BlueprintSettings(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1),
+            ],
+        )
+
+        self.assertEqual(len(snapshot.roots), 2)
+        self.assertEqual(snapshot.roots[0].blueprint_name, "Heron Blueprint")
+        self.assertEqual(snapshot.roots[1].blueprint_name, self.auto_integrity_seal_blueprint_name)
 
     def test_multiple_top_level_blueprints_can_use_different_job_sizes(self):
         snapshot = self.build_snapshot(
