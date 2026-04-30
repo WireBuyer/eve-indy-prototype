@@ -21,13 +21,12 @@ class BomPlanner:
     def __init__(self, idx: IndustryIndex):
         self.idx = idx
 
-    def build_snapshot(self, request: PlanConfig) -> BomSnapshot:
-        plan = request.copy()
+    def build_snapshot(self, plan: PlanConfig) -> BomSnapshot:
         roots: list[BomNode] = []
         selected_product_type_ids: set[int] = set()
         descendant_product_type_ids: set[int] = set()
 
-        for root_index, settings in enumerate(plan.top_level_blueprints):
+        for settings in plan.top_level_blueprints:
             production = self._production_for_settings(settings)
             if production.product_type_id in descendant_product_type_ids:
                 raise ValueError(
@@ -39,7 +38,6 @@ class BomPlanner:
                 production=production,
                 required_quantity=None,
                 depth=0,
-                node_id=str(root_index),
                 plan=plan,
                 active_blueprints=set(),
             )
@@ -69,14 +67,12 @@ class BomPlanner:
         production: ProductionPlan,
         required_quantity: float | None,
         depth: int,
-        node_id: str,
         plan: PlanConfig,
         active_blueprints: set[int],
     ) -> BomNode:
         runs = production.runs_for(required_quantity)
         quantity = production.planned_output(runs) if required_quantity is None else float(required_quantity)
         node = BomNode(
-            node_id=node_id,
             type_id=production.product_type_id,
             name=production.product_name,
             depth=depth,
@@ -91,7 +87,7 @@ class BomPlanner:
         active_blueprints.add(production.blueprint_type_id)
         try:
             node.children = [
-                self._build_child(node, material, child_index, plan, active_blueprints)
+                self._build_child(node, material, plan, active_blueprints)
                 for child_index, material in enumerate(self.idx.inputs(production.blueprint_type_id, production.activity))
             ]
         finally:
@@ -102,14 +98,12 @@ class BomPlanner:
         self,
         parent: BomNode,
         material: MaterialRow,
-        child_index: int,
         plan: PlanConfig,
         active_blueprints: set[int],
     ) -> BomNode:
         if parent.production is None or parent.runs is None:
             raise ValueError("Material nodes require a buildable parent")
 
-        node_id = f"{parent.node_id}.{child_index}"
         depth = parent.depth + 1
         type_id = material.material_typeid
         name = self.idx.type_name(type_id)
@@ -117,7 +111,7 @@ class BomPlanner:
 
         blueprint_product = None if name in plan.buy_components else self.idx.production_blueprint_for(type_id)
         if blueprint_product is None:
-            return BomNode(node_id=node_id, type_id=type_id, name=name, depth=depth, quantity=quantity)
+            return BomNode(type_id=type_id, name=name, depth=depth, quantity=quantity)
 
         return self._build_node(
             production=self._production_from_product(
@@ -126,7 +120,6 @@ class BomPlanner:
             ),
             required_quantity=quantity,
             depth=depth,
-            node_id=node_id,
             plan=plan,
             active_blueprints=active_blueprints,
         )

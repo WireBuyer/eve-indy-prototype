@@ -7,7 +7,7 @@ MANUFACTURING_ACTIVITY = 1
 REACTION_ACTIVITY = 11
 PRODUCTION_ACTIVITIES = (MANUFACTURING_ACTIVITY, REACTION_ACTIVITY)
 
-
+# --- models for the db tables ---
 @dataclass(frozen=True)
 class TypeInfo:
     type_id: int
@@ -41,6 +41,19 @@ class BlueprintActivityTime:
     time: float
 
 
+# --- models for business logic ---
+# model that holds all info for a plan
+@dataclass
+class PlanConfig:
+    top_level_blueprints: list[BlueprintSettings] = field(default_factory=list)
+    blueprint_settings: dict[str, BlueprintSettings] = field(default_factory=dict)
+    buy_components: set[str] = field(default_factory=set)
+
+    def settings_for(self, blueprint_name: str) -> BlueprintSettings:
+        return self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
+
+
+# model that holds info for a print (either top level or override)
 @dataclass(frozen=True)
 class BlueprintSettings:
     name: str
@@ -100,32 +113,8 @@ class ProductionPlan:
             return seconds * (1.0 - (self.settings.time_efficiency / 100.0))
         return seconds
 
-
-@dataclass
-class PlanConfig:
-    top_level_blueprints: list[BlueprintSettings] = field(default_factory=list)
-    blueprint_settings: dict[str, BlueprintSettings] = field(default_factory=dict)
-    buy_components: set[str] = field(default_factory=set)
-
-    def __post_init__(self) -> None:
-        self.top_level_blueprints = list(self.top_level_blueprints or [])
-        self.blueprint_settings = dict(self.blueprint_settings or {})
-        self.buy_components = set(self.buy_components or set())
-
-    def settings_for(self, blueprint_name: str) -> BlueprintSettings:
-        return self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
-
-    def copy(self) -> PlanConfig:
-        return PlanConfig(
-            top_level_blueprints=self.top_level_blueprints,
-            blueprint_settings=self.blueprint_settings,
-            buy_components=self.buy_components,
-        )
-
-
 @dataclass
 class BomNode:
-    node_id: str
     type_id: int
     name: str
     depth: int
