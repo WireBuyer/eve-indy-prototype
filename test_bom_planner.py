@@ -1,8 +1,12 @@
+import io
 import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
 
 from bom_planner import BomPlanner
 from db_io import load_tables
 from model import BlueprintSettings, PlanConfig
+from plan_editor import BlueprintSettingsUpdate, PlanEditor
 
 
 class BomPlannerTests(unittest.TestCase):
@@ -10,6 +14,7 @@ class BomPlannerTests(unittest.TestCase):
     def setUpClass(cls):
         cls.idx = load_tables("eve.db")
         cls.planner = BomPlanner(cls.idx)
+        cls.editor = PlanEditor(cls.planner)
         cls.rhea_blueprint_typeid = cls.idx.find_type_id_by_name("Rhea Blueprint")
         cls.jump_drive_blueprint_name = "Capital Jump Drive Blueprint"
         cls.ferrogel_formula_name = "Ferrogel Reaction Formula"
@@ -31,6 +36,21 @@ class BomPlannerTests(unittest.TestCase):
             )
         )
 
+    def production_rows(self, snapshot, blueprint_name):
+        return [
+            row
+            for row in snapshot.rows
+            if row.production is not None and row.production.blueprint_name == blueprint_name
+        ]
+
+    def test_plan_config_normalizes_optional_collections(self):
+        plan = PlanConfig(top_level_blueprints=None, blueprint_settings=None, buy_components=None)
+
+        self.assertEqual(plan.top_level_blueprints, [])
+        self.assertEqual(plan.blueprint_settings, {})
+        self.assertEqual(plan.buy_components, set())
+        self.assertEqual(plan.settings_for("Rhea Blueprint").name, "Rhea Blueprint")
+
     def test_root_me_reduces_direct_manufacturing_inputs(self):
         base_snapshot = self.build_snapshot([BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
         updated_snapshot = self.build_snapshot([BlueprintSettings("Rhea Blueprint", 10, 0, 1, 1)])
@@ -51,13 +71,9 @@ class BomPlannerTests(unittest.TestCase):
             },
         )
 
-        updated_usage = next(
-            usage
-            for usage in updated_snapshot.used_blueprints
-            if usage.production.blueprint_name == self.jump_drive_blueprint_name
-        )
-        self.assertEqual(updated_usage.production.settings.material_efficiency, 10)
-        self.assertEqual(updated_usage.production.settings.time_efficiency, 20)
+        updated_row = self.production_rows(updated_snapshot, self.jump_drive_blueprint_name)[0]
+        self.assertEqual(updated_row.production.settings.material_efficiency, 10)
+        self.assertEqual(updated_row.production.settings.time_efficiency, 20)
         self.assertEqual(base_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 29160.0)
         self.assertEqual(updated_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28860.0)
         self.assertEqual(base_snapshot.aggregates[self.tritanium].quantity, 5078493.6)
@@ -72,13 +88,9 @@ class BomPlannerTests(unittest.TestCase):
             },
         )
 
-        ferrogel_usage = next(
-            usage
-            for usage in updated_snapshot.used_blueprints
-            if usage.production.blueprint_name == self.ferrogel_formula_name
-        )
-        self.assertEqual(ferrogel_usage.production.settings.material_efficiency, 0)
-        self.assertEqual(ferrogel_usage.production.settings.time_efficiency, 0)
+        ferrogel_row = self.production_rows(updated_snapshot, self.ferrogel_formula_name)[0]
+        self.assertEqual(ferrogel_row.production.settings.material_efficiency, 0)
+        self.assertEqual(ferrogel_row.production.settings.time_efficiency, 0)
         self.assertEqual(base_snapshot.aggregates[self.fulleroferrocene].quantity, 660.0)
         self.assertEqual(updated_snapshot.aggregates[self.fulleroferrocene].quantity, 660.0)
 
@@ -152,8 +164,82 @@ class BomPlannerTests(unittest.TestCase):
         self.assertIn("Capital Jump Drive", snapshot.request.buy_components)
         self.assertIsNone(snapshot.aggregates[self.capital_jump_drive].production)
         self.assertEqual(snapshot.aggregates[self.capital_jump_drive].quantity, 30.0)
-        self.assertNotIn(self.jump_drive_blueprint_name, {usage.production.blueprint_name for usage in snapshot.used_blueprints})
+        self.assertNotIn(
+            self.jump_drive_blueprint_name,
+            {row.production.blueprint_name for row in snapshot.rows if row.production is not None},
+        )
         self.assertEqual(snapshot.aggregates[self.wetware_mainframe].quantity, 1.0)
+
+    def test_editor_applies_lightweight_top_level_update(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        result = self.editor.update_top_level_blueprints(
+            plan,
+            indexes=[0],
+            update=BlueprintSettingsUpdate(material_efficiency=10, time_efficiency=20, runs=2, prints=3),
+        )
+
+        self.assertEqual(result.plan.top_level_blueprints[0].material_efficiency, 10)
+        self.assertEqual(result.plan.top_level_blueprints[0].time_efficiency, 20)
+        self.assertEqual(result.plan.top_level_blueprints[0].runs, 2.0)
+        self.assertEqual(result.plan.top_level_blueprints[0].prints, 3)
+        self.assertEqual(result.snapshot.root.planned_output_quantity, 6.0)
+
+    def test_editor_applies_selected_depth_blueprint_update(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        result = self.editor.update_depth_blueprints(
+            plan,
+            depth=1,
+            blueprint_names=[self.jump_drive_blueprint_name],
+            update=BlueprintSettingsUpdate(material_efficiency=10, time_efficiency=20),
+        )
+
+        settings = result.plan.blueprint_settings[self.jump_drive_blueprint_name]
+        self.assertEqual(settings.material_efficiency, 10)
+        self.assertEqual(settings.time_efficiency, 20)
+        self.assertIsNone(settings.runs)
+        self.assertEqual(result.snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28860.0)
+
+    def test_editor_rejects_runs_update_below_top_level(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        with self.assertRaisesRegex(ValueError, "runs can only be updated"):
+            self.editor.update_depth_blueprints(
+                plan,
+                depth=1,
+                blueprint_names=[self.jump_drive_blueprint_name],
+                update=BlueprintSettingsUpdate(runs=2),
+            )
+
+    def test_editor_rejects_depth_update_for_blueprint_not_in_that_layer(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        with self.assertRaisesRegex(ValueError, "not buildable at depth 2"):
+            self.editor.update_depth_blueprints(
+                plan,
+                depth=2,
+                blueprint_names=[self.jump_drive_blueprint_name],
+                update=BlueprintSettingsUpdate(material_efficiency=10),
+            )
+
+    def test_editor_validates_added_top_level_blueprint_conflicts(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Raven Blueprint", 0, 0, 1, 1)])
+
+        with self.assertRaisesRegex(ValueError, "already required by another selection"):
+            self.editor.add_top_level_blueprint(
+                plan,
+                BlueprintSettings(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1),
+            )
+
+    def test_main_output_matches_example_fixture(self):
+        from main import main
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            main()
+
+        self.assertEqual(output.getvalue(), Path("Example 2.txt").read_text())
 
 
 if __name__ == "__main__":

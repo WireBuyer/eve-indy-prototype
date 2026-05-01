@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
-
 from industry_index import IndustryIndex
 from model import (
     MANUFACTURING_ACTIVITY,
     BlueprintProduct,
     BlueprintSettings,
-    BlueprintUsage,
     BomAggregate,
-    BomNode,
+    BomLine,
     BomSnapshot,
     MaterialRow,
     PlanConfig,
@@ -22,7 +19,7 @@ class BomPlanner:
         self.idx = idx
 
     def build_snapshot(self, plan: PlanConfig) -> BomSnapshot:
-        roots: list[BomNode] = []
+        rows: list[BomLine] = []
         selected_product_type_ids: set[int] = set()
         descendant_product_type_ids: set[int] = set()
 
@@ -34,14 +31,16 @@ class BomPlanner:
                     f"{production.product_name} is already required by another selection."
                 )
 
-            root = self._build_node(
+            root_start = len(rows)
+            self._expand_blueprint(
                 production=production,
                 required_quantity=None,
                 depth=0,
                 plan=plan,
+                rows=rows,
                 active_blueprints=set(),
             )
-            root_descendants = {node.type_id for node in _iter_nodes(root.children)}
+            root_descendants = {row.type_id for row in rows[root_start + 1:]}
             conflicting_roots = selected_product_type_ids.intersection(root_descendants)
             if conflicting_roots:
                 conflict_name = self.idx.type_name(next(iter(conflicting_roots)))
@@ -50,29 +49,28 @@ class BomPlanner:
                     f"it requires an existing top-level selection: {conflict_name}."
                 )
 
-            roots.append(root)
-            selected_product_type_ids.add(root.type_id)
+            selected_product_type_ids.add(production.product_type_id)
             descendant_product_type_ids.update(root_descendants)
 
-        aggregates, used_blueprints = self._summarize(roots)
+        aggregates = self._summarize(rows)
         return BomSnapshot(
             request=plan,
-            roots=roots,
+            rows=rows,
             aggregates=aggregates,
-            used_blueprints=used_blueprints,
         )
 
-    def _build_node(
+    def _expand_blueprint(
         self,
         production: ProductionPlan,
         required_quantity: float | None,
         depth: int,
         plan: PlanConfig,
+        rows: list[BomLine],
         active_blueprints: set[int],
-    ) -> BomNode:
+    ) -> BomLine:
         runs = production.runs_for(required_quantity)
         quantity = production.planned_output(runs) if required_quantity is None else float(required_quantity)
-        node = BomNode(
+        row = BomLine(
             type_id=production.product_type_id,
             name=production.product_name,
             depth=depth,
@@ -80,40 +78,39 @@ class BomPlanner:
             production=production,
             runs=runs,
         )
+        rows.append(row)
 
         if production.blueprint_type_id in active_blueprints:
-            return node
+            return row
 
         active_blueprints.add(production.blueprint_type_id)
         try:
-            node.children = [
-                self._build_child(node, material, plan, active_blueprints)
-                for child_index, material in enumerate(self.idx.inputs(production.blueprint_type_id, production.activity))
-            ]
+            for material in self.idx.inputs(production.blueprint_type_id, production.activity):
+                self._expand_material(production, runs, material, depth + 1, plan, rows, active_blueprints)
         finally:
             active_blueprints.remove(production.blueprint_type_id)
-        return node
+        return row
 
-    def _build_child(
+    def _expand_material(
         self,
-        parent: BomNode,
+        parent_production: ProductionPlan,
+        parent_runs: float,
         material: MaterialRow,
+        depth: int,
         plan: PlanConfig,
+        rows: list[BomLine],
         active_blueprints: set[int],
-    ) -> BomNode:
-        if parent.production is None or parent.runs is None:
-            raise ValueError("Material nodes require a buildable parent")
-
-        depth = parent.depth + 1
+    ) -> None:
         type_id = material.material_typeid
         name = self.idx.type_name(type_id)
-        quantity = parent.production.material_quantity(material.quantity, parent.runs)
+        quantity = parent_production.material_quantity(material.quantity, parent_runs)
 
         blueprint_product = None if name in plan.buy_components else self.idx.production_blueprint_for(type_id)
         if blueprint_product is None:
-            return BomNode(type_id=type_id, name=name, depth=depth, quantity=quantity)
+            rows.append(BomLine(type_id=type_id, name=name, depth=depth, quantity=quantity))
+            return
 
-        return self._build_node(
+        self._expand_blueprint(
             production=self._production_from_product(
                 blueprint_product,
                 plan.settings_for(self.idx.type_name(blueprint_product.type_id)),
@@ -121,6 +118,7 @@ class BomPlanner:
             required_quantity=quantity,
             depth=depth,
             plan=plan,
+            rows=rows,
             active_blueprints=active_blueprints,
         )
 
@@ -150,31 +148,17 @@ class BomPlanner:
             settings=settings,
         )
 
-    def _summarize(self, roots: list[BomNode]) -> tuple[dict[int, BomAggregate], list[BlueprintUsage]]:
+    def _summarize(self, rows: list[BomLine]) -> dict[int, BomAggregate]:
         aggregates: dict[int, BomAggregate] = {}
-        usage_by_production: dict[ProductionPlan, BlueprintUsage] = {}
 
-        for node in _iter_nodes(roots):
-            if node.depth > 0:
-                aggregate = aggregates.get(node.type_id)
-                if aggregate is None:
-                    aggregates[node.type_id] = BomAggregate.from_node(node)
-                else:
-                    aggregate.absorb(node)
-
-            if node.production is None:
+        for row in rows:
+            if row.depth == 0:
                 continue
 
-            usage = usage_by_production.get(node.production)
-            if usage is None:
-                usage_by_production[node.production] = BlueprintUsage.from_node(node)
+            aggregate = aggregates.get(row.type_id)
+            if aggregate is None:
+                aggregates[row.type_id] = BomAggregate.from_line(row)
             else:
-                usage.absorb(node)
+                aggregate.absorb(row)
 
-        return aggregates, list(usage_by_production.values())
-
-
-def _iter_nodes(nodes: list[BomNode]) -> Iterator[BomNode]:
-    for node in nodes:
-        yield node
-        yield from _iter_nodes(node.children)
+        return aggregates

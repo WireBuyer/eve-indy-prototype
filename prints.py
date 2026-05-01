@@ -79,20 +79,37 @@ def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
 
 def print_blueprint_settings(snapshot: BomSnapshot) -> None:
     print("\nBlueprints in tree:")
+    usage_by_production = {}
+    for row in snapshot.rows:
+        if row.production is None:
+            continue
+
+        usage = usage_by_production.get(row.production)
+        if usage is None:
+            usage_by_production[row.production] = {
+                "min_depth": row.depth,
+                "total_output": row.planned_output_quantity,
+                "total_time": row.total_time_seconds,
+            }
+        else:
+            usage["min_depth"] = min(usage["min_depth"], row.depth)
+            usage["total_output"] += row.planned_output_quantity
+            usage["total_time"] += row.total_time_seconds
+
     blueprints_by_depth = defaultdict(list)
-    for usage in snapshot.used_blueprints:
-        blueprints_by_depth[usage.min_depth].append(usage)
+    for production, usage in usage_by_production.items():
+        blueprints_by_depth[usage["min_depth"]].append((production, usage))
 
     for depth in sorted(blueprints_by_depth):
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
-        for usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry.production.blueprint_name):
-            settings = usage.production.settings
+        for production, usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry[0].blueprint_name):
+            settings = production.settings
             rows.append(
                 (
-                    usage.production.blueprint_name,
-                    f"output {fmt(usage.total_planned_output_quantity)}",
-                    f"time {format_duration(usage.total_time_seconds)}",
+                    production.blueprint_name,
+                    f"output {fmt(usage['total_output'])}",
+                    f"time {format_duration(usage['total_time'])}",
                     format_job_cell(
                         settings.material_efficiency,
                         settings.time_efficiency,

@@ -45,9 +45,14 @@ class BlueprintActivityTime:
 # model that holds all info for a plan
 @dataclass
 class PlanConfig:
-    top_level_blueprints: list[BlueprintSettings] = field(default_factory=list)
-    blueprint_settings: dict[str, BlueprintSettings] = field(default_factory=dict)
-    buy_components: set[str] = field(default_factory=set)
+    top_level_blueprints: list[BlueprintSettings] | None = field(default_factory=list)
+    blueprint_settings: dict[str, BlueprintSettings] | None = field(default_factory=dict)
+    buy_components: set[str] | None = field(default_factory=set)
+
+    def __post_init__(self) -> None:
+        self.top_level_blueprints = list(self.top_level_blueprints or [])
+        self.blueprint_settings = dict(self.blueprint_settings or {})
+        self.buy_components = set(self.buy_components or set())
 
     def settings_for(self, blueprint_name: str) -> BlueprintSettings:
         return self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
@@ -114,14 +119,13 @@ class ProductionPlan:
         return seconds
 
 @dataclass
-class BomNode:
+class BomLine:
     type_id: int
     name: str
     depth: int
     quantity: float
     production: ProductionPlan | None = None
     runs: float | None = None
-    children: list[BomNode] = field(default_factory=list)
 
     @property
     def planned_output_quantity(self) -> float:
@@ -176,28 +180,28 @@ class BomAggregate:
     mixed_blueprint_settings: bool = False
 
     @classmethod
-    def from_node(cls, node: BomNode) -> BomAggregate:
+    def from_line(cls, line: BomLine) -> BomAggregate:
         return cls(
-            type_id=node.type_id,
-            name=node.name,
-            quantity=node.quantity,
-            min_depth=node.depth,
-            max_depth=node.depth,
-            production=node.production,
-            total_time_seconds=node.total_time_seconds,
+            type_id=line.type_id,
+            name=line.name,
+            quantity=line.quantity,
+            min_depth=line.depth,
+            max_depth=line.depth,
+            production=line.production,
+            total_time_seconds=line.total_time_seconds,
         )
 
-    def absorb(self, node: BomNode) -> None:
-        self.quantity += node.quantity
-        self.total_time_seconds += node.total_time_seconds
-        self.min_depth = min(self.min_depth, node.depth)
-        self.max_depth = max(self.max_depth, node.depth)
+    def absorb(self, line: BomLine) -> None:
+        self.quantity += line.quantity
+        self.total_time_seconds += line.total_time_seconds
+        self.min_depth = min(self.min_depth, line.depth)
+        self.max_depth = max(self.max_depth, line.depth)
 
-        if node.production is None:
+        if line.production is None:
             return
         if self.production is None:
-            self.production = node.production
-        elif self.production != node.production:
+            self.production = line.production
+        elif self.production != line.production:
             self.mixed_blueprint_settings = True
 
     @property
@@ -210,47 +214,17 @@ class BomAggregate:
 
 
 @dataclass
-class BlueprintUsage:
-    production: ProductionPlan
-    occurrences: int = 0
-    min_depth: int = 0
-    max_depth: int = 0
-    total_runs: float = 0.0
-    total_planned_output_quantity: float = 0.0
-    total_time_seconds: float = 0.0
-
-    @classmethod
-    def from_node(cls, node: BomNode) -> BlueprintUsage:
-        if node.production is None:
-            raise ValueError("Blueprint usage can only be created from buildable nodes")
-        return cls(
-            production=node.production,
-            occurrences=1,
-            min_depth=node.depth,
-            max_depth=node.depth,
-            total_runs=node.total_runs,
-            total_planned_output_quantity=node.planned_output_quantity,
-            total_time_seconds=node.total_time_seconds,
-        )
-
-    def absorb(self, node: BomNode) -> None:
-        self.occurrences += 1
-        self.min_depth = min(self.min_depth, node.depth)
-        self.max_depth = max(self.max_depth, node.depth)
-        self.total_runs += node.total_runs
-        self.total_planned_output_quantity += node.planned_output_quantity
-        self.total_time_seconds += node.total_time_seconds
-
-
-@dataclass
 class BomSnapshot:
     request: PlanConfig
-    roots: list[BomNode]
+    rows: list[BomLine]
     aggregates: dict[int, BomAggregate]
-    used_blueprints: list[BlueprintUsage]
 
     @property
-    def root(self) -> BomNode | None:
+    def roots(self) -> list[BomLine]:
+        return [row for row in self.rows if row.depth == 0]
+
+    @property
+    def root(self) -> BomLine | None:
         return self.roots[0] if self.roots else None
 
     @property
@@ -259,7 +233,7 @@ class BomSnapshot:
 
     @property
     def total_time_seconds(self) -> float:
-        return sum(usage.total_time_seconds for usage in self.used_blueprints)
+        return sum(row.total_time_seconds for row in self.rows)
 
 
 def _clamp(value: int, minimum: int, maximum: int) -> int:
