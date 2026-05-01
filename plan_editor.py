@@ -29,19 +29,29 @@ class PlanEditor:
         return self.planner.build_snapshot(plan)
 
     def add_top_level_blueprint(self, plan: PlanConfig, settings: BlueprintSettings) -> PlanEditResult:
+        if settings.name in plan.top_level_blueprints:
+            raise ValueError(f"{settings.name} is already selected.")
+
+        top_level_blueprints = dict(plan.top_level_blueprints)
+        top_level_blueprints[settings.name] = settings
         updated_plan = _copy_plan(
             plan,
-            top_level_blueprints=[*plan.top_level_blueprints, settings],
+            top_level_blueprints=top_level_blueprints,
         )
         return self._validated(updated_plan)
 
-    def remove_top_level_blueprint(self, plan: PlanConfig, index: int) -> PlanEditResult:
-        top_level_blueprints = list(plan.top_level_blueprints)
-        if index < 0 or index >= len(top_level_blueprints):
-            raise IndexError("top-level blueprint index is out of range")
+    def remove_top_level_blueprints(self, plan: PlanConfig, blueprint_names: list[str]) -> PlanEditResult:
+        top_level_blueprints = dict(plan.top_level_blueprints)
+        missing_names = set(blueprint_names) - set(top_level_blueprints)
+        if missing_names:
+            raise KeyError(f"Top-level blueprints are not selected: {', '.join(sorted(missing_names))}")
 
-        del top_level_blueprints[index]
+        for blueprint_name in blueprint_names:
+            del top_level_blueprints[blueprint_name]
         return self._validated(_copy_plan(plan, top_level_blueprints=top_level_blueprints))
+
+    def remove_top_level_blueprint(self, plan: PlanConfig, blueprint_name: str) -> PlanEditResult:
+        return self.remove_top_level_blueprints(plan, [blueprint_name])
 
     def set_buy_component(self, plan: PlanConfig, component_name: str, should_buy: bool) -> PlanEditResult:
         buy_components = set(plan.buy_components)
@@ -54,16 +64,69 @@ class PlanEditor:
     def update_top_level_blueprints(
         self,
         plan: PlanConfig,
-        indexes: list[int],
+        blueprint_names: list[str],
         update: BlueprintSettingsUpdate,
     ) -> PlanEditResult:
-        top_level_blueprints = list(plan.top_level_blueprints)
-        for index in indexes:
-            if index < 0 or index >= len(top_level_blueprints):
-                raise IndexError("top-level blueprint index is out of range")
-            top_level_blueprints[index] = _apply_update(top_level_blueprints[index], update, allow_runs=True)
+        top_level_blueprints = dict(plan.top_level_blueprints)
+        missing_names = set(blueprint_names) - set(top_level_blueprints)
+        if missing_names:
+            raise KeyError(f"Top-level blueprints are not selected: {', '.join(sorted(missing_names))}")
+
+        for blueprint_name in blueprint_names:
+            top_level_blueprints[blueprint_name] = _apply_update(
+                top_level_blueprints[blueprint_name],
+                update,
+                allow_runs=True,
+            )
 
         return self._validated(_copy_plan(plan, top_level_blueprints=top_level_blueprints))
+
+    def update_blueprints(
+        self,
+        plan: PlanConfig,
+        blueprint_names: list[str],
+        update: BlueprintSettingsUpdate,
+    ) -> PlanEditResult:
+        snapshot = self.preview(plan)
+        visible_top_level_names = {
+            row.production.blueprint_name
+            for row in snapshot.roots
+            if row.production is not None
+        }
+        visible_child_names = {
+            aggregate.production.blueprint_name
+            for aggregate in snapshot.aggregates.values()
+            if aggregate.production is not None
+        }
+        visible_names = visible_top_level_names.union(visible_child_names)
+        missing_names = set(blueprint_names) - visible_names
+        if missing_names:
+            raise ValueError(f"Blueprints are not in the current plan: {', '.join(sorted(missing_names))}")
+
+        top_level_names = [name for name in blueprint_names if name in visible_top_level_names]
+        child_names = [name for name in blueprint_names if name not in visible_top_level_names]
+
+        top_level_blueprints = dict(plan.top_level_blueprints)
+        blueprint_settings = dict(plan.blueprint_settings)
+
+        for blueprint_name in top_level_names:
+            top_level_blueprints[blueprint_name] = _apply_update(
+                top_level_blueprints[blueprint_name],
+                update,
+                allow_runs=True,
+            )
+
+        for blueprint_name in child_names:
+            current = blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
+            blueprint_settings[blueprint_name] = _apply_update(current, update, allow_runs=False)
+
+        return self._validated(
+            _copy_plan(
+                plan,
+                top_level_blueprints=top_level_blueprints,
+                blueprint_settings=blueprint_settings,
+            )
+        )
 
     def update_blueprint_overrides(
         self,
@@ -86,22 +149,25 @@ class PlanEditor:
         update: BlueprintSettingsUpdate,
     ) -> PlanEditResult:
         snapshot = self.preview(plan)
-        available_names = {
-            row.production.blueprint_name
-            for row in snapshot.rows
-            if row.depth == depth and row.production is not None
-        }
+        if depth == 0:
+            available_names = {
+                row.production.blueprint_name
+                for row in snapshot.roots
+                if row.production is not None
+            }
+        else:
+            available_names = {
+                aggregate.production.blueprint_name
+                for aggregate in snapshot.aggregates.values()
+                if aggregate.max_depth == depth and aggregate.production is not None
+            }
+
         missing_names = set(blueprint_names) - available_names
         if missing_names:
             raise ValueError(f"Blueprints are not buildable at depth {depth}: {', '.join(sorted(missing_names))}")
 
         if depth == 0:
-            indexes = [
-                index
-                for index, settings in enumerate(plan.top_level_blueprints)
-                if settings.name in blueprint_names
-            ]
-            return self.update_top_level_blueprints(plan, indexes, update)
+            return self.update_top_level_blueprints(plan, blueprint_names, update)
 
         return self.update_blueprint_overrides(plan, blueprint_names, update)
 
@@ -112,7 +178,7 @@ class PlanEditor:
 
 def _copy_plan(
     plan: PlanConfig,
-    top_level_blueprints: list[BlueprintSettings] | None = None,
+    top_level_blueprints: dict[str, BlueprintSettings] | None = None,
     blueprint_settings: dict[str, BlueprintSettings] | None = None,
     buy_components: set[str] | None = None,
 ) -> PlanConfig:

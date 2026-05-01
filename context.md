@@ -18,9 +18,11 @@ Current design:
 - The same `BlueprintSettings` model is used for top-level selected prints and child print overrides.
 - `runs: float | None` means manual runs if provided, otherwise auto-calculate from required quantity / (prints \* output_per_run).
 - Top-level prints have a user-submitted values for runs. Child/derived prints should only have use auto runs.
+- `PlanConfig.top_level_blueprints` and `PlanConfig.blueprint_settings` are keyed by blueprint name for now. This keeps root and child updates direct while preserving name-based debugging.
 - `BomPlanner` emits flat BOM rows and aggregates those rows for display. Recursive expansion is only used to follow dependencies, not as the output model.
 - `BomSnapshot.rows` is the source for roots, total build time, depth aggregation, and printable output.
 - `PlanEditor` models lightweight API-style updates. It applies small changes to the stored `PlanConfig`, validates by rebuilding a snapshot, and returns both the updated plan and calculated result.
+- `PlanEditor.update_blueprints` accepts a list of one or more highlighted blueprint names and does not require a depth value.
 - Top-level runs can be manually edited. Child/derived blueprint updates keep runs automatic.
 
 Important Spring Boot/API direction:

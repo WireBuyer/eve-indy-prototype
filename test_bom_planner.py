@@ -46,7 +46,7 @@ class BomPlannerTests(unittest.TestCase):
     def test_plan_config_normalizes_optional_collections(self):
         plan = PlanConfig(top_level_blueprints=None, blueprint_settings=None, buy_components=None)
 
-        self.assertEqual(plan.top_level_blueprints, [])
+        self.assertEqual(plan.top_level_blueprints, {})
         self.assertEqual(plan.blueprint_settings, {})
         self.assertEqual(plan.buy_components, set())
         self.assertEqual(plan.settings_for("Rhea Blueprint").name, "Rhea Blueprint")
@@ -134,18 +134,14 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(snapshot.roots[0].blueprint_name, "Heron Blueprint")
         self.assertEqual(snapshot.roots[1].blueprint_name, self.auto_integrity_seal_blueprint_name)
 
-    def test_multiple_top_level_blueprints_can_use_different_job_sizes(self):
-        snapshot = self.build_snapshot(
-            [
-                BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1),
-                BlueprintSettings("Rhea Blueprint", 10, 0, 2, 2),
-            ],
-        )
-
-        self.assertEqual(len(snapshot.roots), 2)
-        self.assertEqual(snapshot.roots[0].planned_output_quantity, 1.0)
-        self.assertEqual(snapshot.roots[1].planned_output_quantity, 4.0)
-        self.assertEqual(snapshot.aggregates[self.capital_jump_drive].quantity, 138.0)
+    def test_top_level_selection_cannot_duplicate_existing_selection(self):
+        with self.assertRaisesRegex(ValueError, "already selected"):
+            self.build_snapshot(
+                [
+                    BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1),
+                    BlueprintSettings("Rhea Blueprint", 10, 0, 2, 2),
+                ],
+            )
 
     def test_time_efficiency_reduces_total_time(self):
         base_snapshot = self.build_snapshot([BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
@@ -175,15 +171,28 @@ class BomPlannerTests(unittest.TestCase):
 
         result = self.editor.update_top_level_blueprints(
             plan,
-            indexes=[0],
+            blueprint_names=["Rhea Blueprint"],
             update=BlueprintSettingsUpdate(material_efficiency=10, time_efficiency=20, runs=2, prints=3),
         )
 
-        self.assertEqual(result.plan.top_level_blueprints[0].material_efficiency, 10)
-        self.assertEqual(result.plan.top_level_blueprints[0].time_efficiency, 20)
-        self.assertEqual(result.plan.top_level_blueprints[0].runs, 2.0)
-        self.assertEqual(result.plan.top_level_blueprints[0].prints, 3)
+        settings = result.plan.top_level_blueprints["Rhea Blueprint"]
+        self.assertEqual(settings.material_efficiency, 10)
+        self.assertEqual(settings.time_efficiency, 20)
+        self.assertEqual(settings.runs, 2.0)
+        self.assertEqual(settings.prints, 3)
         self.assertEqual(result.snapshot.root.planned_output_quantity, 6.0)
+
+    def test_editor_updates_selected_blueprints_without_depth(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        result = self.editor.update_blueprints(
+            plan,
+            blueprint_names=["Capital Jump Drive Blueprint", "Capital Propulsion Engine Blueprint"],
+            update=BlueprintSettingsUpdate(material_efficiency=10),
+        )
+
+        self.assertEqual(result.plan.blueprint_settings["Capital Jump Drive Blueprint"].material_efficiency, 10)
+        self.assertEqual(result.plan.blueprint_settings["Capital Propulsion Engine Blueprint"].material_efficiency, 10)
 
     def test_editor_applies_selected_depth_blueprint_update(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
@@ -230,6 +239,15 @@ class BomPlannerTests(unittest.TestCase):
             self.editor.add_top_level_blueprint(
                 plan,
                 BlueprintSettings(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1),
+            )
+
+    def test_editor_validates_added_duplicate_top_level_blueprint(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        with self.assertRaisesRegex(ValueError, "already selected"):
+            self.editor.add_top_level_blueprint(
+                plan,
+                BlueprintSettings("Rhea Blueprint", 10, 0, 2, 2),
             )
 
     def test_main_output_matches_example_fixture(self):

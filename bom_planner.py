@@ -23,8 +23,14 @@ class BomPlanner:
         selected_product_type_ids: set[int] = set()
         descendant_product_type_ids: set[int] = set()
 
-        for settings in plan.top_level_blueprints:
+        for settings in plan.top_level_blueprints.values():
             production = self._production_for_settings(settings)
+            if production.product_type_id in selected_product_type_ids:
+                raise ValueError(
+                    f"{production.blueprint_name} cannot be selected because "
+                    f"{production.product_name} is already selected."
+                )
+
             if production.product_type_id in descendant_product_type_ids:
                 raise ValueError(
                     f"{production.blueprint_name} cannot be selected because "

@@ -45,12 +45,12 @@ class BlueprintActivityTime:
 # model that holds all info for a plan
 @dataclass
 class PlanConfig:
-    top_level_blueprints: list[BlueprintSettings] | None = field(default_factory=list)
+    top_level_blueprints: dict[str, BlueprintSettings] | list[BlueprintSettings] | None = field(default_factory=dict)
     blueprint_settings: dict[str, BlueprintSettings] | None = field(default_factory=dict)
     buy_components: set[str] | None = field(default_factory=set)
 
     def __post_init__(self) -> None:
-        self.top_level_blueprints = list(self.top_level_blueprints or [])
+        self.top_level_blueprints = _blueprint_settings_by_name(self.top_level_blueprints)
         self.blueprint_settings = dict(self.blueprint_settings or {})
         self.buy_components = set(self.buy_components or set())
 
@@ -238,3 +238,19 @@ class BomSnapshot:
 
 def _clamp(value: int, minimum: int, maximum: int) -> int:
     return max(minimum, min(maximum, int(value)))
+
+
+def _blueprint_settings_by_name(
+    settings: dict[str, BlueprintSettings] | list[BlueprintSettings] | None,
+) -> dict[str, BlueprintSettings]:
+    if settings is None:
+        return {}
+    if isinstance(settings, dict):
+        return dict(settings)
+
+    by_name: dict[str, BlueprintSettings] = {}
+    for blueprint_settings in settings:
+        if blueprint_settings.name in by_name:
+            raise ValueError(f"{blueprint_settings.name} is already selected.")
+        by_name[blueprint_settings.name] = blueprint_settings
+    return by_name

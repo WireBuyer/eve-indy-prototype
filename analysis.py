@@ -68,12 +68,12 @@ def _snapshot_for_blueprint(
     planner = BomPlanner(idx)
     return planner.build_snapshot(
         PlanConfig(
-            top_level_blueprints=[
-                BlueprintSettings(
+            top_level_blueprints={
+                idx.type_name(blueprint_type_id): BlueprintSettings(
                     name=idx.type_name(blueprint_type_id),
                     runs=runs,
                     prints=prints,
                 )
-            ],
+            },
         )
     )

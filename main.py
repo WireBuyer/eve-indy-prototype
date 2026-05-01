@@ -5,11 +5,11 @@ from model import BlueprintSettings, PlanConfig
 from prints import print_depth_summary
 
 # Selection of what to make
-TOP_LEVEL_BLUEPRINTS = [
-    # BlueprintSettings("Heron Blueprint", 0, 0, 1, 1),
-    BlueprintSettings("Raven Blueprint", 10, 20, 1, 1),
-    # BlueprintSettings("Charon Blueprint", 10, 20, 1, 1),
-]
+TOP_LEVEL_BLUEPRINTS = {
+    # "Heron Blueprint": BlueprintSettings("Heron Blueprint", 0, 0, 1, 1),
+    "Raven Blueprint": BlueprintSettings("Raven Blueprint", 10, 20, 1, 1),
+    # "Charon Blueprint": BlueprintSettings("Charon Blueprint", 10, 20, 1, 1),
+}
 
 # Blueprint ME modifiers. Users will be able to add their own prints and configs.
 # The same settings object works for top-level jobs and component overrides.
@@ -17,7 +17,7 @@ BLUEPRINT_ME_UPDATES = {
     # "Life Support Backup Unit Blueprint": BlueprintSettings("Life Support Backup Unit Blueprint", 10, 20),
     # "Capital Jump Drive Blueprint": BlueprintSettings("Capital Jump Drive Blueprint", 10, 20),
     "Life Support Backup Unit Blueprint": BlueprintSettings("Life Support Backup Unit Blueprint", 10, 20),
-    "Auto-Integrity Preservation Seal Blueprint": BlueprintSettings("Auto-Integrity Preservation Seal Blueprint", 10, 20),
+    # "Auto-Integrity Preservation Seal Blueprint": BlueprintSettings("Auto-Integrity Preservation Seal Blueprint", 10, 20),
 }
 
 # Default behavior is build. If a component name appears here, it will be bought and not built,

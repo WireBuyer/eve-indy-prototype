@@ -179,10 +179,10 @@ def print_depth_summary(snapshot: BomSnapshot) -> None:
         print_table_rows(rows)
 
 
-def print_top_level_blueprints(idx, blueprints: list[BlueprintSettings]) -> None:
+def print_top_level_blueprints(idx, blueprints: dict[str, BlueprintSettings]) -> None:
     print("Top-level blueprints:")
     rows: list[tuple[str, str, str, str]] = []
-    for blueprint in blueprints:
+    for blueprint in blueprints.values():
         blueprint_typeid = idx.find_type_id_by_name(blueprint.name)
         label = blueprint_typeid if blueprint_typeid is not None else "unknown"
         rows.append(
