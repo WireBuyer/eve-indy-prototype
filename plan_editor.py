@@ -7,15 +7,6 @@ from model import BlueprintSettings, BomSnapshot, PlanConfig
 
 
 @dataclass(frozen=True)
-class BlueprintSettingsUpdate:
-    material_efficiency: int | None = None
-    time_efficiency: int | None = None
-    runs: float | None = None
-    clear_runs: bool = False
-    prints: int | None = None
-
-
-@dataclass(frozen=True)
 class PlanEditResult:
     plan: PlanConfig
     snapshot: BomSnapshot
@@ -64,15 +55,14 @@ class PlanEditor:
     def update_top_level_blueprints(
         self,
         plan: PlanConfig,
-        blueprint_names: list[str],
-        update: BlueprintSettingsUpdate,
+        updates_by_name: dict[str, dict],
     ) -> PlanEditResult:
         top_level_blueprints = dict(plan.top_level_blueprints)
-        missing_names = set(blueprint_names) - set(top_level_blueprints)
+        missing_names = set(updates_by_name) - set(top_level_blueprints)
         if missing_names:
             raise KeyError(f"Top-level blueprints are not selected: {', '.join(sorted(missing_names))}")
 
-        for blueprint_name in blueprint_names:
+        for blueprint_name, update in updates_by_name.items():
             top_level_blueprints[blueprint_name] = _apply_update(
                 top_level_blueprints[blueprint_name],
                 update,
@@ -84,8 +74,7 @@ class PlanEditor:
     def update_blueprints(
         self,
         plan: PlanConfig,
-        blueprint_names: list[str],
-        update: BlueprintSettingsUpdate,
+        updates_by_name: dict[str, dict],
     ) -> PlanEditResult:
         snapshot = self.preview(plan)
         visible_top_level_names = {
@@ -99,26 +88,24 @@ class PlanEditor:
             if aggregate.production is not None
         }
         visible_names = visible_top_level_names.union(visible_child_names)
-        missing_names = set(blueprint_names) - visible_names
+        requested_names = set(updates_by_name)
+        missing_names = requested_names - visible_names
         if missing_names:
             raise ValueError(f"Blueprints are not in the current plan: {', '.join(sorted(missing_names))}")
-
-        top_level_names = [name for name in blueprint_names if name in visible_top_level_names]
-        child_names = [name for name in blueprint_names if name not in visible_top_level_names]
 
         top_level_blueprints = dict(plan.top_level_blueprints)
         blueprint_settings = dict(plan.blueprint_settings)
 
-        for blueprint_name in top_level_names:
-            top_level_blueprints[blueprint_name] = _apply_update(
-                top_level_blueprints[blueprint_name],
-                update,
-                allow_runs=True,
-            )
-
-        for blueprint_name in child_names:
-            current = blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
-            blueprint_settings[blueprint_name] = _apply_update(current, update, allow_runs=False)
+        for blueprint_name, update in updates_by_name.items():
+            if blueprint_name in visible_top_level_names:
+                top_level_blueprints[blueprint_name] = _apply_update(
+                    top_level_blueprints[blueprint_name],
+                    update,
+                    allow_runs=True,
+                )
+            else:
+                current = blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
+                blueprint_settings[blueprint_name] = _apply_update(current, update, allow_runs=False)
 
         return self._validated(
             _copy_plan(
@@ -131,11 +118,10 @@ class PlanEditor:
     def update_blueprint_overrides(
         self,
         plan: PlanConfig,
-        blueprint_names: list[str],
-        update: BlueprintSettingsUpdate,
+        updates_by_name: dict[str, dict],
     ) -> PlanEditResult:
         blueprint_settings = dict(plan.blueprint_settings)
-        for blueprint_name in blueprint_names:
+        for blueprint_name, update in updates_by_name.items():
             current = blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
             blueprint_settings[blueprint_name] = _apply_update(current, update, allow_runs=False)
 
@@ -145,8 +131,7 @@ class PlanEditor:
         self,
         plan: PlanConfig,
         depth: int,
-        blueprint_names: list[str],
-        update: BlueprintSettingsUpdate,
+        updates_by_name: dict[str, dict],
     ) -> PlanEditResult:
         snapshot = self.preview(plan)
         if depth == 0:
@@ -162,14 +147,14 @@ class PlanEditor:
                 if aggregate.max_depth == depth and aggregate.production is not None
             }
 
-        missing_names = set(blueprint_names) - available_names
+        missing_names = set(updates_by_name) - available_names
         if missing_names:
             raise ValueError(f"Blueprints are not buildable at depth {depth}: {', '.join(sorted(missing_names))}")
 
         if depth == 0:
-            return self.update_top_level_blueprints(plan, blueprint_names, update)
+            return self.update_top_level_blueprints(plan, updates_by_name)
 
-        return self.update_blueprint_overrides(plan, blueprint_names, update)
+        return self.update_blueprint_overrides(plan, updates_by_name)
 
     def _validated(self, plan: PlanConfig) -> PlanEditResult:
         snapshot = self.preview(plan)
@@ -191,26 +176,16 @@ def _copy_plan(
 
 def _apply_update(
     settings: BlueprintSettings,
-    update: BlueprintSettingsUpdate,
+    update: dict,
     allow_runs: bool,
 ) -> BlueprintSettings:
-    if not allow_runs and (update.runs is not None or update.clear_runs):
+    if not allow_runs and "runs" in update:
         raise ValueError("runs can only be updated for top-level blueprints")
-
-    runs = settings.runs
-    if update.clear_runs:
-        runs = None
-    elif update.runs is not None:
-        runs = update.runs
 
     return BlueprintSettings(
         name=settings.name,
-        material_efficiency=(
-            settings.material_efficiency
-            if update.material_efficiency is None
-            else update.material_efficiency
-        ),
-        time_efficiency=settings.time_efficiency if update.time_efficiency is None else update.time_efficiency,
-        runs=runs,
-        prints=settings.prints if update.prints is None else update.prints,
+        material_efficiency=update.get("material_efficiency", settings.material_efficiency),
+        time_efficiency=update.get("time_efficiency", settings.time_efficiency),
+        runs=update.get("runs", settings.runs),
+        prints=update.get("prints", settings.prints),
     )

@@ -10,33 +10,33 @@ Depth 1:
   Nocxium                          | qty 14,040 [BASE]    |                 | 
   Zydrine                          | qty 3,510 [BASE]     |                 | 
   Megacyte                         | qty 1,755 [BASE]     |                 | 
-  Auto-Integrity Preservation Seal | qty 135              | time 18h 0m 0s  | ME 10 | TE 20 | runs auto | prints 1
+  Auto-Integrity Preservation Seal | qty 135              | time 22h 30m 0s | ME 0 | TE 0 | runs auto | prints 1
   Core Temperature Regulator       | qty 1                | time 2h 13m 20s | ME 0 | TE 0 | runs auto | prints 1
   Life Support Backup Unit         | qty 67.500           | time 9h 0m 0s   | ME 10 | TE 20 | runs auto | prints 1
 
 Depth 2:
-  Supertensile Plastics   | qty 162 [BASE] |                  | 
+  Supertensile Plastics   | qty 180 [BASE] |                  | 
   Test Cultures           | qty 162 [BASE] |                  | 
   Chiral Structures       | qty 100 [BASE] |                  | 
-  Nanites                 | qty 162 [BASE] |                  | 
+  Nanites                 | qty 180 [BASE] |                  | 
   Water                   | qty 100 [BASE] |                  | 
   Viral Agent             | qty 162 [BASE] |                  | 
   Pressurized Oxidizers   | qty 500        | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
-  Reinforced Carbon Fiber | qty 1,107.500  | time 16h 36m 45s | ME 0 | TE 0 | runs auto | prints 1
+  Reinforced Carbon Fiber | qty 1,152.500  | time 17h 17m 15s | ME 0 | TE 0 | runs auto | prints 1
 
 Depth 3:
   Carbon Polymers       | qty 500       | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
   Sulfuric Acid         | qty 500       | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
-  Carbon Fiber          | qty 1,107.500 | time 16h 36m 45s | ME 0 | TE 0 | runs auto | prints 1
-  Oxy-Organic Solvents  | qty 8.037     | time 2h 24m 40s  | ME 0 | TE 0 | runs auto | prints 1
-  Thermosetting Polymer | qty 1,107.500 | time 16h 36m 45s | ME 0 | TE 0 | runs auto | prints 1
+  Carbon Fiber          | qty 1,152.500 | time 17h 17m 15s | ME 0 | TE 0 | runs auto | prints 1
+  Oxy-Organic Solvents  | qty 8.262     | time 2h 28m 44s  | ME 0 | TE 0 | runs auto | prints 1
+  Thermosetting Polymer | qty 1,152.500 | time 17h 17m 15s | ME 0 | TE 0 | runs auto | prints 1
 
 Depth 4:
   Nitrogen Fuel Block | qty 12.500 [BUY]    
-  Hydrogen Fuel Block | qty 27.688 [BUY]    
+  Hydrogen Fuel Block | qty 28.812 [BUY]    
   Helium Fuel Block   | qty 12.500 [BUY]    
-  Oxygen Fuel Block   | qty 31.706 [BUY]    
-  Hydrocarbons        | qty 2,411.250 [BASE]
-  Atmospheric Gases   | qty 2,411.250 [BASE]
-  Evaporite Deposits  | qty 803.750 [BASE]  
-  Silicates           | qty 803.750 [BASE]  
+  Oxygen Fuel Block   | qty 32.944 [BUY]    
+  Hydrocarbons        | qty 2,478.750 [BASE]
+  Atmospheric Gases   | qty 2,478.750 [BASE]
+  Evaporite Deposits  | qty 826.250 [BASE]  
+  Silicates           | qty 826.250 [BASE]  

@@ -6,7 +6,7 @@ from pathlib import Path
 from bom_planner import BomPlanner
 from db_io import load_tables
 from model import BlueprintSettings, PlanConfig
-from plan_editor import BlueprintSettingsUpdate, PlanEditor
+from plan_editor import PlanEditor
 
 
 class BomPlannerTests(unittest.TestCase):
@@ -171,8 +171,14 @@ class BomPlannerTests(unittest.TestCase):
 
         result = self.editor.update_top_level_blueprints(
             plan,
-            blueprint_names=["Rhea Blueprint"],
-            update=BlueprintSettingsUpdate(material_efficiency=10, time_efficiency=20, runs=2, prints=3),
+            {
+                "Rhea Blueprint": {
+                    "material_efficiency": 10,
+                    "time_efficiency": 20,
+                    "runs": 2,
+                    "prints": 3,
+                }
+            },
         )
 
         settings = result.plan.top_level_blueprints["Rhea Blueprint"]
@@ -187,12 +193,30 @@ class BomPlannerTests(unittest.TestCase):
 
         result = self.editor.update_blueprints(
             plan,
-            blueprint_names=["Capital Jump Drive Blueprint", "Capital Propulsion Engine Blueprint"],
-            update=BlueprintSettingsUpdate(material_efficiency=10),
+            {
+                "Capital Jump Drive Blueprint": {"material_efficiency": 10},
+                "Capital Propulsion Engine Blueprint": {"material_efficiency": 10},
+            },
         )
 
         self.assertEqual(result.plan.blueprint_settings["Capital Jump Drive Blueprint"].material_efficiency, 10)
         self.assertEqual(result.plan.blueprint_settings["Capital Propulsion Engine Blueprint"].material_efficiency, 10)
+
+    def test_editor_applies_different_updates_in_one_request(self):
+        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        result = self.editor.update_blueprints(
+            plan,
+            {
+                "Capital Jump Drive Blueprint": {"material_efficiency": 10},
+                "Capital Propulsion Engine Blueprint": {"material_efficiency": 10},
+                "Capital Armor Plates Blueprint": {"material_efficiency": 8},
+            },
+        )
+
+        self.assertEqual(result.plan.blueprint_settings["Capital Jump Drive Blueprint"].material_efficiency, 10)
+        self.assertEqual(result.plan.blueprint_settings["Capital Propulsion Engine Blueprint"].material_efficiency, 10)
+        self.assertEqual(result.plan.blueprint_settings["Capital Armor Plates Blueprint"].material_efficiency, 8)
 
     def test_editor_applies_selected_depth_blueprint_update(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
@@ -200,8 +224,12 @@ class BomPlannerTests(unittest.TestCase):
         result = self.editor.update_depth_blueprints(
             plan,
             depth=1,
-            blueprint_names=[self.jump_drive_blueprint_name],
-            update=BlueprintSettingsUpdate(material_efficiency=10, time_efficiency=20),
+            updates_by_name={
+                self.jump_drive_blueprint_name: {
+                    "material_efficiency": 10,
+                    "time_efficiency": 20,
+                }
+            },
         )
 
         settings = result.plan.blueprint_settings[self.jump_drive_blueprint_name]
@@ -217,8 +245,7 @@ class BomPlannerTests(unittest.TestCase):
             self.editor.update_depth_blueprints(
                 plan,
                 depth=1,
-                blueprint_names=[self.jump_drive_blueprint_name],
-                update=BlueprintSettingsUpdate(runs=2),
+                updates_by_name={self.jump_drive_blueprint_name: {"runs": 2}},
             )
 
     def test_editor_rejects_depth_update_for_blueprint_not_in_that_layer(self):
@@ -228,8 +255,7 @@ class BomPlannerTests(unittest.TestCase):
             self.editor.update_depth_blueprints(
                 plan,
                 depth=2,
-                blueprint_names=[self.jump_drive_blueprint_name],
-                update=BlueprintSettingsUpdate(material_efficiency=10),
+                updates_by_name={self.jump_drive_blueprint_name: {"material_efficiency": 10}},
             )
 
     def test_editor_validates_added_top_level_blueprint_conflicts(self):
