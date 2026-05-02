@@ -1,42 +1,57 @@
 
-Depth 0:
-  Raven | output 1 | time 4h 0m 0s | ME 10 | TE 20 | runs 1 | prints 1
-
-Depth 1:
-  Tritanium                        | qty 4,680,000 [BASE] |                 | 
-  Pyerite                          | qty 2,340,000 [BASE] |                 | 
-  Mexallon                         | qty 351,000 [BASE]   |                 | 
-  Isogen                           | qty 117,000 [BASE]   |                 | 
-  Nocxium                          | qty 14,040 [BASE]    |                 | 
-  Zydrine                          | qty 3,510 [BASE]     |                 | 
-  Megacyte                         | qty 1,755 [BASE]     |                 | 
-  Auto-Integrity Preservation Seal | qty 135              | time 22h 30m 0s | ME 0 | TE 0 | runs auto | prints 1
-  Core Temperature Regulator       | qty 1                | time 2h 13m 20s | ME 0 | TE 0 | runs auto | prints 1
-  Life Support Backup Unit         | qty 67.500           | time 9h 0m 0s   | ME 10 | TE 20 | runs auto | prints 1
-
-Depth 2:
-  Supertensile Plastics   | qty 180 [BASE] |                  | 
-  Test Cultures           | qty 162 [BASE] |                  | 
-  Chiral Structures       | qty 100 [BASE] |                  | 
-  Nanites                 | qty 180 [BASE] |                  | 
-  Water                   | qty 100 [BASE] |                  | 
-  Viral Agent             | qty 162 [BASE] |                  | 
-  Pressurized Oxidizers   | qty 500        | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
-  Reinforced Carbon Fiber | qty 1,152.500  | time 17h 17m 15s | ME 0 | TE 0 | runs auto | prints 1
-
-Depth 3:
-  Carbon Polymers       | qty 500       | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
-  Sulfuric Acid         | qty 500       | time 7h 30m 0s   | ME 0 | TE 0 | runs auto | prints 1
-  Carbon Fiber          | qty 1,152.500 | time 17h 17m 15s | ME 0 | TE 0 | runs auto | prints 1
-  Oxy-Organic Solvents  | qty 8.262     | time 2h 28m 44s  | ME 0 | TE 0 | runs auto | prints 1
-  Thermosetting Polymer | qty 1,152.500 | time 17h 17m 15s | ME 0 | TE 0 | runs auto | prints 1
-
-Depth 4:
-  Nitrogen Fuel Block | qty 12.500 [BUY]    
-  Hydrogen Fuel Block | qty 28.812 [BUY]    
-  Helium Fuel Block   | qty 12.500 [BUY]    
-  Oxygen Fuel Block   | qty 32.944 [BUY]    
-  Hydrocarbons        | qty 2,478.750 [BASE]
-  Atmospheric Gases   | qty 2,478.750 [BASE]
-  Evaporite Deposits  | qty 826.250 [BASE]  
-  Silicates           | qty 826.250 [BASE]  
+Shopping list:
+  AG-Composite Molecular Condenser 34
+  Amber Cytoserocin                16
+  Amber Mykoserocin                1,280
+  Atmospheric Gases                71,241
+  Broadcast Node                   2
+  Cadmium                          11,575
+  Caesium                          6,725
+  Chiral Structures                3,500
+  Chromium                         91,859
+  Construction Blocks              2,138
+  Dysprosium                       14,154
+  Evaporite Deposits               108,140
+  Fullerite-C28                    548
+  Fullerite-C32                    705
+  Fullerite-C320                   238
+  Fullerite-C50                    360
+  Fullerite-C540                   260
+  Fullerite-C60                    467
+  Fullerite-C70                    603
+  Fullerite-C72                    200
+  Fullerite-C84                    419
+  Golden Cytoserocin               16
+  Golden Mykoserocin               1,280
+  Hafnium                          11,812
+  Helium Fuel Block                4,592
+  Hydrocarbons                     88,481
+  Hydrogen Fuel Block              2,752
+  Integrity Response Drones        20
+  Isogen                           1,392,591
+  Megacyte                         35,193
+  Mercury                          6,332
+  Mexallon                         4,989,577
+  Morphite                         3,563
+  Nanites                          534
+  Neodymium                        5,405
+  Nitrogen Fuel Block              5,855
+  Nocxium                          140,687
+  Organic Mortar Applicators       25
+  Oxygen Fuel Block                13,799
+  Platinum                         46,422
+  Promethium                       7,485
+  Pyerite                          17,950,612
+  Self-Harmonizing Power Core      26
+  Silicates                        125,381
+  Supertensile Plastics            534
+  Technetium                       19,912
+  Test Cultures                    481
+  Thulium                          4,070
+  Titanium                         64,422
+  Tritanium                        4,988,477
+  Vanadium                         4,362
+  Viral Agent                      481
+  Water                            3,500
+  Wetware Mainframe                30
+  Zydrine                          71,732

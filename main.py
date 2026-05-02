@@ -2,12 +2,12 @@ from bom_planner import BomPlanner
 from db_io import load_tables
 from model import BlueprintSettings, PlanConfig
 
-from prints import print_depth_summary
+from prints import print_depth_summary, print_shopping_list
 
 # Selection of what to make
 TOP_LEVEL_BLUEPRINTS = {
     # "Heron Blueprint": BlueprintSettings("Heron Blueprint", 0, 0, 1, 1),
-    "Raven Blueprint": BlueprintSettings("Raven Blueprint", 10, 20, 1, 1),
+    "Rhea Blueprint": BlueprintSettings("Rhea Blueprint", 5, 20, 1, 1),
     # "Charon Blueprint": BlueprintSettings("Charon Blueprint", 10, 20, 1, 1),
 }
 
@@ -48,7 +48,9 @@ def main():
     # print_buy_components(BUY_COMPONENTS)
     # print(f"\nTotal build time: {format_duration(snapshot.total_time_seconds)}")
     # print_blueprint_settings(snapshot)
-    print_depth_summary(snapshot)
+    # print_depth_summary(snapshot)
+    shopping_list = snapshot.get_shopping_list()
+    print_shopping_list(shopping_list)
 
 
 if __name__ == "__main__":

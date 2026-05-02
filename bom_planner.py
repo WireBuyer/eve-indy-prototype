@@ -90,6 +90,7 @@ class BomPlanner:
         if production.blueprint_type_id in active_blueprints:
             return row
 
+        # infinite recursion check in cases of old bpos like silos
         active_blueprints.add(production.blueprint_type_id)
         try:
             for material in self.idx.inputs(production.blueprint_type_id, production.activity):

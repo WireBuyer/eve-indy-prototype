@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from math import ceil
 
 
 MANUFACTURING_ACTIVITY = 1
@@ -285,6 +286,19 @@ class BomSnapshot:
     @property
     def total_time_seconds(self) -> float:
         return sum(row.total_time_seconds for row in self.rows)
+
+    def get_shopping_list(self) -> list[dict]:
+        return [
+            {
+                "name": aggregate.name,
+                "quantity": ceil(aggregate.quantity),
+            }
+            for aggregate in sorted(
+                self.aggregates.values(),
+                key=lambda aggregate: aggregate.name,
+            )
+            if aggregate.production is None
+        ]
 
 
 def _clamp(value: int, minimum: int, maximum: int) -> int:

@@ -179,6 +179,18 @@ def print_depth_summary(snapshot: BomSnapshot) -> None:
         print_table_rows(rows)
 
 
+def print_shopping_list(shopping_list: list[dict]) -> list[dict]:
+    print("\nShopping list:")
+    if not shopping_list:
+        print("  (none)")
+        return shopping_list
+
+    name_width = max(len(material["name"]) for material in shopping_list)
+    for material in shopping_list:
+        print(f"  {material['name']:<{name_width}} {fmt(material['quantity'])}")
+    return shopping_list
+
+
 def print_top_level_blueprints(idx, blueprints: dict[str, BlueprintSettings]) -> None:
     print("Top-level blueprints:")
     rows: list[tuple[str, str, str, str]] = []

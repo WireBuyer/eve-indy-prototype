@@ -165,6 +165,29 @@ class BomPlannerTests(unittest.TestCase):
         )
         self.assertEqual(snapshot.aggregates[self.wetware_mainframe].quantity, 1.0)
 
+    def test_shopping_list_includes_base_materials_and_bought_components(self):
+        snapshot = self.build_snapshot(
+            [BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)],
+            buy_components={"Capital Jump Drive"},
+        )
+
+        names = {material["name"] for material in snapshot.get_shopping_list()}
+        self.assertIn("Tritanium", names)
+        self.assertIn("Capital Jump Drive", names)
+        self.assertNotIn("Charon", names)
+
+    def test_print_shopping_list_uses_plain_rows(self):
+        from prints import print_shopping_list
+
+        shopping_list = [{"name": "Tritanium", "quantity": 12}]
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            result = print_shopping_list(shopping_list)
+
+        self.assertIs(result, shopping_list)
+        self.assertEqual(output.getvalue(), "\nShopping list:\n  Tritanium 12\n")
+
     def test_plan_config_applies_top_level_update(self):
         plan = PlanConfig(
             plan_id="test-plan",
