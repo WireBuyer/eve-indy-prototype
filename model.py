@@ -45,10 +45,13 @@ class BlueprintActivityTime:
 # model that holds all info for a plan
 @dataclass
 class PlanConfig:
+    # remove the | None 
+    plan_id: str | None = None
     top_level_blueprints: dict[str, BlueprintSettings] | list[BlueprintSettings] | None = field(default_factory=dict)
     blueprint_settings: dict[str, BlueprintSettings] | None = field(default_factory=dict)
     buy_components: set[str] | None = field(default_factory=set)
 
+    # remove this
     def __post_init__(self) -> None:
         self.top_level_blueprints = _blueprint_settings_by_name(self.top_level_blueprints)
         self.blueprint_settings = dict(self.blueprint_settings or {})
@@ -56,6 +59,54 @@ class PlanConfig:
 
     def settings_for(self, blueprint_name: str) -> BlueprintSettings:
         return self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
+
+    def add_top_level_blueprint(self, settings: BlueprintSettings) -> None:
+        if settings.name in self.top_level_blueprints:
+            raise ValueError(f"{settings.name} is already selected.")
+        self.top_level_blueprints[settings.name] = settings
+
+    def remove_top_level_blueprints(self, blueprint_names: list[str]) -> None:
+        missing_names = set(blueprint_names) - set(self.top_level_blueprints)
+        if missing_names:
+            raise KeyError(f"Top-level blueprints are not selected: {', '.join(sorted(missing_names))}")
+
+        for blueprint_name in blueprint_names:
+            del self.top_level_blueprints[blueprint_name]
+
+    def set_buy_component(self, component_name: str, should_buy: bool) -> None:
+        if should_buy:
+            self.buy_components.add(component_name)
+        else:
+            self.buy_components.discard(component_name)
+
+    def update_top_level_blueprints(self, updates_by_name: dict[str, dict]) -> None:
+        missing_names = set(updates_by_name) - set(self.top_level_blueprints)
+        if missing_names:
+            raise KeyError(f"Top-level blueprints are not selected: {', '.join(sorted(missing_names))}")
+
+        for blueprint_name, update in updates_by_name.items():
+            self.top_level_blueprints[blueprint_name] = _apply_settings_update(
+                self.top_level_blueprints[blueprint_name],
+                update,
+                allow_runs=True,
+            )
+
+    def update_blueprint_overrides(self, updates_by_name: dict[str, dict]) -> None:
+        for blueprint_name, update in updates_by_name.items():
+            current = self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
+            self.blueprint_settings[blueprint_name] = _apply_settings_update(current, update, allow_runs=False)
+
+    def update_blueprints(self, updates_by_name: dict[str, dict]) -> None:
+        for blueprint_name, update in updates_by_name.items():
+            if blueprint_name in self.top_level_blueprints:
+                self.top_level_blueprints[blueprint_name] = _apply_settings_update(
+                    self.top_level_blueprints[blueprint_name],
+                    update,
+                    allow_runs=True,
+                )
+            else:
+                current = self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
+                self.blueprint_settings[blueprint_name] = _apply_settings_update(current, update, allow_runs=False)
 
 
 # model that holds info for a print (either top level or override)
@@ -254,3 +305,20 @@ def _blueprint_settings_by_name(
             raise ValueError(f"{blueprint_settings.name} is already selected.")
         by_name[blueprint_settings.name] = blueprint_settings
     return by_name
+
+
+def _apply_settings_update(
+    settings: BlueprintSettings,
+    update: dict,
+    allow_runs: bool,
+) -> BlueprintSettings:
+    if not allow_runs and "runs" in update:
+        raise ValueError("runs can only be updated for top-level blueprints")
+
+    return BlueprintSettings(
+        name=settings.name,
+        material_efficiency=update.get("material_efficiency", settings.material_efficiency),
+        time_efficiency=update.get("time_efficiency", settings.time_efficiency),
+        runs=update.get("runs", settings.runs),
+        prints=update.get("prints", settings.prints),
+    )

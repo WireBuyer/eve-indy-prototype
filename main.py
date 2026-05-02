@@ -36,6 +36,7 @@ def main():
     planner = BomPlanner(idx)
     snapshot = planner.build_snapshot(
         PlanConfig(
+            plan_id="main-plan",
             top_level_blueprints=TOP_LEVEL_BLUEPRINTS,
             blueprint_settings=BLUEPRINT_ME_UPDATES,
             buy_components=BUY_COMPONENTS,

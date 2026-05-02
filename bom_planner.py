@@ -23,6 +23,7 @@ class BomPlanner:
         selected_product_type_ids: set[int] = set()
         descendant_product_type_ids: set[int] = set()
 
+        # TODO: rename settings and settings-named functions
         for settings in plan.top_level_blueprints.values():
             production = self._production_for_settings(settings)
             if production.product_type_id in selected_product_type_ids:
@@ -128,6 +129,7 @@ class BomPlanner:
             active_blueprints=active_blueprints,
         )
 
+    # TODO: this can be combined with _production_from_product
     def _production_for_settings(self, settings: BlueprintSettings) -> ProductionPlan:
         blueprint_type_id = self.idx.find_type_id_by_name(settings.name)
         if blueprint_type_id is None:
@@ -138,7 +140,8 @@ class BomPlanner:
         if not outputs:
             raise ValueError(f"Blueprint {settings.name} does not have a production activity.")
         return self._production_from_product(outputs[0], settings)
-
+    
+    # TODO: combine this with above 
     def _production_from_product(self, product: BlueprintProduct, settings: BlueprintSettings) -> ProductionPlan:
         if product.activity != MANUFACTURING_ACTIVITY:
             settings = BlueprintSettings(name=settings.name, runs=settings.runs, prints=settings.prints)

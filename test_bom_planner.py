@@ -6,7 +6,6 @@ from pathlib import Path
 from bom_planner import BomPlanner
 from db_io import load_tables
 from model import BlueprintSettings, PlanConfig
-from plan_editor import PlanEditor
 
 
 class BomPlannerTests(unittest.TestCase):
@@ -14,7 +13,6 @@ class BomPlannerTests(unittest.TestCase):
     def setUpClass(cls):
         cls.idx = load_tables("eve.db")
         cls.planner = BomPlanner(cls.idx)
-        cls.editor = PlanEditor(cls.planner)
         cls.rhea_blueprint_typeid = cls.idx.find_type_id_by_name("Rhea Blueprint")
         cls.jump_drive_blueprint_name = "Capital Jump Drive Blueprint"
         cls.ferrogel_formula_name = "Ferrogel Reaction Formula"
@@ -46,6 +44,7 @@ class BomPlannerTests(unittest.TestCase):
     def test_plan_config_normalizes_optional_collections(self):
         plan = PlanConfig(top_level_blueprints=None, blueprint_settings=None, buy_components=None)
 
+        self.assertIsNone(plan.plan_id)
         self.assertEqual(plan.top_level_blueprints, {})
         self.assertEqual(plan.blueprint_settings, {})
         self.assertEqual(plan.buy_components, set())
@@ -166,11 +165,13 @@ class BomPlannerTests(unittest.TestCase):
         )
         self.assertEqual(snapshot.aggregates[self.wetware_mainframe].quantity, 1.0)
 
-    def test_editor_applies_lightweight_top_level_update(self):
-        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+    def test_plan_config_applies_top_level_update(self):
+        plan = PlanConfig(
+            plan_id="test-plan",
+            top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)],
+        )
 
-        result = self.editor.update_top_level_blueprints(
-            plan,
+        plan.update_top_level_blueprints(
             {
                 "Rhea Blueprint": {
                     "material_efficiency": 10,
@@ -180,33 +181,48 @@ class BomPlannerTests(unittest.TestCase):
                 }
             },
         )
+        snapshot = self.planner.build_snapshot(plan)
 
-        settings = result.plan.top_level_blueprints["Rhea Blueprint"]
+        settings = plan.top_level_blueprints["Rhea Blueprint"]
+        self.assertEqual(plan.plan_id, "test-plan")
         self.assertEqual(settings.material_efficiency, 10)
         self.assertEqual(settings.time_efficiency, 20)
         self.assertEqual(settings.runs, 2.0)
         self.assertEqual(settings.prints, 3)
-        self.assertEqual(result.snapshot.root.planned_output_quantity, 6.0)
+        self.assertEqual(snapshot.root.planned_output_quantity, 6.0)
 
-    def test_editor_updates_selected_blueprints_without_depth(self):
+    def test_plan_config_updates_only_the_selected_plan_object(self):
+        first_plan = PlanConfig(
+            plan_id="first-plan",
+            top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)],
+        )
+        second_plan = PlanConfig(
+            plan_id="second-plan",
+            top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)],
+        )
+
+        first_plan.update_top_level_blueprints({"Rhea Blueprint": {"material_efficiency": 10}})
+
+        self.assertEqual(first_plan.top_level_blueprints["Rhea Blueprint"].material_efficiency, 10)
+        self.assertEqual(second_plan.top_level_blueprints["Rhea Blueprint"].material_efficiency, 0)
+
+    def test_plan_config_updates_selected_blueprints_without_depth(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
 
-        result = self.editor.update_blueprints(
-            plan,
+        plan.update_blueprints(
             {
                 "Capital Jump Drive Blueprint": {"material_efficiency": 10},
                 "Capital Propulsion Engine Blueprint": {"material_efficiency": 10},
             },
         )
 
-        self.assertEqual(result.plan.blueprint_settings["Capital Jump Drive Blueprint"].material_efficiency, 10)
-        self.assertEqual(result.plan.blueprint_settings["Capital Propulsion Engine Blueprint"].material_efficiency, 10)
+        self.assertEqual(plan.blueprint_settings["Capital Jump Drive Blueprint"].material_efficiency, 10)
+        self.assertEqual(plan.blueprint_settings["Capital Propulsion Engine Blueprint"].material_efficiency, 10)
 
-    def test_editor_applies_different_updates_in_one_request(self):
+    def test_plan_config_applies_different_updates_in_one_request(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
 
-        result = self.editor.update_blueprints(
-            plan,
+        plan.update_blueprints(
             {
                 "Capital Jump Drive Blueprint": {"material_efficiency": 10},
                 "Capital Propulsion Engine Blueprint": {"material_efficiency": 10},
@@ -214,67 +230,47 @@ class BomPlannerTests(unittest.TestCase):
             },
         )
 
-        self.assertEqual(result.plan.blueprint_settings["Capital Jump Drive Blueprint"].material_efficiency, 10)
-        self.assertEqual(result.plan.blueprint_settings["Capital Propulsion Engine Blueprint"].material_efficiency, 10)
-        self.assertEqual(result.plan.blueprint_settings["Capital Armor Plates Blueprint"].material_efficiency, 8)
+        self.assertEqual(plan.blueprint_settings["Capital Jump Drive Blueprint"].material_efficiency, 10)
+        self.assertEqual(plan.blueprint_settings["Capital Propulsion Engine Blueprint"].material_efficiency, 10)
+        self.assertEqual(plan.blueprint_settings["Capital Armor Plates Blueprint"].material_efficiency, 8)
 
-    def test_editor_applies_selected_depth_blueprint_update(self):
+    def test_plan_config_rebuilds_after_child_update(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
 
-        result = self.editor.update_depth_blueprints(
-            plan,
-            depth=1,
-            updates_by_name={
+        plan.update_blueprints(
+            {
                 self.jump_drive_blueprint_name: {
                     "material_efficiency": 10,
                     "time_efficiency": 20,
                 }
-            },
+            }
         )
+        snapshot = self.planner.build_snapshot(plan)
 
-        settings = result.plan.blueprint_settings[self.jump_drive_blueprint_name]
+        settings = plan.blueprint_settings[self.jump_drive_blueprint_name]
         self.assertEqual(settings.material_efficiency, 10)
         self.assertEqual(settings.time_efficiency, 20)
         self.assertIsNone(settings.runs)
-        self.assertEqual(result.snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28860.0)
+        self.assertEqual(snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28860.0)
 
-    def test_editor_rejects_runs_update_below_top_level(self):
+    def test_plan_config_rejects_runs_update_below_top_level(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
 
         with self.assertRaisesRegex(ValueError, "runs can only be updated"):
-            self.editor.update_depth_blueprints(
-                plan,
-                depth=1,
-                updates_by_name={self.jump_drive_blueprint_name: {"runs": 2}},
-            )
+            plan.update_blueprints({self.jump_drive_blueprint_name: {"runs": 2}})
 
-    def test_editor_rejects_depth_update_for_blueprint_not_in_that_layer(self):
-        plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
-
-        with self.assertRaisesRegex(ValueError, "not buildable at depth 2"):
-            self.editor.update_depth_blueprints(
-                plan,
-                depth=2,
-                updates_by_name={self.jump_drive_blueprint_name: {"material_efficiency": 10}},
-            )
-
-    def test_editor_validates_added_top_level_blueprint_conflicts(self):
+    def test_plan_config_add_top_level_blueprint_is_validated_by_planner(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Raven Blueprint", 0, 0, 1, 1)])
+        plan.add_top_level_blueprint(BlueprintSettings(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1))
 
         with self.assertRaisesRegex(ValueError, "already required by another selection"):
-            self.editor.add_top_level_blueprint(
-                plan,
-                BlueprintSettings(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1),
-            )
+            self.planner.build_snapshot(plan)
 
-    def test_editor_validates_added_duplicate_top_level_blueprint(self):
+    def test_plan_config_rejects_added_duplicate_top_level_blueprint(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
 
         with self.assertRaisesRegex(ValueError, "already selected"):
-            self.editor.add_top_level_blueprint(
-                plan,
-                BlueprintSettings("Rhea Blueprint", 10, 0, 2, 2),
-            )
+            plan.add_top_level_blueprint(BlueprintSettings("Rhea Blueprint", 10, 0, 2, 2))
 
     def test_main_output_matches_example_fixture(self):
         from main import main
