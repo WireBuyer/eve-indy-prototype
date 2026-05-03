@@ -1,57 +1,82 @@
 
 Shopping list:
-  AG-Composite Molecular Condenser 34
-  Amber Cytoserocin                16
-  Amber Mykoserocin                1,280
-  Atmospheric Gases                71,241
-  Broadcast Node                   2
-  Cadmium                          11,575
-  Caesium                          6,725
+  Tritanium                        5,024,484
+  Pyerite                          18,080,217
+  Mexallon                         5,025,580
+  Isogen                           1,402,717
+  Nocxium                          141,701
+  Zydrine                          72,272
+  Megacyte                         35,445
+  Supertensile Plastics            534
+  Test Cultures                    534
   Chiral Structures                3,500
-  Chromium                         91,859
-  Construction Blocks              2,138
-  Dysprosium                       14,154
-  Evaporite Deposits               108,140
-  Fullerite-C28                    548
-  Fullerite-C32                    705
-  Fullerite-C320                   238
+  Nanites                          534
+  Broadcast Node                   2
+  Integrity Response Drones        20
+  Organic Mortar Applicators       25
+  Self-Harmonizing Power Core      26
+  Wetware Mainframe                31
+  Water                            3,500
+  Viral Agent                      534
+  Construction Blocks              2,183
+  Nitrogen Fuel Block              5,964
+  Hydrogen Fuel Block              2,797
+  Helium Fuel Block                4,679
+  Oxygen Fuel Block                14,075
+  Morphite                         3,638
+  Hydrocarbons                     89,062
+  Atmospheric Gases                71,459
+  Evaporite Deposits               109,989
+  Silicates                        127,593
+  Titanium                         65,777
+  Chromium                         93,791
+  Vanadium                         4,454
+  Cadmium                          11,818
+  Platinum                         47,399
+  Mercury                          6,465
+  Caesium                          6,866
+  Hafnium                          12,059
+  Technetium                       20,331
+  Dysprosium                       14,450
+  Neodymium                        5,519
+  Promethium                       7,642
+  Thulium                          4,156
+  Amber Cytoserocin                16
+  Golden Cytoserocin               16
+  Amber Mykoserocin                1,280
+  Golden Mykoserocin               1,280
   Fullerite-C50                    360
-  Fullerite-C540                   260
   Fullerite-C60                    467
   Fullerite-C70                    603
   Fullerite-C72                    200
   Fullerite-C84                    419
-  Golden Cytoserocin               16
-  Golden Mykoserocin               1,280
-  Hafnium                          11,812
-  Helium Fuel Block                4,592
-  Hydrocarbons                     88,481
-  Hydrogen Fuel Block              2,752
-  Integrity Response Drones        20
-  Isogen                           1,392,591
-  Megacyte                         35,193
-  Mercury                          6,332
-  Mexallon                         4,989,577
-  Morphite                         3,563
-  Nanites                          534
-  Neodymium                        5,405
-  Nitrogen Fuel Block              5,855
-  Nocxium                          140,687
-  Organic Mortar Applicators       25
-  Oxygen Fuel Block                13,799
-  Platinum                         46,422
-  Promethium                       7,485
-  Pyerite                          17,950,612
-  Self-Harmonizing Power Core      26
-  Silicates                        125,381
-  Supertensile Plastics            534
-  Technetium                       19,912
-  Test Cultures                    481
-  Thulium                          4,070
-  Titanium                         64,422
-  Tritanium                        4,988,477
-  Vanadium                         4,362
-  Viral Agent                      481
-  Water                            3,500
-  Wetware Mainframe                30
-  Zydrine                          71,732
+  Fullerite-C28                    548
+  Fullerite-C32                    705
+  Fullerite-C320                   238
+  Fullerite-C540                   260
+  AG-Composite Molecular Condenser 34
+
+Minerals:
+  Tritanium 5,024,484
+  Pyerite   18,080,217
+  Mexallon  5,025,580
+  Isogen    1,402,717
+  Nocxium   141,701
+  Zydrine   72,272
+  Megacyte  35,445
+  Morphite  3,638
+
+Gas:
+  Amber Cytoserocin  16
+  Golden Cytoserocin 16
+  Amber Mykoserocin  1,280
+  Golden Mykoserocin 1,280
+  Fullerite-C50      360
+  Fullerite-C60      467
+  Fullerite-C70      603
+  Fullerite-C72      200
+  Fullerite-C84      419
+  Fullerite-C28      548
+  Fullerite-C32      705
+  Fullerite-C320     238
+  Fullerite-C540     260

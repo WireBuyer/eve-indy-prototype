@@ -7,6 +7,10 @@ from math import ceil
 MANUFACTURING_ACTIVITY = 1
 REACTION_ACTIVITY = 11
 PRODUCTION_ACTIVITIES = (MANUFACTURING_ACTIVITY, REACTION_ACTIVITY)
+SHOPPING_LIST_GROUPS = {
+    "minerals": {18},
+    "gas": {711},
+}
 
 # --- models for the db tables ---
 @dataclass(frozen=True)
@@ -178,6 +182,7 @@ class BomLine:
     quantity: float
     production: ProductionPlan | None = None
     runs: float | None = None
+    group_id: int | None = None
 
     @property
     def planned_output_quantity(self) -> float:
@@ -230,6 +235,7 @@ class BomAggregate:
     production: ProductionPlan | None = None
     total_time_seconds: float = 0.0
     mixed_blueprint_settings: bool = False
+    group_id: int | None = None
 
     @classmethod
     def from_line(cls, line: BomLine) -> BomAggregate:
@@ -241,6 +247,7 @@ class BomAggregate:
             max_depth=line.depth,
             production=line.production,
             total_time_seconds=line.total_time_seconds,
+            group_id=line.group_id,
         )
 
     def absorb(self, line: BomLine) -> None:
@@ -287,7 +294,8 @@ class BomSnapshot:
     def total_time_seconds(self) -> float:
         return sum(row.total_time_seconds for row in self.rows)
 
-    def get_shopping_list(self) -> list[dict]:
+    def get_shopping_list(self, item_group: str | None = None) -> list[dict]:
+        group_ids = _shopping_list_group_ids(item_group)
         return [
             {
                 "name": aggregate.name,
@@ -295,14 +303,22 @@ class BomSnapshot:
             }
             for aggregate in sorted(
                 self.aggregates.values(),
-                key=lambda aggregate: aggregate.name,
+                key=lambda aggregate: aggregate.type_id,
             )
-            if aggregate.production is None
+            if aggregate.production is None and (group_ids is None or aggregate.group_id in group_ids)
         ]
 
 
 def _clamp(value: int, minimum: int, maximum: int) -> int:
     return max(minimum, min(maximum, int(value)))
+
+
+def _shopping_list_group_ids(item_group: str | None) -> set[int] | None:
+    if item_group is None:
+        return None
+    if item_group not in SHOPPING_LIST_GROUPS:
+        raise ValueError(f"Unknown shopping list group: {item_group}")
+    return SHOPPING_LIST_GROUPS[item_group]
 
 
 def _blueprint_settings_by_name(

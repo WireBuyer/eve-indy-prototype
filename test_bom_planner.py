@@ -24,6 +24,13 @@ class BomPlannerTests(unittest.TestCase):
         cls.tritanium = cls.idx.find_type_id_by_name("Tritanium")
         cls.fulleroferrocene = cls.idx.find_type_id_by_name("Fulleroferrocene")
         cls.wetware_mainframe = cls.idx.find_type_id_by_name("Wetware Mainframe")
+        cls.tungsten_carbide = cls.idx.find_type_id_by_name("Tungsten Carbide")
+        cls.tungsten_carbide_formula = cls.idx.find_type_id_by_name("Tungsten Carbide Reaction Formula")
+        cls.unpublished_tungsten_carbide_formula = next(
+            blueprint.type_id
+            for blueprint in cls.idx.blueprints_for(cls.tungsten_carbide)
+            if not cls.idx.is_published_type(blueprint.type_id)
+        )
 
     def build_snapshot(self, blueprints, blueprint_settings=None, buy_components=None):
         return self.planner.build_snapshot(
@@ -165,16 +172,52 @@ class BomPlannerTests(unittest.TestCase):
         )
         self.assertEqual(snapshot.aggregates[self.wetware_mainframe].quantity, 1.0)
 
+    def test_child_expansion_prefers_published_blueprint_when_multiple_producers_exist(self):
+        blueprint = self.idx.production_blueprint_for(self.tungsten_carbide)
+
+        self.assertTrue(self.idx.is_published_type(blueprint.type_id))
+        self.assertEqual(blueprint.type_id, self.tungsten_carbide_formula)
+
+    def test_top_level_selection_uses_only_published_blueprints(self):
+        unpublished_name = self.idx.type_name(self.unpublished_tungsten_carbide_formula)
+
+        self.assertFalse(self.idx.is_published_type(self.unpublished_tungsten_carbide_formula))
+        with self.assertRaisesRegex(ValueError, "Blueprint not found"):
+            self.build_snapshot([BlueprintSettings(unpublished_name)])
+
     def test_shopping_list_includes_base_materials_and_bought_components(self):
         snapshot = self.build_snapshot(
             [BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)],
             buy_components={"Capital Jump Drive"},
         )
 
-        names = {material["name"] for material in snapshot.get_shopping_list()}
+        shopping_list = snapshot.get_shopping_list()
+        names = {material["name"] for material in shopping_list}
+        type_ids = [self.idx.find_type_id_by_name(material["name"]) for material in shopping_list]
+
         self.assertIn("Tritanium", names)
         self.assertIn("Capital Jump Drive", names)
         self.assertNotIn("Charon", names)
+        self.assertEqual(type_ids, sorted(type_ids))
+
+    def test_shopping_list_can_filter_minerals_and_gas(self):
+        snapshot = self.build_snapshot([BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        minerals = {material["name"] for material in snapshot.get_shopping_list("minerals")}
+        gas = {material["name"] for material in snapshot.get_shopping_list("gas")}
+
+        self.assertIn("Tritanium", minerals)
+        self.assertIn("Morphite", minerals)
+        self.assertNotIn("Fullerite-C28", minerals)
+        self.assertIn("Fullerite-C28", gas)
+        self.assertIn("Amber Cytoserocin", gas)
+        self.assertNotIn("Tritanium", gas)
+
+    def test_shopping_list_rejects_unknown_filter(self):
+        snapshot = self.build_snapshot([BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+
+        with self.assertRaisesRegex(ValueError, "Unknown shopping list group"):
+            snapshot.get_shopping_list("moon")
 
     def test_print_shopping_list_uses_plain_rows(self):
         from prints import print_shopping_list

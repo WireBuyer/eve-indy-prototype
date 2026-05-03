@@ -37,6 +37,9 @@ class IndustryIndex:
     def find_type_id_by_name(self, name: str) -> int | None:
         return self._type_id_by_name.get(name)
 
+    def is_published_type(self, type_id: int) -> bool:
+        return type_id in self._inv_types
+
     def activity_for(self, blueprint_type_id: int) -> int | None:
         for activity in PRODUCTION_ACTIVITIES:
             if (blueprint_type_id, activity) in self._bp_products:
@@ -60,11 +63,18 @@ class IndustryIndex:
 
     def production_blueprint_for(self, product_type_id: int) -> BlueprintProduct | None:
         blueprints = self.blueprints_for(product_type_id)
+        published_blueprints = [
+            blueprint
+            for blueprint in blueprints
+            if self.is_published_type(blueprint.type_id)
+        ]
+        selected_blueprints = published_blueprints or blueprints
+
         for activity in PRODUCTION_ACTIVITIES:
-            for blueprint in blueprints:
+            for blueprint in selected_blueprints:
                 if blueprint.activity == activity:
                     return blueprint
-        return blueprints[0] if blueprints else None
+        return selected_blueprints[0] if selected_blueprints else None
 
     def activity_time(self, blueprint_type_id: int, activity: int) -> float | None:
         row = self._activity_times.get((blueprint_type_id, activity))

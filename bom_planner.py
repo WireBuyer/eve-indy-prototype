@@ -84,6 +84,7 @@ class BomPlanner:
             quantity=quantity,
             production=production,
             runs=runs,
+            group_id=self._group_id(production.product_type_id),
         )
         rows.append(row)
 
@@ -115,7 +116,15 @@ class BomPlanner:
 
         blueprint_product = None if name in plan.buy_components else self.idx.production_blueprint_for(type_id)
         if blueprint_product is None:
-            rows.append(BomLine(type_id=type_id, name=name, depth=depth, quantity=quantity))
+            rows.append(
+                BomLine(
+                    type_id=type_id,
+                    name=name,
+                    depth=depth,
+                    quantity=quantity,
+                    group_id=self._group_id(type_id),
+                )
+            )
             return
 
         self._expand_blueprint(
@@ -135,6 +144,8 @@ class BomPlanner:
         blueprint_type_id = self.idx.find_type_id_by_name(settings.name)
         if blueprint_type_id is None:
             raise ValueError(f"Blueprint not found: {settings.name}")
+        if not self.idx.is_published_type(blueprint_type_id):
+            raise ValueError(f"Blueprint is not published: {settings.name}")
 
         activity = self.idx.activity_for(blueprint_type_id)
         outputs = self.idx.outputs(blueprint_type_id, activity)
@@ -157,6 +168,10 @@ class BomPlanner:
             time_per_run=self.idx.activity_time(product.type_id, product.activity) or 0.0,
             settings=settings,
         )
+
+    def _group_id(self, type_id: int) -> int | None:
+        type_info = self.idx.get_type(type_id)
+        return type_info.group_id if type_info is not None else None
 
     def _summarize(self, rows: list[BomLine]) -> dict[int, BomAggregate]:
         aggregates: dict[int, BomAggregate] = {}

@@ -179,8 +179,8 @@ def print_depth_summary(snapshot: BomSnapshot) -> None:
         print_table_rows(rows)
 
 
-def print_shopping_list(shopping_list: list[dict]) -> list[dict]:
-    print("\nShopping list:")
+def print_shopping_list(shopping_list: list[dict], title: str = "Shopping list") -> list[dict]:
+    print(f"\n{title}:")
     if not shopping_list:
         print("  (none)")
         return shopping_list
