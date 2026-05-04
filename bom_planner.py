@@ -15,8 +15,11 @@ from model import (
 
 
 class BomPlanner:
-    def __init__(self, idx: IndustryIndex):
+    # Delete the estimate param later
+    def __init__(self, idx: IndustryIndex, use_estimate_math: bool = False):
         self.idx = idx
+        # Temporary estimate switch: delete this parameter/field and the two branches when estimate math is removed.
+        self.use_estimate_math = use_estimate_math
 
     def build_snapshot(self, plan: PlanConfig) -> BomSnapshot:
         rows: list[BomLine] = []
@@ -64,6 +67,7 @@ class BomPlanner:
             request=plan,
             rows=rows,
             aggregates=aggregates,
+            use_estimate_math=self.use_estimate_math,
         )
 
     def _expand_blueprint(
@@ -75,7 +79,11 @@ class BomPlanner:
         rows: list[BomLine],
         active_blueprints: set[int],
     ) -> BomLine:
-        runs = production.runs_for(required_quantity)
+        runs = None
+        if self.use_estimate_math:
+            runs = production.estimate_runs_for(required_quantity)
+        else:
+            runs = production.runs_for(required_quantity)
         quantity = production.planned_output(runs) if required_quantity is None else float(required_quantity)
         row = BomLine(
             type_id=production.product_type_id,
@@ -112,7 +120,11 @@ class BomPlanner:
     ) -> None:
         type_id = material.material_typeid
         name = self.idx.type_name(type_id)
-        quantity = parent_production.material_quantity(material.quantity, parent_runs)
+        quantity = None
+        if self.use_estimate_math:
+            quantity = parent_production.estimate_material_quantity(material.quantity, parent_runs)
+        else:
+            quantity = parent_production.material_quantity(material.quantity, parent_runs)
 
         blueprint_product = None if name in plan.buy_components else self.idx.production_blueprint_for(type_id)
         if blueprint_product is None:

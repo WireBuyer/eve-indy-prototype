@@ -7,7 +7,7 @@ from prints import *
 # Selection of what to make
 TOP_LEVEL_BLUEPRINTS = {
     # "Heron Blueprint": BlueprintSettings("Heron Blueprint", 0, 0, 1, 1),
-    "Rhea Blueprint": BlueprintSettings("Rhea Blueprint", 0, 14, 1, 1),
+    "Paladin Blueprint": BlueprintSettings("Paladin Blueprint", 3, 14, 1, 1),
     # "Charon Blueprint": BlueprintSettings("Charon Blueprint", 10, 20, 1, 1),
 }
 
@@ -35,6 +35,7 @@ BUY_COMPONENTS = {
 def main():
     idx = load_tables("eve.db")
     planner = BomPlanner(idx)
+    # planner = BomPlanner(idx, use_estimate_math=True)
     snapshot = planner.build_snapshot(
         PlanConfig(
             plan_id="main-plan",
@@ -51,9 +52,9 @@ def main():
     # print_blueprint_settings(snapshot)
     print_depth_summary(snapshot)
     shopping_list = snapshot.get_shopping_list()
-    print_shopping_list(shopping_list)
-    # print_shopping_list(snapshot.get_shopping_list("minerals"), "Minerals")
-    # print_shopping_list(snapshot.get_shopping_list("gas"), "Gas")
+    # print_shopping_list(shopping_list)
+    print_shopping_list(snapshot.get_shopping_list("minerals"), "Minerals")
+    print_shopping_list(snapshot.get_shopping_list("gas"), "Gas")
 
 
 if __name__ == "__main__":

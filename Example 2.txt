@@ -1,82 +1,105 @@
 
-Shopping list:
-  Tritanium                        5,024,484
-  Pyerite                          18,080,217
-  Mexallon                         5,025,580
-  Isogen                           1,402,717
-  Nocxium                          141,701
-  Zydrine                          72,272
-  Megacyte                         35,445
-  Supertensile Plastics            534
-  Test Cultures                    534
-  Chiral Structures                3,500
-  Nanites                          534
-  Broadcast Node                   2
-  Integrity Response Drones        20
-  Organic Mortar Applicators       25
-  Self-Harmonizing Power Core      26
-  Wetware Mainframe                31
-  Water                            3,500
-  Viral Agent                      534
-  Construction Blocks              2,183
-  Nitrogen Fuel Block              5,964
-  Hydrogen Fuel Block              2,797
-  Helium Fuel Block                4,679
-  Oxygen Fuel Block                14,075
-  Morphite                         3,638
-  Hydrocarbons                     89,062
-  Atmospheric Gases                71,459
-  Evaporite Deposits               109,989
-  Silicates                        127,593
-  Titanium                         65,777
-  Chromium                         93,791
-  Vanadium                         4,454
-  Cadmium                          11,818
-  Platinum                         47,399
-  Mercury                          6,465
-  Caesium                          6,866
-  Hafnium                          12,059
-  Technetium                       20,331
-  Dysprosium                       14,450
-  Neodymium                        5,519
-  Promethium                       7,642
-  Thulium                          4,156
-  Amber Cytoserocin                16
-  Golden Cytoserocin               16
-  Amber Mykoserocin                1,280
-  Golden Mykoserocin               1,280
-  Fullerite-C50                    360
-  Fullerite-C60                    467
-  Fullerite-C70                    603
-  Fullerite-C72                    200
-  Fullerite-C84                    419
-  Fullerite-C28                    548
-  Fullerite-C32                    705
-  Fullerite-C320                   238
-  Fullerite-C540                   260
-  AG-Composite Molecular Condenser 34
+Depth 0:
+  Paladin | output 1 | time 3d 14h 0m 0s | ME 3 | TE 14 | runs 1 | prints 1
+
+Depth 1:
+  Apocalypse                    | qty 1          | time 5h 0m 0s        | ME 0 | TE 0 | runs 1 | prints 1
+  Construction Blocks           | qty 437 [BASE] |                      | 
+  Morphite                      | qty 946 [BASE] |                      | 
+  R.A.M.- Starship Tech         | qty 30         | time 41m 40s         | ME 0 | TE 0 | runs 1 | prints 1
+  Fusion Thruster               | qty 364        | time 15h 10m 0s      | ME 0 | TE 0 | runs 364 | prints 1
+  Radar Sensor Cluster          | qty 838        | time 1d 10h 55m 0s   | ME 0 | TE 0 | runs 838 | prints 1
+  Nanoelectrical Microprocessor | qty 5,820      | time 5d 1h 15m 0s    | ME 0 | TE 0 | runs 5,820 | prints 1
+  Tungsten Carbide Armor Plate  | qty 36,375     | time 10d 12h 36m 15s | ME 0 | TE 0 | runs 36,375 | prints 1
+  Antimatter Reactor Unit       | qty 655        | time 2d 6h 35m 0s    | ME 0 | TE 0 | runs 655 | prints 1
+  Tesseract Capacitor Unit      | qty 2,910      | time 5d 1h 15m 0s    | ME 0 | TE 0 | runs 2,910 | prints 1
+  Linear Shield Emitter         | qty 3,682      | time 6d 9h 25m 0s    | ME 0 | TE 0 | runs 3,682 | prints 1
+
+Depth 2:
+  Tritanium                        | qty 5,200,556 [BASE] |                   | 
+  Pyerite                          | qty 2,600,444 [BASE] |                   | 
+  Mexallon                         | qty 390,222 [BASE]   |                   | 
+  Isogen                           | qty 130,082 [BASE]   |                   | 
+  Nocxium                          | qty 15,636 [BASE]    |                   | 
+  Zydrine                          | qty 3,900 [BASE]     |                   | 
+  Megacyte                         | qty 1,950 [BASE]     |                   | 
+  Tungsten Carbide                 | qty 1,888,077        | time 24d 0h 0m 0s | ME 0 | TE 0 | runs 189 | prints 1
+  Sylramic Fibers                  | qty 433,263          | time 9d 3h 0m 0s  | ME 0 | TE 0 | runs 73 | prints 1
+  Fullerides                       | qty 32,010           | time 1d 9h 0m 0s  | ME 0 | TE 0 | runs 11 | prints 1
+  Phenolic Composites              | qty 36,012           | time 2d 3h 0m 0s  | ME 0 | TE 0 | runs 17 | prints 1
+  Nanotransistors                  | qty 15,388           | time 1d 9h 0m 0s  | ME 0 | TE 0 | runs 11 | prints 1
+  Hypersynaptic Fibers             | qty 1,676            | time 9h 0m 0s     | ME 0 | TE 0 | runs 3 | prints 1
+  Ferrogel                         | qty 4,046            | time 1d 9h 0m 0s  | ME 0 | TE 0 | runs 11 | prints 1
+  Fermionic Condensates            | qty 1,310            | time 21h 0m 0s    | ME 0 | TE 0 | runs 7 | prints 1
+  Terahertz Metamaterials          | qty 17,460           | time 7d 9h 0m 0s  | ME 0 | TE 0 | runs 59 | prints 1
+  Auto-Integrity Preservation Seal | qty 150              | time 1d 1h 0m 0s  | ME 0 | TE 0 | runs 50 | prints 1
+  Core Temperature Regulator       | qty 1                | time 2h 13m 20s   | ME 0 | TE 0 | runs 1 | prints 1
+  Life Support Backup Unit         | qty 75               | time 12h 30m 0s   | ME 0 | TE 0 | runs 25 | prints 1
+
+Depth 3:
+  Supertensile Plastics   | qty 200 [BASE] |                   | 
+  Test Cultures           | qty 200 [BASE] |                   | 
+  Chiral Structures       | qty 100 [BASE] |                   | 
+  Nanites                 | qty 200 [BASE] |                   | 
+  Water                   | qty 100 [BASE] |                   | 
+  Viral Agent             | qty 200 [BASE] |                   | 
+  Rolled Tungsten Alloy   | qty 25,100     | time 16d 0h 0m 0s | ME 0 | TE 0 | runs 126 | prints 1
+  Silicon Diborite        | qty 1,700      | time 1d 3h 0m 0s  | ME 0 | TE 0 | runs 9 | prints 1
+  Ceramic Powder          | qty 7,300      | time 4d 15h 0m 0s | ME 0 | TE 0 | runs 37 | prints 1
+  Platinum Technite       | qty 2,200      | time 1d 12h 0m 0s | ME 0 | TE 0 | runs 11 | prints 1
+  Caesarium Cadmide       | qty 2,400      | time 1d 15h 0m 0s | ME 0 | TE 0 | runs 12 | prints 1
+  Solerium                | qty 300        | time 6h 0m 0s     | ME 0 | TE 0 | runs 2 | prints 1
+  Hexite                  | qty 8,400      | time 5d 9h 0m 0s  | ME 0 | TE 0 | runs 42 | prints 1
+  Hyperflurite            | qty 1,100      | time 18h 0m 0s    | ME 0 | TE 0 | runs 6 | prints 1
+  Neo Mercurite           | qty 1,100      | time 18h 0m 0s    | ME 0 | TE 0 | runs 6 | prints 1
+  Dysporite               | qty 1,000      | time 18h 0m 0s    | ME 0 | TE 0 | runs 5 | prints 1
+  Ferrofluid              | qty 1,100      | time 18h 0m 0s    | ME 0 | TE 0 | runs 6 | prints 1
+  Fluxed Condensates      | qty 700        | time 12h 0m 0s    | ME 0 | TE 0 | runs 4 | prints 1
+  Vanadium Hafnite        | qty 2,000      | time 1d 9h 0m 0s  | ME 0 | TE 0 | runs 10 | prints 1
+  Prometium               | qty 1,800      | time 1d 6h 0m 0s  | ME 0 | TE 0 | runs 9 | prints 1
+  Promethium Mercurite    | qty 5,900      | time 3d 18h 0m 0s | ME 0 | TE 0 | runs 30 | prints 1
+  Pressurized Oxidizers   | qty 500        | time 9h 0m 0s     | ME 0 | TE 0 | runs 3 | prints 1
+  Reinforced Carbon Fiber | qty 1,250      | time 1d 0h 0m 0s  | ME 0 | TE 0 | runs 7 | prints 1
+
+Depth 4:
+  Tungsten              | qty 12,800 [BASE] |                   | 
+  Chromium              | qty 4,500 [BASE]  |                   | 
+  Vanadium              | qty 1,700 [BASE]  |                   | 
+  Cadmium               | qty 2,300 [BASE]  |                   | 
+  Platinum              | qty 18,300 [BASE] |                   | 
+  Mercury               | qty 4,200 [BASE]  |                   | 
+  Caesium               | qty 1,500 [BASE]  |                   | 
+  Hafnium               | qty 1,700 [BASE]  |                   | 
+  Technetium            | qty 1,200 [BASE]  |                   | 
+  Dysprosium            | qty 1,200 [BASE]  |                   | 
+  Neodymium             | qty 1,000 [BASE]  |                   | 
+  Promethium            | qty 4,600 [BASE]  |                   | 
+  Thulium               | qty 400 [BASE]    |                   | 
+  Carbon Polymers       | qty 1,700         | time 1d 3h 0m 0s  | ME 0 | TE 0 | runs 9 | prints 1
+  Sulfuric Acid         | qty 20,900        | time 13d 9h 0m 0s | ME 0 | TE 0 | runs 105 | prints 1
+  Carbon Fiber          | qty 1,600         | time 1d 0h 0m 0s  | ME 0 | TE 0 | runs 8 | prints 1
+  Oxy-Organic Solvents  | qty 11            | time 12h 0m 0s    | ME 0 | TE 0 | runs 2 | prints 1
+  Thermosetting Polymer | qty 1,600         | time 1d 0h 0m 0s  | ME 0 | TE 0 | runs 8 | prints 1
+
+Depth 5:
+  Nitrogen Fuel Block | qty 2,550 [BUY]  
+  Hydrogen Fuel Block | qty 365 [BUY]    
+  Helium Fuel Block   | qty 950 [BUY]    
+  Oxygen Fuel Block   | qty 350 [BUY]    
+  Hydrocarbons        | qty 9,700 [BASE] 
+  Atmospheric Gases   | qty 19,500 [BASE]
+  Evaporite Deposits  | qty 16,100 [BASE]
+  Silicates           | qty 6,300 [BASE] 
 
 Minerals:
-  Tritanium 5,024,484
-  Pyerite   18,080,217
-  Mexallon  5,025,580
-  Isogen    1,402,717
-  Nocxium   141,701
-  Zydrine   72,272
-  Megacyte  35,445
-  Morphite  3,638
+  Tritanium 5,200,556
+  Pyerite   2,600,444
+  Mexallon  390,222
+  Isogen    130,082
+  Nocxium   15,636
+  Zydrine   3,900
+  Megacyte  1,950
+  Morphite  946
 
 Gas:
-  Amber Cytoserocin  16
-  Golden Cytoserocin 16
-  Amber Mykoserocin  1,280
-  Golden Mykoserocin 1,280
-  Fullerite-C50      360
-  Fullerite-C60      467
-  Fullerite-C70      603
-  Fullerite-C72      200
-  Fullerite-C84      419
-  Fullerite-C28      548
-  Fullerite-C32      705
-  Fullerite-C320     238
-  Fullerite-C540     260
+  (none)

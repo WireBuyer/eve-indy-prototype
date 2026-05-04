@@ -90,11 +90,13 @@ def print_blueprint_settings(snapshot: BomSnapshot) -> None:
                 "min_depth": row.depth,
                 "total_output": row.planned_output_quantity,
                 "total_time": row.total_time_seconds,
+                "total_runs": row.runs or 0.0,
             }
         else:
             usage["min_depth"] = min(usage["min_depth"], row.depth)
             usage["total_output"] += row.planned_output_quantity
             usage["total_time"] += row.total_time_seconds
+            usage["total_runs"] += row.runs or 0.0
 
     blueprints_by_depth = defaultdict(list)
     for production, usage in usage_by_production.items():
@@ -105,6 +107,7 @@ def print_blueprint_settings(snapshot: BomSnapshot) -> None:
         rows: list[tuple[str, str, str, str]] = []
         for production, usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry[0].blueprint_name):
             settings = production.settings
+            runs = settings.runs if settings.runs is not None else usage["total_runs"]
             rows.append(
                 (
                     production.blueprint_name,
@@ -113,7 +116,7 @@ def print_blueprint_settings(snapshot: BomSnapshot) -> None:
                     format_job_cell(
                         settings.material_efficiency,
                         settings.time_efficiency,
-                        settings.runs,
+                        runs,
                         settings.prints,
                     ),
                 )
@@ -128,10 +131,18 @@ def aggregate_detail_cell(snapshot: BomSnapshot, aggregate: BomAggregate) -> str
         return "config mixed"
 
     settings = aggregate.blueprint_settings
+    runs = settings.runs
+    if runs is None:
+        # Temporary estimate support: delete this branch when the planner estimate switch is removed.
+        runs = (
+            aggregate.production.estimate_runs_for(aggregate.quantity)
+            if snapshot.use_estimate_math
+            else aggregate.production.runs_for(aggregate.quantity)
+        )
     return format_job_cell(
         settings.material_efficiency,
         settings.time_efficiency,
-        settings.runs,
+        runs,
         settings.prints,
     )
 

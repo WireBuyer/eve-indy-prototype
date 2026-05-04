@@ -148,7 +148,8 @@ class ProductionPlan:
     time_per_run: float
     settings: BlueprintSettings
 
-    def runs_for(self, required_quantity: float | None) -> float:
+    # Temporary estimate support: delete this method when fractional math is removed.
+    def estimate_runs_for(self, required_quantity: float | None) -> float:
         if self.settings.runs is not None:
             return self.settings.runs
         if required_quantity is None:
@@ -159,14 +160,36 @@ class ProductionPlan:
             return float(required_quantity)
         return float(required_quantity) / output_per_job
 
+    def runs_for(self, required_quantity: float | None) -> float:
+        if self.settings.runs is not None:
+            return self.settings.runs
+        if required_quantity is None:
+            return 1.0
+
+        output_per_job = self.output_per_run * self.settings.prints
+        if output_per_job <= 0:
+            return float(ceil(required_quantity))
+        return float(ceil(float(required_quantity) / output_per_job))
+
     def planned_output(self, runs: float) -> float:
         return self.output_per_run * runs * self.settings.prints
 
-    def material_quantity(self, quantity_per_run: float, runs: float) -> float:
+    def material_modifier(self) -> float:
+        if self.activity == MANUFACTURING_ACTIVITY:
+            return 1.0 - (self.settings.material_efficiency / 100.0)
+        return 1.0
+
+    # Temporary estimate support: delete this method when fractional math is removed.
+    def estimate_material_quantity(self, quantity_per_run: float, runs: float) -> float:
         quantity = float(quantity_per_run) * runs * self.settings.prints
         if self.activity == MANUFACTURING_ACTIVITY and quantity_per_run > 1.0:
-            return quantity * (1.0 - (self.settings.material_efficiency / 100.0))
+            return quantity * self.material_modifier()
         return quantity
+
+    def material_quantity(self, quantity_per_run: float, runs: float) -> float:
+        quantity_per_print = runs * float(quantity_per_run) * self.material_modifier()
+        required_per_print = max(runs, ceil(round(quantity_per_print, 2)))
+        return float(required_per_print) * self.settings.prints
 
     def total_time(self, runs: float) -> float:
         seconds = self.time_per_run * runs * self.settings.prints
@@ -277,6 +300,8 @@ class BomSnapshot:
     request: PlanConfig
     rows: list[BomLine]
     aggregates: dict[int, BomAggregate]
+    # Temporary estimate support: delete this field when the planner estimate switch is removed.
+    use_estimate_math: bool = False
 
     @property
     def roots(self) -> list[BomLine]:

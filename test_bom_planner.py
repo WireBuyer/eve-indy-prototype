@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bom_planner import BomPlanner
 from db_io import load_tables
-from model import BlueprintSettings, PlanConfig
+from model import MANUFACTURING_ACTIVITY, BlueprintSettings, PlanConfig, ProductionPlan
 
 
 class BomPlannerTests(unittest.TestCase):
@@ -68,6 +68,46 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(base_snapshot.aggregates[self.charon].quantity, 1.0)
         self.assertEqual(updated_snapshot.aggregates[self.charon].quantity, 1.0)
 
+    def test_runs_for_auto_child_prints_rounds_up_to_whole_runs(self):
+        production = ProductionPlan(
+            blueprint_type_id=1,
+            blueprint_name="Example Blueprint",
+            activity=MANUFACTURING_ACTIVITY,
+            product_type_id=2,
+            product_name="Example Product",
+            output_per_run=1000,
+            time_per_run=0,
+            settings=BlueprintSettings("Example Blueprint", prints=2),
+        )
+
+        self.assertEqual(production.runs_for(9500), 5.0)
+        self.assertEqual(production.planned_output(5), 10000.0)
+
+    def test_material_quantity_uses_eve_rounding_before_prints(self):
+        production = ProductionPlan(
+            blueprint_type_id=1,
+            blueprint_name="Example Blueprint",
+            activity=MANUFACTURING_ACTIVITY,
+            product_type_id=2,
+            product_name="Example Product",
+            output_per_run=1,
+            time_per_run=0,
+            settings=BlueprintSettings("Example Blueprint", material_efficiency=3, prints=2),
+        )
+
+        self.assertEqual(production.material_quantity(975, 1), 1892.0)
+
+    def test_planner_can_temporarily_use_estimate_math(self):
+        estimate_planner = BomPlanner(self.idx, use_estimate_math=True)
+
+        snapshot = estimate_planner.build_snapshot(
+            PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
+        )
+
+        self.assertTrue(snapshot.use_estimate_math)
+        self.assertEqual(snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 29160.0)
+        self.assertEqual(snapshot.aggregates[self.tritanium].quantity, 5078493.6)
+
     def test_child_blueprint_override_rebuilds_descendants_inline(self):
         base_snapshot = self.build_snapshot([BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
         updated_snapshot = self.build_snapshot(
@@ -80,10 +120,10 @@ class BomPlannerTests(unittest.TestCase):
         updated_row = self.production_rows(updated_snapshot, self.jump_drive_blueprint_name)[0]
         self.assertEqual(updated_row.production.settings.material_efficiency, 10)
         self.assertEqual(updated_row.production.settings.time_efficiency, 20)
-        self.assertEqual(base_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 29160.0)
-        self.assertEqual(updated_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28860.0)
-        self.assertEqual(base_snapshot.aggregates[self.tritanium].quantity, 5078493.6)
-        self.assertEqual(updated_snapshot.aggregates[self.tritanium].quantity, 4898493.6)
+        self.assertEqual(base_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 29170.0)
+        self.assertEqual(updated_snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28870.0)
+        self.assertEqual(base_snapshot.aggregates[self.tritanium].quantity, 5079056.0)
+        self.assertEqual(updated_snapshot.aggregates[self.tritanium].quantity, 4899056.0)
 
     def test_reaction_formula_me_and_te_are_ignored(self):
         base_snapshot = self.build_snapshot([BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
@@ -317,7 +357,7 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(settings.material_efficiency, 10)
         self.assertEqual(settings.time_efficiency, 20)
         self.assertIsNone(settings.runs)
-        self.assertEqual(snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28860.0)
+        self.assertEqual(snapshot.aggregates[self.reinforced_carbon_fiber].quantity, 28870.0)
 
     def test_plan_config_rejects_runs_update_below_top_level(self):
         plan = PlanConfig(top_level_blueprints=[BlueprintSettings("Rhea Blueprint", 0, 0, 1, 1)])
