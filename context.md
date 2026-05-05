@@ -14,20 +14,20 @@ If a component shows up in a selected print it is added to a set to track. These
 
 Current design:
 
-- `BlueprintSettings` represents user print settings: blueprint/print name, ME, TE, runs, prints.
+- `BlueprintSettings` represents user print settings: blueprint type ID, blueprint/print name, ME, TE, runs, prints.
 - The same `BlueprintSettings` model is used for top-level selected prints and child print overrides.
 - `runs: float | None` means manual runs if provided, otherwise auto-calculate from required quantity / (prints \* output_per_run), rounded up to whole runs.
 - Top-level prints have a user-submitted values for runs. Child/derived prints should auto-calculate whole runs.
-- `PlanConfig.top_level_blueprints` and `PlanConfig.blueprint_settings` are keyed by blueprint name for now. This keeps root and child updates direct while preserving name-based debugging.
+- `PlanConfig.top_level_blueprints` and `PlanConfig.blueprint_settings` are keyed by blueprint type ID. Name-based input should call `IndustryIndex.find_type_id_by_name(...)` and pass that ID into `BlueprintSettings`.
 - `PlanConfig.plan_id` identifies a plan in the prototype. Web/API code can keep a plan-id map outside the planner and pass the selected `PlanConfig` into `BomPlanner`.
-- `PlanConfig.update_blueprints` accepts a dict keyed by blueprint name. Each value is a plain dict of fields to update, so one request can update one print or many prints with different values.
+- `PlanConfig.update_blueprints` accepts a dict keyed by blueprint type ID. Each value is a plain dict of fields to update, so one request can update one print or many prints with different values.
 - `BomPlanner` emits flat BOM rows and aggregates those rows for display. Recursive expansion is only used to follow dependencies, not as the output model.
 - `BomSnapshot.rows` is the source for roots, total build time, depth aggregation, and printable output.
 - Top-level runs can be manually edited. Child/derived blueprint updates keep runs automatic.
 - The default production math uses EVE-style whole-run material rounding. `BomPlanner(idx, use_estimate_math=True)` temporarily switches to the older fractional math; delete that flag and the estimate helpers later without changing planner traversal.
 
 Important Spring Boot/API direction:
-The eventual design should probably key blueprint settings/overrides by blueprint type ID rather than name. Current prototype still uses print names in places, but avoid deepening that dependency if changing code. Prefer explicit IDs and DTO-like structures where practical.
+The planner should keep using blueprint type IDs internally. UI/API code can still accept names for search/debug and resolve them to IDs before updating the plan.
 
 Verification:
 

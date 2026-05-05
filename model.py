@@ -52,31 +52,36 @@ class BlueprintActivityTime:
 class PlanConfig:
     # remove the | None 
     plan_id: str | None = None
-    top_level_blueprints: dict[str, BlueprintSettings] | list[BlueprintSettings] | None = field(default_factory=dict)
-    blueprint_settings: dict[str, BlueprintSettings] | None = field(default_factory=dict)
+    top_level_blueprints: dict[int, BlueprintSettings] | None = field(default_factory=dict)
+    blueprint_settings: dict[int, BlueprintSettings] | None = field(default_factory=dict)
     buy_components: set[str] | None = field(default_factory=set)
 
     # remove this
     def __post_init__(self) -> None:
-        self.top_level_blueprints = _blueprint_settings_by_name(self.top_level_blueprints)
-        self.blueprint_settings = dict(self.blueprint_settings or {})
+        self.top_level_blueprints = _copy_settings_by_id(self.top_level_blueprints)
+        self.blueprint_settings = _copy_settings_by_id(self.blueprint_settings)
         self.buy_components = set(self.buy_components or set())
 
-    def settings_for(self, blueprint_name: str) -> BlueprintSettings:
-        return self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
+    def settings_for(self, blueprint_type_id: int, blueprint_name: str) -> BlueprintSettings:
+        return self.blueprint_settings.get(
+            blueprint_type_id,
+            BlueprintSettings(blueprint_name, blueprint_type_id=blueprint_type_id),
+        )
 
     def add_top_level_blueprint(self, settings: BlueprintSettings) -> None:
-        if settings.name in self.top_level_blueprints:
+        if settings.blueprint_type_id is None:
+            raise ValueError(f"Blueprint type id is required for {settings.name}.")
+        if settings.blueprint_type_id in self.top_level_blueprints:
             raise ValueError(f"{settings.name} is already selected.")
-        self.top_level_blueprints[settings.name] = settings
+        self.top_level_blueprints[settings.blueprint_type_id] = settings
 
-    def remove_top_level_blueprints(self, blueprint_names: list[str]) -> None:
-        missing_names = set(blueprint_names) - set(self.top_level_blueprints)
-        if missing_names:
-            raise KeyError(f"Top-level blueprints are not selected: {', '.join(sorted(missing_names))}")
+    def remove_top_level_blueprints(self, blueprint_type_ids: list[int]) -> None:
+        missing_ids = set(blueprint_type_ids) - set(self.top_level_blueprints)
+        if missing_ids:
+            raise KeyError(f"Top-level blueprints are not selected: {', '.join(str(type_id) for type_id in sorted(missing_ids))}")
 
-        for blueprint_name in blueprint_names:
-            del self.top_level_blueprints[blueprint_name]
+        for blueprint_type_id in blueprint_type_ids:
+            del self.top_level_blueprints[blueprint_type_id]
 
     def set_buy_component(self, component_name: str, should_buy: bool) -> None:
         if should_buy:
@@ -84,34 +89,40 @@ class PlanConfig:
         else:
             self.buy_components.discard(component_name)
 
-    def update_top_level_blueprints(self, updates_by_name: dict[str, dict]) -> None:
-        missing_names = set(updates_by_name) - set(self.top_level_blueprints)
-        if missing_names:
-            raise KeyError(f"Top-level blueprints are not selected: {', '.join(sorted(missing_names))}")
+    def update_top_level_blueprints(self, updates_by_id: dict[int, dict]) -> None:
+        missing_ids = set(updates_by_id) - set(self.top_level_blueprints)
+        if missing_ids:
+            raise KeyError(f"Top-level blueprints are not selected: {', '.join(str(type_id) for type_id in sorted(missing_ids))}")
 
-        for blueprint_name, update in updates_by_name.items():
-            self.top_level_blueprints[blueprint_name] = _apply_settings_update(
-                self.top_level_blueprints[blueprint_name],
+        for blueprint_type_id, update in updates_by_id.items():
+            self.top_level_blueprints[blueprint_type_id] = _apply_settings_update(
+                self.top_level_blueprints[blueprint_type_id],
                 update,
                 allow_runs=True,
             )
 
-    def update_blueprint_overrides(self, updates_by_name: dict[str, dict]) -> None:
-        for blueprint_name, update in updates_by_name.items():
-            current = self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
-            self.blueprint_settings[blueprint_name] = _apply_settings_update(current, update, allow_runs=False)
+    def update_blueprint_overrides(self, updates_by_id: dict[int, dict]) -> None:
+        for blueprint_type_id, update in updates_by_id.items():
+            current = self.blueprint_settings.get(
+                blueprint_type_id,
+                BlueprintSettings(str(blueprint_type_id), blueprint_type_id=blueprint_type_id),
+            )
+            self.blueprint_settings[blueprint_type_id] = _apply_settings_update(current, update, allow_runs=False)
 
-    def update_blueprints(self, updates_by_name: dict[str, dict]) -> None:
-        for blueprint_name, update in updates_by_name.items():
-            if blueprint_name in self.top_level_blueprints:
-                self.top_level_blueprints[blueprint_name] = _apply_settings_update(
-                    self.top_level_blueprints[blueprint_name],
+    def update_blueprints(self, updates_by_id: dict[int, dict]) -> None:
+        for blueprint_type_id, update in updates_by_id.items():
+            if blueprint_type_id in self.top_level_blueprints:
+                self.top_level_blueprints[blueprint_type_id] = _apply_settings_update(
+                    self.top_level_blueprints[blueprint_type_id],
                     update,
                     allow_runs=True,
                 )
             else:
-                current = self.blueprint_settings.get(blueprint_name, BlueprintSettings(blueprint_name))
-                self.blueprint_settings[blueprint_name] = _apply_settings_update(current, update, allow_runs=False)
+                current = self.blueprint_settings.get(
+                    blueprint_type_id,
+                    BlueprintSettings(str(blueprint_type_id), blueprint_type_id=blueprint_type_id),
+                )
+                self.blueprint_settings[blueprint_type_id] = _apply_settings_update(current, update, allow_runs=False)
 
 
 # model that holds info for a print (either top level or override)
@@ -122,6 +133,7 @@ class BlueprintSettings:
     time_efficiency: int = 0
     runs: float | None = None
     prints: int = 1
+    blueprint_type_id: int | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "material_efficiency", _clamp(self.material_efficiency, 0, 10))
@@ -138,7 +150,7 @@ class BlueprintSettings:
 
 
 @dataclass(frozen=True)
-class ProductionPlan:
+class BuildJob:
     blueprint_type_id: int
     blueprint_name: str
     activity: int
@@ -203,33 +215,33 @@ class BomLine:
     name: str
     depth: int
     quantity: float
-    production: ProductionPlan | None = None
+    build_job: BuildJob | None = None
     runs: float | None = None
     group_id: int | None = None
 
     @property
     def planned_output_quantity(self) -> float:
-        if self.production is None or self.runs is None:
+        if self.build_job is None or self.runs is None:
             return self.quantity
-        return self.production.planned_output(self.runs)
+        return self.build_job.planned_output(self.runs)
 
     @property
     def total_time_seconds(self) -> float:
-        if self.production is None or self.runs is None:
+        if self.build_job is None or self.runs is None:
             return 0.0
-        return self.production.total_time(self.runs)
+        return self.build_job.total_time(self.runs)
 
     @property
     def blueprint_settings(self) -> BlueprintSettings | None:
-        return self.production.settings if self.production is not None else None
+        return self.build_job.settings if self.build_job is not None else None
 
     @property
     def blueprint_name(self) -> str | None:
-        return self.production.blueprint_name if self.production is not None else None
+        return self.build_job.blueprint_name if self.build_job is not None else None
 
     @property
     def blueprint_type_id(self) -> int | None:
-        return self.production.blueprint_type_id if self.production is not None else None
+        return self.build_job.blueprint_type_id if self.build_job is not None else None
 
     @property
     def material_efficiency(self) -> int:
@@ -255,7 +267,7 @@ class BomAggregate:
     quantity: float
     min_depth: int
     max_depth: int
-    production: ProductionPlan | None = None
+    build_job: BuildJob | None = None
     total_time_seconds: float = 0.0
     mixed_blueprint_settings: bool = False
     group_id: int | None = None
@@ -268,7 +280,7 @@ class BomAggregate:
             quantity=line.quantity,
             min_depth=line.depth,
             max_depth=line.depth,
-            production=line.production,
+            build_job=line.build_job,
             total_time_seconds=line.total_time_seconds,
             group_id=line.group_id,
         )
@@ -279,20 +291,20 @@ class BomAggregate:
         self.min_depth = min(self.min_depth, line.depth)
         self.max_depth = max(self.max_depth, line.depth)
 
-        if line.production is None:
+        if line.build_job is None:
             return
-        if self.production is None:
-            self.production = line.production
-        elif self.production != line.production:
+        if self.build_job is None:
+            self.build_job = line.build_job
+        elif self.build_job != line.build_job:
             self.mixed_blueprint_settings = True
 
     @property
     def blueprint_settings(self) -> BlueprintSettings | None:
-        return self.production.settings if self.production is not None else None
+        return self.build_job.settings if self.build_job is not None else None
 
     @property
     def blueprint_type_id(self) -> int | None:
-        return self.production.blueprint_type_id if self.production is not None else None
+        return self.build_job.blueprint_type_id if self.build_job is not None else None
 
 
 @dataclass
@@ -330,7 +342,7 @@ class BomSnapshot:
                 self.aggregates.values(),
                 key=lambda aggregate: aggregate.type_id,
             )
-            if aggregate.production is None and (group_ids is None or aggregate.group_id in group_ids)
+            if aggregate.build_job is None and (group_ids is None or aggregate.group_id in group_ids)
         ]
 
 
@@ -346,20 +358,22 @@ def _shopping_list_group_ids(item_group: str | None) -> set[int] | None:
     return SHOPPING_LIST_GROUPS[item_group]
 
 
-def _blueprint_settings_by_name(
-    settings: dict[str, BlueprintSettings] | list[BlueprintSettings] | None,
-) -> dict[str, BlueprintSettings]:
+def _copy_settings_by_id(
+    settings: dict[int, BlueprintSettings] | None,
+) -> dict[int, BlueprintSettings]:
     if settings is None:
         return {}
-    if isinstance(settings, dict):
-        return dict(settings)
 
-    by_name: dict[str, BlueprintSettings] = {}
-    for blueprint_settings in settings:
-        if blueprint_settings.name in by_name:
+    by_id: dict[int, BlueprintSettings] = {}
+    for blueprint_type_id, blueprint_settings in settings.items():
+        if blueprint_settings.blueprint_type_id is None:
+            raise ValueError(f"Blueprint type id is required for {blueprint_settings.name}.")
+        if blueprint_type_id != blueprint_settings.blueprint_type_id:
+            raise ValueError(f"Blueprint settings key does not match {blueprint_settings.name}.")
+        if blueprint_settings.blueprint_type_id in by_id:
             raise ValueError(f"{blueprint_settings.name} is already selected.")
-        by_name[blueprint_settings.name] = blueprint_settings
-    return by_name
+        by_id[blueprint_settings.blueprint_type_id] = blueprint_settings
+    return by_id
 
 
 def _apply_settings_update(
@@ -376,4 +390,5 @@ def _apply_settings_update(
         time_efficiency=update.get("time_efficiency", settings.time_efficiency),
         runs=update.get("runs", settings.runs),
         prints=update.get("prints", settings.prints),
+        blueprint_type_id=settings.blueprint_type_id,
     )

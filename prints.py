@@ -50,7 +50,7 @@ def is_bought(snapshot: BomSnapshot, name: str) -> bool:
 
 
 def is_base_material(snapshot: BomSnapshot, aggregate: BomAggregate) -> bool:
-    return aggregate.production is None and not is_bought(snapshot, aggregate.name)
+    return aggregate.build_job is None and not is_bought(snapshot, aggregate.name)
 
 
 def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
@@ -79,14 +79,14 @@ def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
 
 def print_blueprint_settings(snapshot: BomSnapshot) -> None:
     print("\nBlueprints in tree:")
-    usage_by_production = {}
+    usage_by_build_job = {}
     for row in snapshot.rows:
-        if row.production is None:
+        if row.build_job is None:
             continue
 
-        usage = usage_by_production.get(row.production)
+        usage = usage_by_build_job.get(row.build_job)
         if usage is None:
-            usage_by_production[row.production] = {
+            usage_by_build_job[row.build_job] = {
                 "min_depth": row.depth,
                 "total_output": row.planned_output_quantity,
                 "total_time": row.total_time_seconds,
@@ -99,18 +99,18 @@ def print_blueprint_settings(snapshot: BomSnapshot) -> None:
             usage["total_runs"] += row.runs or 0.0
 
     blueprints_by_depth = defaultdict(list)
-    for production, usage in usage_by_production.items():
-        blueprints_by_depth[usage["min_depth"]].append((production, usage))
+    for build_job, usage in usage_by_build_job.items():
+        blueprints_by_depth[usage["min_depth"]].append((build_job, usage))
 
     for depth in sorted(blueprints_by_depth):
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
-        for production, usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry[0].blueprint_name):
-            settings = production.settings
+        for build_job, usage in sorted(blueprints_by_depth[depth], key=lambda entry: entry[0].blueprint_name):
+            settings = build_job.settings
             runs = settings.runs if settings.runs is not None else usage["total_runs"]
             rows.append(
                 (
-                    production.blueprint_name,
+                    build_job.blueprint_name,
                     f"output {fmt(usage['total_output'])}",
                     f"time {format_duration(usage['total_time'])}",
                     format_job_cell(
@@ -135,9 +135,9 @@ def aggregate_detail_cell(snapshot: BomSnapshot, aggregate: BomAggregate) -> str
     if runs is None:
         # Temporary estimate support: delete this branch when the planner estimate switch is removed.
         runs = (
-            aggregate.production.estimate_runs_for(aggregate.quantity)
+            aggregate.build_job.estimate_runs_for(aggregate.quantity)
             if snapshot.use_estimate_math
-            else aggregate.production.runs_for(aggregate.quantity)
+            else aggregate.build_job.runs_for(aggregate.quantity)
         )
     return format_job_cell(
         settings.material_efficiency,
@@ -202,12 +202,11 @@ def print_shopping_list(shopping_list: list[dict], title: str = "Shopping list")
     return shopping_list
 
 
-def print_top_level_blueprints(idx, blueprints: dict[str, BlueprintSettings]) -> None:
+def print_top_level_blueprints(idx, blueprints: dict[int, BlueprintSettings]) -> None:
     print("Top-level blueprints:")
     rows: list[tuple[str, str, str, str]] = []
     for blueprint in blueprints.values():
-        blueprint_typeid = idx.find_type_id_by_name(blueprint.name)
-        label = blueprint_typeid if blueprint_typeid is not None else "unknown"
+        label = blueprint.blueprint_type_id if blueprint.blueprint_type_id is not None else "unknown"
         rows.append(
             (
                 blueprint.name,
@@ -224,7 +223,7 @@ def print_top_level_blueprints(idx, blueprints: dict[str, BlueprintSettings]) ->
     print_table_rows(rows)
 
 
-def print_blueprint_updates(blueprint_updates: dict[str, BlueprintSettings]) -> None:
+def print_blueprint_updates(blueprint_updates: dict[int, BlueprintSettings]) -> None:
     if not blueprint_updates:
         return
 

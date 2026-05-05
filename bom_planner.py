@@ -3,6 +3,7 @@ from __future__ import annotations
 from industry_index import IndustryIndex
 from model import (
     MANUFACTURING_ACTIVITY,
+    BuildJob,
     BlueprintProduct,
     BlueprintSettings,
     BomAggregate,
@@ -10,7 +11,6 @@ from model import (
     BomSnapshot,
     MaterialRow,
     PlanConfig,
-    ProductionPlan,
 )
 
 
@@ -26,24 +26,28 @@ class BomPlanner:
         selected_product_type_ids: set[int] = set()
         descendant_product_type_ids: set[int] = set()
 
-        # TODO: rename settings and settings-named functions
-        for settings in plan.top_level_blueprints.values():
-            production = self._production_for_settings(settings)
-            if production.product_type_id in selected_product_type_ids:
+        for print in plan.top_level_blueprints.values():
+            # get output product and quantity of a print
+            outputs = self.idx.outputs(print.blueprint_type_id)
+
+            # convert the print to a build job
+            build_job = self._build_job(outputs[0], print)
+
+            if build_job.product_type_id in selected_product_type_ids:
                 raise ValueError(
-                    f"{production.blueprint_name} cannot be selected because "
-                    f"{production.product_name} is already selected."
+                    f"{build_job.blueprint_name} cannot be selected because "
+                    f"{build_job.product_name} is already selected."
                 )
 
-            if production.product_type_id in descendant_product_type_ids:
+            if build_job.product_type_id in descendant_product_type_ids:
                 raise ValueError(
-                    f"{production.blueprint_name} cannot be selected because "
-                    f"{production.product_name} is already required by another selection."
+                    f"{build_job.blueprint_name} cannot be selected because "
+                    f"{build_job.product_name} is already required by another selection."
                 )
 
             root_start = len(rows)
             self._expand_blueprint(
-                production=production,
+                build_job=build_job,
                 required_quantity=None,
                 depth=0,
                 plan=plan,
@@ -55,11 +59,11 @@ class BomPlanner:
             if conflicting_roots:
                 conflict_name = self.idx.type_name(next(iter(conflicting_roots)))
                 raise ValueError(
-                    f"{production.blueprint_name} cannot be selected because "
+                    f"{build_job.blueprint_name} cannot be selected because "
                     f"it requires an existing top-level selection: {conflict_name}."
                 )
 
-            selected_product_type_ids.add(production.product_type_id)
+            selected_product_type_ids.add(build_job.product_type_id)
             descendant_product_type_ids.update(root_descendants)
 
         aggregates = self._summarize(rows)
@@ -72,7 +76,7 @@ class BomPlanner:
 
     def _expand_blueprint(
         self,
-        production: ProductionPlan,
+        build_job: BuildJob,
         required_quantity: float | None,
         depth: int,
         plan: PlanConfig,
@@ -81,36 +85,36 @@ class BomPlanner:
     ) -> BomLine:
         runs = None
         if self.use_estimate_math:
-            runs = production.estimate_runs_for(required_quantity)
+            runs = build_job.estimate_runs_for(required_quantity)
         else:
-            runs = production.runs_for(required_quantity)
-        quantity = production.planned_output(runs) if required_quantity is None else float(required_quantity)
+            runs = build_job.runs_for(required_quantity)
+        quantity = build_job.planned_output(runs) if required_quantity is None else float(required_quantity)
         row = BomLine(
-            type_id=production.product_type_id,
-            name=production.product_name,
+            type_id=build_job.product_type_id,
+            name=build_job.product_name,
             depth=depth,
             quantity=quantity,
-            production=production,
+            build_job=build_job,
             runs=runs,
-            group_id=self._group_id(production.product_type_id),
+            group_id=self._group_id(build_job.product_type_id),
         )
         rows.append(row)
 
-        if production.blueprint_type_id in active_blueprints:
+        if build_job.blueprint_type_id in active_blueprints:
             return row
 
         # infinite recursion check in cases of old bpos like silos
-        active_blueprints.add(production.blueprint_type_id)
+        active_blueprints.add(build_job.blueprint_type_id)
         try:
-            for material in self.idx.inputs(production.blueprint_type_id, production.activity):
-                self._expand_material(production, runs, material, depth + 1, plan, rows, active_blueprints)
+            for material in self.idx.inputs(build_job.blueprint_type_id, build_job.activity):
+                self._expand_material(build_job, runs, material, depth + 1, plan, rows, active_blueprints)
         finally:
-            active_blueprints.remove(production.blueprint_type_id)
+            active_blueprints.remove(build_job.blueprint_type_id)
         return row
 
     def _expand_material(
         self,
-        parent_production: ProductionPlan,
+        parent_build_job: BuildJob,
         parent_runs: float,
         material: MaterialRow,
         depth: int,
@@ -122,11 +126,11 @@ class BomPlanner:
         name = self.idx.type_name(type_id)
         quantity = None
         if self.use_estimate_math:
-            quantity = parent_production.estimate_material_quantity(material.quantity, parent_runs)
+            quantity = parent_build_job.estimate_material_quantity(material.quantity, parent_runs)
         else:
-            quantity = parent_production.material_quantity(material.quantity, parent_runs)
+            quantity = parent_build_job.material_quantity(material.quantity, parent_runs)
 
-        blueprint_product = None if name in plan.buy_components else self.idx.production_blueprint_for(type_id)
+        blueprint_product = None if name in plan.buy_components else self.idx.build_blueprint_for(type_id)
         if blueprint_product is None:
             rows.append(
                 BomLine(
@@ -139,10 +143,11 @@ class BomPlanner:
             )
             return
 
+        child_blueprint_name = self.idx.type_name(blueprint_product.type_id)
         self._expand_blueprint(
-            production=self._production_from_product(
+            build_job=self._build_job(
                 blueprint_product,
-                plan.settings_for(self.idx.type_name(blueprint_product.type_id)),
+                plan.settings_for(blueprint_product.type_id, child_blueprint_name),
             ),
             required_quantity=quantity,
             depth=depth,
@@ -151,26 +156,16 @@ class BomPlanner:
             active_blueprints=active_blueprints,
         )
 
-    # TODO: this can be combined with _production_from_product
-    def _production_for_settings(self, settings: BlueprintSettings) -> ProductionPlan:
-        blueprint_type_id = self.idx.find_type_id_by_name(settings.name)
-        if blueprint_type_id is None:
-            raise ValueError(f"Blueprint not found: {settings.name}")
-        if not self.idx.is_published_type(blueprint_type_id):
-            raise ValueError(f"Blueprint is not published: {settings.name}")
-
-        activity = self.idx.activity_for(blueprint_type_id)
-        outputs = self.idx.outputs(blueprint_type_id, activity)
-        if not outputs:
-            raise ValueError(f"Blueprint {settings.name} does not have a production activity.")
-        return self._production_from_product(outputs[0], settings)
-    
-    # TODO: combine this with above 
-    def _production_from_product(self, product: BlueprintProduct, settings: BlueprintSettings) -> ProductionPlan:
+    def _build_job(self, product: BlueprintProduct, print: BlueprintSettings) -> BuildJob:
         if product.activity != MANUFACTURING_ACTIVITY:
-            settings = BlueprintSettings(name=settings.name, runs=settings.runs, prints=settings.prints)
+            print = BlueprintSettings(
+                name=print.name,
+                runs=print.runs,
+                prints=print.prints,
+                blueprint_type_id=print.blueprint_type_id,
+            )
 
-        return ProductionPlan(
+        return BuildJob(
             blueprint_type_id=product.type_id,
             blueprint_name=self.idx.type_name(product.type_id),
             activity=product.activity,
@@ -178,7 +173,7 @@ class BomPlanner:
             product_name=self.idx.type_name(product.product_typeid),
             output_per_run=float(product.quantity),
             time_per_run=self.idx.activity_time(product.type_id, product.activity) or 0.0,
-            settings=settings,
+            settings=print,
         )
 
     def _group_id(self, type_id: int) -> int | None:

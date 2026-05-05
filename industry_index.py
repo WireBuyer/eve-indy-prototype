@@ -61,7 +61,7 @@ class IndustryIndex:
     def blueprints_for(self, product_type_id: int) -> list[BlueprintProduct]:
         return list(self._bp_by_product.get(product_type_id, []))
 
-    def production_blueprint_for(self, product_type_id: int) -> BlueprintProduct | None:
+    def build_blueprint_for(self, product_type_id: int) -> BlueprintProduct | None:
         blueprints = self.blueprints_for(product_type_id)
         published_blueprints = [
             blueprint

@@ -5,21 +5,21 @@ from model import BlueprintSettings, PlanConfig
 from prints import *
 
 # Selection of what to make
-TOP_LEVEL_BLUEPRINTS = {
-    # "Heron Blueprint": BlueprintSettings("Heron Blueprint", 0, 0, 1, 1),
-    "Paladin Blueprint": BlueprintSettings("Paladin Blueprint", 3, 14, 1, 1),
-    # "Charon Blueprint": BlueprintSettings("Charon Blueprint", 10, 20, 1, 1),
-}
+TOP_LEVEL_BLUEPRINTS = [
+    # ("Heron Blueprint", 0, 0, 1, 1),
+    ("Raven Blueprint", 3, 14, 1, 1),
+    # ("Charon Blueprint", 10, 20, 1, 1),
+]
 
 # Blueprint ME modifiers. Users will be able to add their own prints and configs.
 # The same settings object works for top-level jobs and component overrides.
-BLUEPRINT_ME_UPDATES = {
-    # "Life Support Backup Unit Blueprint": BlueprintSettings("Life Support Backup Unit Blueprint", 10, 20),
-    # "Capital Jump Drive Blueprint": BlueprintSettings("Capital Jump Drive Blueprint", 10, 20),
-    # "Life Support Backup Unit Blueprint": BlueprintSettings("Life Support Backup Unit Blueprint", 10, 20),
-    # "Auto-Integrity Preservation Seal Blueprint": BlueprintSettings("Auto-Integrity Preservation Seal Blueprint", 10, 20),
-    "Charon Blueprint": BlueprintSettings("Charon Blueprint", 10, 20, 1, 1)
-}
+BLUEPRINT_ME_UPDATES = [
+    # ("Life Support Backup Unit Blueprint", 10, 20),
+    # ("Capital Jump Drive Blueprint", 10, 20),
+    # ("Life Support Backup Unit Blueprint", 10, 20),
+    # ("Auto-Integrity Preservation Seal Blueprint", 10, 20),
+    ("Charon Blueprint", 10, 20, 1, 1)
+]
 
 # Default behavior is build. If a component name appears here, it will be bought and not built,
 # and the planner will stop before expanding its child inputs.
@@ -36,11 +36,42 @@ def main():
     idx = load_tables("eve.db")
     planner = BomPlanner(idx)
     # planner = BomPlanner(idx, use_estimate_math=True)
+
+    def blueprint_type_id(name: str) -> int:
+        type_id = idx.find_type_id_by_name(name)
+        if type_id is None:
+            raise ValueError(f"Blueprint not found: {name}")
+        return type_id
+
+    top_level_blueprints = {}
+    for name, material_efficiency, time_efficiency, runs, prints in TOP_LEVEL_BLUEPRINTS:
+        settings = BlueprintSettings(
+            name,
+            material_efficiency,
+            time_efficiency,
+            runs,
+            prints,
+            blueprint_type_id=blueprint_type_id(name),
+        )
+        top_level_blueprints[settings.blueprint_type_id] = settings
+
+    blueprint_updates = {}
+    for name, material_efficiency, time_efficiency, runs, prints in BLUEPRINT_ME_UPDATES:
+        settings = BlueprintSettings(
+            name,
+            material_efficiency,
+            time_efficiency,
+            runs,
+            prints,
+            blueprint_type_id=blueprint_type_id(name),
+        )
+        blueprint_updates[settings.blueprint_type_id] = settings
+
     snapshot = planner.build_snapshot(
         PlanConfig(
             plan_id="main-plan",
-            top_level_blueprints=TOP_LEVEL_BLUEPRINTS,
-            blueprint_settings=BLUEPRINT_ME_UPDATES,
+            top_level_blueprints=top_level_blueprints,
+            blueprint_settings=blueprint_updates,
             buy_components=BUY_COMPONENTS,
         )
     )
