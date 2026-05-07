@@ -7,10 +7,12 @@ from math import ceil
 MANUFACTURING_ACTIVITY = 1
 REACTION_ACTIVITY = 11
 PRODUCTION_ACTIVITIES = (MANUFACTURING_ACTIVITY, REACTION_ACTIVITY)
+
 SHOPPING_LIST_GROUPS = {
     "minerals": {18},
     "gas": {711},
 }
+
 
 # --- models for the db tables ---
 @dataclass(frozen=True)
@@ -47,20 +49,46 @@ class BlueprintActivityTime:
 
 
 # --- models for business logic ---
+# model that holds info for a print (either top level or override)
+@dataclass(frozen=True)
+class BlueprintSettings:
+    name: str
+    blueprint_type_id: int
+    material_efficiency: int = 0
+    time_efficiency: int = 0
+    runs: float | None = None
+    prints: int = 1
+
+    def __post_init__(self) -> None:
+        if self.blueprint_type_id is None:
+            raise ValueError(f"Blueprint type id is required for {self.name}.")
+
+        object.__setattr__(self, "blueprint_type_id", int(self.blueprint_type_id))
+        object.__setattr__(self, "material_efficiency", _clamp(self.material_efficiency, 0, 10))
+        object.__setattr__(self, "time_efficiency", _clamp(self.time_efficiency, 0, 20))
+        object.__setattr__(self, "prints", max(1, int(self.prints)))
+
+        if self.runs is None:
+            return
+
+        runs = float(self.runs)
+        if runs <= 0:
+            raise ValueError("runs must be positive when provided")
+        object.__setattr__(self, "runs", runs)
+
+
 # model that holds all info for a plan
 @dataclass
 class PlanConfig:
-    # remove the | None 
     plan_id: str | None = None
-    top_level_blueprints: dict[int, BlueprintSettings] | None = field(default_factory=dict)
-    blueprint_settings: dict[int, BlueprintSettings] | None = field(default_factory=dict)
-    buy_components: set[str] | None = field(default_factory=set)
+    top_level_blueprints: dict[int, BlueprintSettings] = field(default_factory=dict)
+    blueprint_settings: dict[int, BlueprintSettings] = field(default_factory=dict)
+    buy_component_type_ids: set[int] = field(default_factory=set)
 
-    # remove this
     def __post_init__(self) -> None:
-        self.top_level_blueprints = _copy_settings_by_id(self.top_level_blueprints)
-        self.blueprint_settings = _copy_settings_by_id(self.blueprint_settings)
-        self.buy_components = set(self.buy_components or set())
+        self.top_level_blueprints = _copy_settings_by_id(self.top_level_blueprints, allow_runs=True)
+        self.blueprint_settings = _copy_settings_by_id(self.blueprint_settings, allow_runs=False)
+        self.buy_component_type_ids = {int(type_id) for type_id in (self.buy_component_type_ids or set())}
 
     def settings_for(self, blueprint_type_id: int, blueprint_name: str) -> BlueprintSettings:
         return self.blueprint_settings.get(
@@ -68,31 +96,30 @@ class PlanConfig:
             BlueprintSettings(blueprint_name, blueprint_type_id=blueprint_type_id),
         )
 
-    def add_top_level_blueprint(self, settings: BlueprintSettings) -> None:
-        if settings.blueprint_type_id is None:
-            raise ValueError(f"Blueprint type id is required for {settings.name}.")
-        if settings.blueprint_type_id in self.top_level_blueprints:
-            raise ValueError(f"{settings.name} is already selected.")
-        self.top_level_blueprints[settings.blueprint_type_id] = settings
-
     def remove_top_level_blueprints(self, blueprint_type_ids: list[int]) -> None:
         missing_ids = set(blueprint_type_ids) - set(self.top_level_blueprints)
         if missing_ids:
-            raise KeyError(f"Top-level blueprints are not selected: {', '.join(str(type_id) for type_id in sorted(missing_ids))}")
+            raise KeyError(
+                "Top-level blueprints are not selected: "
+                f"{', '.join(str(type_id) for type_id in sorted(missing_ids))}"
+            )
 
         for blueprint_type_id in blueprint_type_ids:
             del self.top_level_blueprints[blueprint_type_id]
 
-    def set_buy_component(self, component_name: str, should_buy: bool) -> None:
+    def set_buy_component(self, component_type_id: int, should_buy: bool) -> None:
         if should_buy:
-            self.buy_components.add(component_name)
+            self.buy_component_type_ids.add(component_type_id)
         else:
-            self.buy_components.discard(component_name)
+            self.buy_component_type_ids.discard(component_type_id)
 
     def update_top_level_blueprints(self, updates_by_id: dict[int, dict]) -> None:
         missing_ids = set(updates_by_id) - set(self.top_level_blueprints)
         if missing_ids:
-            raise KeyError(f"Top-level blueprints are not selected: {', '.join(str(type_id) for type_id in sorted(missing_ids))}")
+            raise KeyError(
+                "Top-level blueprints are not selected: "
+                f"{', '.join(str(type_id) for type_id in sorted(missing_ids))}"
+            )
 
         for blueprint_type_id, update in updates_by_id.items():
             self.top_level_blueprints[blueprint_type_id] = _apply_settings_update(
@@ -125,32 +152,8 @@ class PlanConfig:
                 self.blueprint_settings[blueprint_type_id] = _apply_settings_update(current, update, allow_runs=False)
 
 
-# model that holds info for a print (either top level or override)
 @dataclass(frozen=True)
-class BlueprintSettings:
-    name: str
-    material_efficiency: int = 0
-    time_efficiency: int = 0
-    runs: float | None = None
-    prints: int = 1
-    blueprint_type_id: int | None = None
-
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "material_efficiency", _clamp(self.material_efficiency, 0, 10))
-        object.__setattr__(self, "time_efficiency", _clamp(self.time_efficiency, 0, 20))
-        object.__setattr__(self, "prints", max(1, int(self.prints)))
-
-        if self.runs is None:
-            return
-
-        runs = float(self.runs)
-        if runs <= 0:
-            raise ValueError("runs must be positive when provided")
-        object.__setattr__(self, "runs", runs)
-
-
-@dataclass(frozen=True)
-class BuildJob:
+class ProductionRecipe:
     blueprint_type_id: int
     blueprint_name: str
     activity: int
@@ -158,192 +161,172 @@ class BuildJob:
     product_name: str
     output_per_run: float
     time_per_run: float
-    settings: BlueprintSettings
+    product_group_id: int | None = None
 
-    # Temporary estimate support: delete this method when fractional math is removed.
-    def estimate_runs_for(self, required_quantity: float | None) -> float:
-        if self.settings.runs is not None:
-            return self.settings.runs
-        if required_quantity is None:
-            return 1.0
 
-        output_per_job = self.output_per_run * self.settings.prints
-        if output_per_job <= 0:
-            return float(required_quantity)
-        return float(required_quantity) / output_per_job
-
-    def runs_for(self, required_quantity: float | None) -> float:
-        if self.settings.runs is not None:
-            return self.settings.runs
-        if required_quantity is None:
-            return 1.0
-
-        output_per_job = self.output_per_run * self.settings.prints
-        if output_per_job <= 0:
-            return float(ceil(required_quantity))
-        return float(ceil(float(required_quantity) / output_per_job))
-
-    def planned_output(self, runs: float) -> float:
-        return self.output_per_run * runs * self.settings.prints
-
-    def material_modifier(self) -> float:
-        if self.activity == MANUFACTURING_ACTIVITY:
-            return 1.0 - (self.settings.material_efficiency / 100.0)
-        return 1.0
-
-    # Temporary estimate support: delete this method when fractional math is removed.
-    def estimate_material_quantity(self, quantity_per_run: float, runs: float) -> float:
-        quantity = float(quantity_per_run) * runs * self.settings.prints
-        if self.activity == MANUFACTURING_ACTIVITY and quantity_per_run > 1.0:
-            return quantity * self.material_modifier()
-        return quantity
-
-    def material_quantity(self, quantity_per_run: float, runs: float) -> float:
-        quantity_per_print = runs * float(quantity_per_run) * self.material_modifier()
-        required_per_print = max(runs, ceil(round(quantity_per_print, 2)))
-        return float(required_per_print) * self.settings.prints
-
-    def total_time(self, runs: float) -> float:
-        seconds = self.time_per_run * runs * self.settings.prints
-        if self.activity == MANUFACTURING_ACTIVITY:
-            return seconds * (1.0 - (self.settings.time_efficiency / 100.0))
-        return seconds
-
-@dataclass
-class BomLine:
+@dataclass(frozen=True)
+class BomEntry:
     type_id: int
     name: str
-    depth: int
     quantity: float
-    build_job: BuildJob | None = None
-    runs: float | None = None
+    depth: int
     group_id: int | None = None
+    recipe: ProductionRecipe | None = None
+    settings: BlueprintSettings | None = None
+    runs: float | None = None
+    output_quantity: float = 0.0
+    total_time_seconds: float = 0.0
+    bought: bool = False
 
     @property
-    def planned_output_quantity(self) -> float:
-        if self.build_job is None or self.runs is None:
-            return self.quantity
-        return self.build_job.planned_output(self.runs)
+    def is_built(self) -> bool:
+        return self.recipe is not None
 
     @property
-    def total_time_seconds(self) -> float:
-        if self.build_job is None or self.runs is None:
-            return 0.0
-        return self.build_job.total_time(self.runs)
+    def is_bought(self) -> bool:
+        return self.bought
+
+    @property
+    def is_base_material(self) -> bool:
+        return not self.is_built and not self.bought
+
+    @property
+    def tag(self) -> str:
+        if self.bought:
+            return "BUY"
+        if self.is_base_material:
+            return "BASE"
+        return ""
 
     @property
     def blueprint_settings(self) -> BlueprintSettings | None:
-        return self.build_job.settings if self.build_job is not None else None
+        return self.settings
 
     @property
     def blueprint_name(self) -> str | None:
-        return self.build_job.blueprint_name if self.build_job is not None else None
+        return None if self.recipe is None else self.recipe.blueprint_name
 
     @property
     def blueprint_type_id(self) -> int | None:
-        return self.build_job.blueprint_type_id if self.build_job is not None else None
+        return None if self.recipe is None else self.recipe.blueprint_type_id
 
     @property
     def material_efficiency(self) -> int:
-        return self.blueprint_settings.material_efficiency if self.blueprint_settings is not None else 0
+        return 0 if self.settings is None else self.settings.material_efficiency
 
     @property
     def time_efficiency(self) -> int:
-        return self.blueprint_settings.time_efficiency if self.blueprint_settings is not None else 0
+        return 0 if self.settings is None else self.settings.time_efficiency
 
     @property
     def prints(self) -> int:
-        return self.blueprint_settings.prints if self.blueprint_settings is not None else 1
+        return 1 if self.settings is None else self.settings.prints
 
     @property
     def total_runs(self) -> float:
         return 0.0 if self.runs is None else self.runs * self.prints
 
 
-@dataclass
-class BomAggregate:
-    type_id: int
-    name: str
-    quantity: float
-    min_depth: int
-    max_depth: int
-    build_job: BuildJob | None = None
-    total_time_seconds: float = 0.0
-    mixed_blueprint_settings: bool = False
-    group_id: int | None = None
-
-    @classmethod
-    def from_line(cls, line: BomLine) -> BomAggregate:
-        return cls(
-            type_id=line.type_id,
-            name=line.name,
-            quantity=line.quantity,
-            min_depth=line.depth,
-            max_depth=line.depth,
-            build_job=line.build_job,
-            total_time_seconds=line.total_time_seconds,
-            group_id=line.group_id,
-        )
-
-    def absorb(self, line: BomLine) -> None:
-        self.quantity += line.quantity
-        self.total_time_seconds += line.total_time_seconds
-        self.min_depth = min(self.min_depth, line.depth)
-        self.max_depth = max(self.max_depth, line.depth)
-
-        if line.build_job is None:
-            return
-        if self.build_job is None:
-            self.build_job = line.build_job
-        elif self.build_job != line.build_job:
-            self.mixed_blueprint_settings = True
-
-    @property
-    def blueprint_settings(self) -> BlueprintSettings | None:
-        return self.build_job.settings if self.build_job is not None else None
-
-    @property
-    def blueprint_type_id(self) -> int | None:
-        return self.build_job.blueprint_type_id if self.build_job is not None else None
-
-
-@dataclass
-class BomSnapshot:
+@dataclass(frozen=True)
+class BomResult:
     request: PlanConfig
-    rows: list[BomLine]
-    aggregates: dict[int, BomAggregate]
-    # Temporary estimate support: delete this field when the planner estimate switch is removed.
+    roots: list[BomEntry]
+    entries: dict[int, BomEntry]
     use_estimate_math: bool = False
 
     @property
-    def roots(self) -> list[BomLine]:
-        return [row for row in self.rows if row.depth == 0]
-
-    @property
-    def root(self) -> BomLine | None:
+    def root(self) -> BomEntry | None:
         return self.roots[0] if self.roots else None
 
     @property
     def depths(self) -> dict[int, int]:
-        return {type_id: aggregate.max_depth for type_id, aggregate in self.aggregates.items()}
+        return {type_id: entry.depth for type_id, entry in self.entries.items()}
+
+    @property
+    def depth_layers(self) -> dict[int, list[BomEntry]]:
+        layers: dict[int, list[BomEntry]] = {}
+        for entry in self.entries.values():
+            layers.setdefault(entry.depth, []).append(entry)
+        for entries in layers.values():
+            entries.sort(key=lambda entry: entry.type_id)
+        return layers
 
     @property
     def total_time_seconds(self) -> float:
-        return sum(row.total_time_seconds for row in self.rows)
+        return sum(entry.total_time_seconds for entry in self.roots) + sum(
+            entry.total_time_seconds for entry in self.entries.values()
+        )
+
+    @property
+    def rows(self) -> list[BomEntry]:
+        return self.roots + sorted(self.entries.values(), key=lambda entry: (entry.depth, entry.type_id))
 
     def get_shopping_list(self, item_group: str | None = None) -> list[dict]:
         group_ids = _shopping_list_group_ids(item_group)
         return [
             {
-                "name": aggregate.name,
-                "quantity": ceil(aggregate.quantity),
+                "type_id": entry.type_id,
+                "name": entry.name,
+                "quantity": ceil(entry.quantity),
+                "tag": entry.tag,
             }
-            for aggregate in sorted(
-                self.aggregates.values(),
-                key=lambda aggregate: aggregate.type_id,
-            )
-            if aggregate.build_job is None and (group_ids is None or aggregate.group_id in group_ids)
+            for entry in sorted(self.entries.values(), key=lambda entry: entry.type_id)
+            if not entry.is_built and (group_ids is None or entry.group_id in group_ids)
         ]
+
+
+class ProductionMath:
+    def __init__(self, use_estimate_math: bool = False):
+        self.use_estimate_math = use_estimate_math
+
+    def runs_for(
+        self,
+        recipe: ProductionRecipe,
+        settings: BlueprintSettings,
+        required_quantity: float | None,
+    ) -> float:
+        if settings.runs is not None:
+            return settings.runs
+        if required_quantity is None:
+            return 1.0
+
+        output_per_job = recipe.output_per_run * settings.prints
+        if output_per_job <= 0:
+            return float(required_quantity if self.use_estimate_math else ceil(required_quantity))
+        if self.use_estimate_math:
+            return float(required_quantity) / output_per_job
+        return float(ceil(float(required_quantity) / output_per_job))
+
+    def output_quantity(self, recipe: ProductionRecipe, settings: BlueprintSettings, runs: float) -> float:
+        return recipe.output_per_run * runs * settings.prints
+
+    def material_quantity(
+        self,
+        recipe: ProductionRecipe,
+        settings: BlueprintSettings,
+        quantity_per_run: float,
+        runs: float,
+    ) -> float:
+        if self.use_estimate_math:
+            quantity = float(quantity_per_run) * runs * settings.prints
+            if recipe.activity == MANUFACTURING_ACTIVITY and quantity_per_run > 1.0:
+                return quantity * self.material_modifier(recipe, settings)
+            return quantity
+
+        quantity_per_print = runs * float(quantity_per_run) * self.material_modifier(recipe, settings)
+        required_per_print = max(runs, ceil(round(quantity_per_print, 2)))
+        return float(required_per_print) * settings.prints
+
+    def total_time(self, recipe: ProductionRecipe, settings: BlueprintSettings, runs: float) -> float:
+        seconds = recipe.time_per_run * runs * settings.prints
+        if recipe.activity == MANUFACTURING_ACTIVITY:
+            return seconds * (1.0 - (settings.time_efficiency / 100.0))
+        return seconds
+
+    def material_modifier(self, recipe: ProductionRecipe, settings: BlueprintSettings) -> float:
+        if recipe.activity == MANUFACTURING_ACTIVITY:
+            return 1.0 - (settings.material_efficiency / 100.0)
+        return 1.0
 
 
 def _clamp(value: int, minimum: int, maximum: int) -> int:
@@ -360,16 +343,17 @@ def _shopping_list_group_ids(item_group: str | None) -> set[int] | None:
 
 def _copy_settings_by_id(
     settings: dict[int, BlueprintSettings] | None,
+    allow_runs: bool,
 ) -> dict[int, BlueprintSettings]:
     if settings is None:
         return {}
 
     by_id: dict[int, BlueprintSettings] = {}
     for blueprint_type_id, blueprint_settings in settings.items():
-        if blueprint_settings.blueprint_type_id is None:
-            raise ValueError(f"Blueprint type id is required for {blueprint_settings.name}.")
         if blueprint_type_id != blueprint_settings.blueprint_type_id:
             raise ValueError(f"Blueprint settings key does not match {blueprint_settings.name}.")
+        if not allow_runs and blueprint_settings.runs is not None:
+            raise ValueError("runs can only be set for top-level blueprints")
         if blueprint_settings.blueprint_type_id in by_id:
             raise ValueError(f"{blueprint_settings.name} is already selected.")
         by_id[blueprint_settings.blueprint_type_id] = blueprint_settings
@@ -386,9 +370,9 @@ def _apply_settings_update(
 
     return BlueprintSettings(
         name=settings.name,
+        blueprint_type_id=settings.blueprint_type_id,
         material_efficiency=update.get("material_efficiency", settings.material_efficiency),
         time_efficiency=update.get("time_efficiency", settings.time_efficiency),
         runs=update.get("runs", settings.runs),
         prints=update.get("prints", settings.prints),
-        blueprint_type_id=settings.blueprint_type_id,
     )

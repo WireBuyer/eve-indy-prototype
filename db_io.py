@@ -1,7 +1,7 @@
 import sqlite3
 from collections import defaultdict
 
-from model import TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
+from model import PRODUCTION_ACTIVITIES, TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
 from industry_index import IndustryIndex
 
 
@@ -10,7 +10,7 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
 
     Returns: (inv_types, bp_products, bp_by_product, materials, activities)
     - inv_types: typeID -> TypeInfo (only published types)
-    - bp_products: (blueprint_typeID, activityID) -> list of `BlueprintProduct` (blueprint outputs)
+    - bp_products: (blueprint_typeID, activityID) -> `BlueprintProduct` (blueprint output)
     - bp_by_product: productTypeID -> list of `BlueprintProduct` (reverse index: which blueprints produce a product)
     - materials: (blueprint_typeID, activityID) -> list of `MaterialRow` (blueprint inputs)
     - activity_times: (typeID, activityID) -> `BlueprintActivityTime` (time row for that blueprint/activity)
@@ -35,15 +35,20 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
 
     # Load industryActivityProducts - blueprint outputs
     cur.execute('SELECT typeID, activityID, productTypeID, quantity FROM "industryActivityProducts"')
-    bp_products = defaultdict(list)
+    bp_products = {}
     bp_by_product = defaultdict(list)
     for typeID, activityID, productTypeID, qty in cur.fetchall():
         tid = int(typeID)
         act = int(activityID)
+        if act not in PRODUCTION_ACTIVITIES:
+            continue
         ptype = int(productTypeID)
         q = float(qty)
         row = BlueprintProduct(type_id=tid, activity=act, product_typeid=ptype, quantity=q)
-        bp_products[(tid, act)].append(row)
+        key = (tid, act)
+        if key in bp_products:
+            raise ValueError(f"Multiple production outputs found for blueprint {tid}, activity {act}")
+        bp_products[key] = row
         bp_by_product[ptype].append(row)
 
     # Load industryActivityMaterials - blueprint inputs
