@@ -1,6 +1,7 @@
 from bom_planner import BomPlanner
+from bom_view import shopping_list_for
+from build_models import BuildPlan, PrintSettings
 from db_io import load_tables
-from model import BlueprintSettings, PlanConfig
 
 from prints import *
 
@@ -42,9 +43,9 @@ def main():
             raise ValueError(f"Type not found: {name}")
         return type_id
     
-    top_level_blueprints = {}
+    root_prints = {}
     for name, material_efficiency, time_efficiency, runs, prints in TOP_LEVEL_BLUEPRINTS:
-        settings = BlueprintSettings(
+        settings = PrintSettings(
             name=name,
             blueprint_type_id=to_type(name),
             material_efficiency=material_efficiency,
@@ -52,40 +53,40 @@ def main():
             runs=runs,
             prints=prints,
         )
-        top_level_blueprints[settings.blueprint_type_id] = settings
+        root_prints[settings.blueprint_type_id] = settings
 
-    blueprint_updates = {}
+    print_overrides = {}
     for name, material_efficiency, time_efficiency, runs, prints in BLUEPRINT_ME_UPDATES:
-        settings = BlueprintSettings(
+        settings = PrintSettings(
             name=name,
             blueprint_type_id=to_type(name),
             material_efficiency=material_efficiency,
             time_efficiency=time_efficiency,
             prints=prints,
         )
-        blueprint_updates[settings.blueprint_type_id] = settings
+        print_overrides[settings.blueprint_type_id] = settings
 
-    buy_component_type_ids = {to_type(name) for name in BUY_COMPONENTS}
+    buy_product_type_ids = {to_type(name) for name in BUY_COMPONENTS}
 
     result = planner.build_result(
-        PlanConfig(
+        BuildPlan(
             plan_id="main-plan",
-            top_level_blueprints=top_level_blueprints,
-            blueprint_settings=blueprint_updates,
-            buy_component_type_ids=buy_component_type_ids,
+            root_prints=root_prints,
+            print_overrides=print_overrides,
+            buy_product_type_ids=buy_product_type_ids,
         )
     )
 
     # print_top_level_blueprints(idx, TOP_LEVEL_BLUEPRINTS)
     # print_blueprint_updates(BLUEPRINT_ME_UPDATES)
-    # print_buy_components(idx, buy_component_type_ids)
+    # print_buy_components(idx, buy_product_type_ids)
     # print(f"\nTotal build time: {format_duration(result.total_time_seconds)}")
     # print_blueprint_settings(result)
     print_depth_summary(result)
-    shopping_list = result.get_shopping_list()
+    shopping_list = shopping_list_for(result)
     # print_shopping_list(shopping_list)
-    print_shopping_list(result.get_shopping_list("minerals"), "Minerals")
-    print_shopping_list(result.get_shopping_list("gas"), "Gas")
+    print_shopping_list(shopping_list_for(result, "minerals"), "Minerals")
+    print_shopping_list(shopping_list_for(result, "gas"), "Gas")
 
 
 if __name__ == "__main__":

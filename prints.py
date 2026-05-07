@@ -1,6 +1,8 @@
 from collections import defaultdict
 
-from model import BlueprintSettings, BomEntry, BomResult
+from bom_view import depth_layers as result_depth_layers
+from bom_view import is_built, item_tag, rows as result_rows
+from build_models import BomItem, BomResult, PrintSettings
 
 
 def format_duration(seconds: float) -> str:
@@ -35,9 +37,10 @@ def format_job_cell(material_efficiency: int, time_efficiency: int, runs: float 
     )
 
 
-def build_qty_cell(entry: BomEntry) -> str:
-    suffix = f" [{entry.tag}]" if entry.tag else ""
-    return f"qty {fmt(entry.quantity)}{suffix}"
+def build_qty_cell(result: BomResult, item: BomItem) -> str:
+    tag = item_tag(result, item)
+    suffix = f" [{tag}]" if tag else ""
+    return f"qty {fmt(item.quantity)}{suffix}"
 
 
 def print_table_rows(rows: list[tuple[str, str, str, str]]) -> None:
@@ -68,40 +71,40 @@ def print_blueprint_settings(result: BomResult) -> None:
     print("\nBlueprints in tree:")
 
     blueprints_by_depth = defaultdict(list)
-    for entry in result.rows:
-        if not entry.is_built:
+    for item in result_rows(result):
+        if not is_built(item):
             continue
-        blueprints_by_depth[entry.depth].append(entry)
+        blueprints_by_depth[item.depth].append(item)
 
     for depth in sorted(blueprints_by_depth):
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
-        for entry in sorted(blueprints_by_depth[depth], key=lambda item: item.blueprint_name):
+        for item in sorted(blueprints_by_depth[depth], key=lambda item: item.blueprint_name):
             rows.append(
                 (
-                    entry.blueprint_name,
-                    f"output {fmt(entry.output_quantity)}",
-                    f"time {format_duration(entry.total_time_seconds)}",
+                    item.blueprint_name,
+                    f"output {fmt(item.output_quantity)}",
+                    f"time {format_duration(item.total_time_seconds)}",
                     format_job_cell(
-                        entry.material_efficiency,
-                        entry.time_efficiency,
-                        entry.runs,
-                        entry.prints,
+                        item.material_efficiency,
+                        item.time_efficiency,
+                        item.runs,
+                        item.prints,
                     ),
                 )
             )
         print_table_rows(rows)
 
 
-def entry_detail_cell(entry: BomEntry) -> str:
-    if not entry.is_built:
+def entry_detail_cell(item: BomItem) -> str:
+    if not is_built(item):
         return ""
 
     return format_job_cell(
-        entry.material_efficiency,
-        entry.time_efficiency,
-        entry.runs,
-        entry.prints,
+        item.material_efficiency,
+        item.time_efficiency,
+        item.runs,
+        item.prints,
     )
 
 
@@ -119,21 +122,22 @@ def print_depth_summary(result: BomResult) -> None:
         )
     print_table_rows(root_rows)
 
-    max_depth = max(result.depth_layers.keys()) if result.depth_layers else 0
+    layers = result_depth_layers(result)
+    max_depth = max(layers.keys()) if layers else 0
     for depth in range(1, max_depth + 1):
-        entries = result.depth_layers.get(depth, [])
-        if not entries:
+        items = layers.get(depth, [])
+        if not items:
             continue
 
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
-        for entry in entries:
+        for item in items:
             rows.append(
                 (
-                    entry.name,
-                    build_qty_cell(entry),
-                    f"time {format_duration(entry.total_time_seconds)}" if entry.total_time_seconds else "",
-                    entry_detail_cell(entry),
+                    item.name,
+                    build_qty_cell(result, item),
+                    f"time {format_duration(item.total_time_seconds)}" if item.total_time_seconds else "",
+                    entry_detail_cell(item),
                 )
             )
         print_table_rows(rows)
@@ -151,43 +155,43 @@ def print_shopping_list(shopping_list: list[dict], title: str = "Shopping list")
     return shopping_list
 
 
-def print_top_level_blueprints(idx, blueprints: dict[int, BlueprintSettings]) -> None:
+def print_top_level_blueprints(idx, blueprints: dict[int, PrintSettings]) -> None:
     print("Top-level blueprints:")
     rows: list[tuple[str, str, str, str]] = []
-    for blueprint in blueprints.values():
+    for print_settings in blueprints.values():
         rows.append(
             (
-                blueprint.name,
-                f"typeID {blueprint.blueprint_type_id}",
+                print_settings.name,
+                f"typeID {print_settings.blueprint_type_id}",
                 "",
                 format_job_cell(
-                    blueprint.material_efficiency,
-                    blueprint.time_efficiency,
-                    blueprint.runs,
-                    blueprint.prints,
+                    print_settings.material_efficiency,
+                    print_settings.time_efficiency,
+                    print_settings.runs,
+                    print_settings.prints,
                 ),
             )
         )
     print_table_rows(rows)
 
 
-def print_blueprint_updates(blueprint_updates: dict[int, BlueprintSettings]) -> None:
+def print_blueprint_updates(blueprint_updates: dict[int, PrintSettings]) -> None:
     if not blueprint_updates:
         return
 
     print("\nApplied blueprint overrides:")
     rows: list[tuple[str, str, str, str]] = []
-    for blueprint in sorted(blueprint_updates.values(), key=lambda entry: entry.name):
+    for print_settings in sorted(blueprint_updates.values(), key=lambda entry: entry.name):
         rows.append(
             (
-                blueprint.name,
+                print_settings.name,
                 "",
                 "",
                 format_job_cell(
-                    blueprint.material_efficiency,
-                    blueprint.time_efficiency,
-                    blueprint.runs,
-                    blueprint.prints,
+                    print_settings.material_efficiency,
+                    print_settings.time_efficiency,
+                    print_settings.runs,
+                    print_settings.prints,
                 ),
             )
         )

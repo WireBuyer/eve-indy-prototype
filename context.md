@@ -16,20 +16,22 @@ If a component shows up in a selected print it is tracked as a descendant. That 
 
 Current design:
 
-- `BlueprintSettings` represents user print settings: blueprint type ID, blueprint/print name, ME, TE, runs, prints.
-- `BlueprintSettings.blueprint_type_id` is required.
-- The same settings model is used for top-level selected prints and child print overrides.
+- `model.py` only contains constants and DB-read row models loaded from the EVE database.
+- `PrintSettings` represents user print settings: blueprint type ID, blueprint/print name, ME, TE, runs, prints.
+- `PrintSettings.blueprint_type_id` is required.
+- The same settings record is used for root selected prints and child print overrides.
 - `runs: float | None` means manual runs if provided, otherwise auto-calculate from required quantity / (prints * output_per_run), rounded up to whole runs.
-- Top-level prints may have user-submitted runs. Child/derived prints must auto-calculate whole runs.
-- `PlanConfig.top_level_blueprints` and `PlanConfig.blueprint_settings` are keyed by blueprint type ID.
-- `PlanConfig.buy_component_type_ids` stores bought component product type IDs. UI/API/demo code may accept names, but must resolve them to type IDs before building the plan.
-- `PlanConfig.plan_id` identifies a plan in the prototype. Web/API code can keep a plan-id map outside the planner and pass the selected `PlanConfig` into `BomPlanner`.
-- `PlanConfig.update_blueprints` accepts a dict keyed by blueprint type ID. Each value is a plain dict of fields to update, so one request can update one print or many prints with different values.
+- Root prints may have user-submitted runs. Child/derived prints must auto-calculate whole runs.
+- `BuildPlan.root_prints` and `BuildPlan.print_overrides` are keyed by blueprint type ID.
+- `BuildPlan.buy_product_type_ids` stores bought component product type IDs. UI/API/demo code may accept names, but must resolve them to type IDs before building the plan.
+- `BuildPlan.plan_id` identifies a plan in the prototype. Web/API code can keep a plan-id map outside the planner and pass the selected `BuildPlan` into `BomPlanner`.
+- `plan_service.py` owns plan mutation helpers such as root print updates, override updates, and buy toggles.
 - `ProductionRecipe` is immutable catalog data for one blueprint activity/product.
-- `BomEntry` is the final BOM item for one product type ID, including quantity, max depth, group, optional recipe/settings/runs for built items, and a `bought` flag for buy stops.
-- `BomResult` is the planner output and source of truth. It exposes roots, entries keyed by product type ID, depth layers, total time, and shopping-list helpers.
-- `BomResult.rows` is only a display/test convenience projection.
-- `ProductionMath` owns run, material, output, time, and temporary estimate math.
+- `BuildTree` is the internal recipe/depth tree used by the planner. Duplicate tracking sets stay local inside tree building and are not returned.
+- `BomItem` is the final BOM item for one product type ID, including quantity, max depth, group, and build fields when the item is built.
+- `BomResult` is a plain result record containing roots, items keyed by product type ID, buy product IDs, and estimate flag.
+- `bom_view.py` owns derived projections such as rows, depth layers, total time, item tags, and shopping lists.
+- `production_math.py` owns run, material, output, time, and temporary estimate math.
 - `BomPlanner(idx, use_estimate_math=True)` temporarily switches to the older fractional math. Delete that flag and the estimate branches in `ProductionMath` later without changing planner traversal.
 
 Important Spring Boot/API direction:

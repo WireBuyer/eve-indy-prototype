@@ -4,19 +4,19 @@ from contextlib import redirect_stdout
 from pathlib import Path
 
 from bom_planner import BomPlanner
+from bom_view import is_bought, is_built, item_tag, rows, shopping_list_for
+from build_models import BuildPlan, PrintSettings, ProductionRecipe
 from db_io import load_tables
 from industry_index import IndustryIndex
 from model import (
     MANUFACTURING_ACTIVITY,
     BlueprintActivityTime,
     BlueprintProduct,
-    BlueprintSettings,
     MaterialRow,
-    PlanConfig,
-    ProductionMath,
-    ProductionRecipe,
     TypeInfo,
 )
+from plan_service import update_prints, update_root_prints
+from production_math import ProductionMath
 
 
 class BomPlannerTests(unittest.TestCase):
@@ -47,15 +47,15 @@ class BomPlannerTests(unittest.TestCase):
 
     def build_result(self, blueprints, blueprint_settings=None, buy_components=None):
         return self.planner.build_result(
-            PlanConfig(
-                top_level_blueprints=self.settings_by_id(blueprints),
-                blueprint_settings=self.settings_by_id(blueprint_settings),
-                buy_component_type_ids=self.type_ids(buy_components),
+            BuildPlan(
+                root_prints=self.settings_by_id(blueprints),
+                print_overrides=self.settings_by_id(blueprint_settings),
+                buy_product_type_ids=self.type_ids(buy_components),
             )
         )
 
     def bp(self, name, material_efficiency=0, time_efficiency=0, runs=None, prints=1):
-        return BlueprintSettings(
+        return PrintSettings(
             name=name,
             blueprint_type_id=self.to_type(name),
             material_efficiency=material_efficiency,
@@ -67,7 +67,7 @@ class BomPlannerTests(unittest.TestCase):
     def settings_by_id(self, settings):
         if settings is None:
             return None
-        return {blueprint_settings.blueprint_type_id: blueprint_settings for blueprint_settings in settings}
+        return {print_settings.blueprint_type_id: print_settings for print_settings in settings}
 
     def type_ids(self, names):
         if names is None:
@@ -77,31 +77,28 @@ class BomPlannerTests(unittest.TestCase):
     def built_entries(self, result, blueprint_name):
         return [
             entry
-            for entry in result.rows
-            if entry.is_built and entry.blueprint_name == blueprint_name
+            for entry in rows(result)
+            if is_built(entry) and entry.blueprint_name == blueprint_name
         ]
 
-    def test_plan_config_normalizes_optional_collections(self):
-        plan = PlanConfig(top_level_blueprints=None, blueprint_settings=None, buy_component_type_ids=None)
+    def test_build_plan_normalizes_optional_collections(self):
+        plan = BuildPlan(root_prints=None, print_overrides=None, buy_product_type_ids=None)
 
         self.assertIsNone(plan.plan_id)
-        self.assertEqual(plan.top_level_blueprints, {})
-        self.assertEqual(plan.blueprint_settings, {})
-        self.assertEqual(plan.buy_component_type_ids, set())
-        settings = plan.settings_for(self.rhea_blueprint_typeid, "Rhea Blueprint")
-        self.assertEqual(settings.name, "Rhea Blueprint")
-        self.assertEqual(settings.blueprint_type_id, self.rhea_blueprint_typeid)
+        self.assertEqual(plan.root_prints, {})
+        self.assertEqual(plan.print_overrides, {})
+        self.assertEqual(plan.buy_product_type_ids, set())
 
     def test_root_me_reduces_direct_manufacturing_inputs(self):
         base_result = self.build_result([self.bp("Rhea Blueprint", 0, 0, 1, 1)])
         updated_result = self.build_result([self.bp("Rhea Blueprint", 10, 0, 1, 1)])
 
-        self.assertEqual(base_result.root.blueprint_settings.material_efficiency, 0)
-        self.assertEqual(updated_result.root.blueprint_settings.material_efficiency, 10)
-        self.assertEqual(base_result.entries[self.capital_jump_drive].quantity, 30.0)
-        self.assertEqual(updated_result.entries[self.capital_jump_drive].quantity, 27.0)
-        self.assertEqual(base_result.entries[self.charon].quantity, 1.0)
-        self.assertEqual(updated_result.entries[self.charon].quantity, 1.0)
+        self.assertEqual(base_result.roots[0].material_efficiency, 0)
+        self.assertEqual(updated_result.roots[0].material_efficiency, 10)
+        self.assertEqual(base_result.items_by_product_id[self.capital_jump_drive].quantity, 30.0)
+        self.assertEqual(updated_result.items_by_product_id[self.capital_jump_drive].quantity, 27.0)
+        self.assertEqual(base_result.items_by_product_id[self.charon].quantity, 1.0)
+        self.assertEqual(updated_result.items_by_product_id[self.charon].quantity, 1.0)
 
     def test_runs_for_auto_child_prints_rounds_up_to_whole_runs(self):
         recipe = ProductionRecipe(
@@ -113,7 +110,7 @@ class BomPlannerTests(unittest.TestCase):
             output_per_run=1000,
             time_per_run=0,
         )
-        settings = BlueprintSettings(name="Example Blueprint", blueprint_type_id=1, prints=2)
+        settings = PrintSettings(name="Example Blueprint", blueprint_type_id=1, prints=2)
         math = ProductionMath()
 
         self.assertEqual(math.runs_for(recipe, settings, 9500), 5.0)
@@ -129,7 +126,7 @@ class BomPlannerTests(unittest.TestCase):
             output_per_run=1,
             time_per_run=0,
         )
-        settings = BlueprintSettings(
+        settings = PrintSettings(
             name="Example Blueprint",
             blueprint_type_id=1,
             material_efficiency=3,
@@ -142,61 +139,61 @@ class BomPlannerTests(unittest.TestCase):
         estimate_planner = BomPlanner(self.idx, use_estimate_math=True)
 
         result = estimate_planner.build_result(
-            PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
+            BuildPlan(root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
         )
 
         self.assertTrue(result.use_estimate_math)
-        self.assertEqual(result.entries[self.reinforced_carbon_fiber].quantity, 29160.0)
-        self.assertEqual(result.entries[self.tritanium].quantity, 5078493.6)
+        self.assertEqual(result.items_by_product_id[self.reinforced_carbon_fiber].quantity, 29160.0)
+        self.assertEqual(result.items_by_product_id[self.tritanium].quantity, 5078493.6)
 
     def test_duplicate_component_demand_is_aggregated_before_child_expansion(self):
         idx = self.aggregate_fixture_index()
         result = BomPlanner(idx).build_result(
-            PlanConfig(
-                top_level_blueprints={
-                    101: BlueprintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1),
-                    102: BlueprintSettings(name="Root B Blueprint", blueprint_type_id=102, runs=1),
+            BuildPlan(
+                root_prints={
+                    101: PrintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1),
+                    102: PrintSettings(name="Root B Blueprint", blueprint_type_id=102, runs=1),
                 }
             )
         )
 
-        self.assertEqual(result.entries[300].quantity, 8.0)
-        self.assertEqual(result.entries[300].runs, 1.0)
-        self.assertEqual(result.entries[400].quantity, 100.0)
+        self.assertEqual(result.items_by_product_id[300].quantity, 8.0)
+        self.assertEqual(result.items_by_product_id[300].runs, 1.0)
+        self.assertEqual(result.items_by_product_id[400].quantity, 100.0)
 
     def test_bought_buildable_component_does_not_expand_child_materials(self):
         idx = self.aggregate_fixture_index()
         result = BomPlanner(idx).build_result(
-            PlanConfig(
-                top_level_blueprints={
-                    101: BlueprintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1),
+            BuildPlan(
+                root_prints={
+                    101: PrintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1),
                 },
-                buy_component_type_ids={300},
+                buy_product_type_ids={300},
             )
         )
 
-        self.assertTrue(result.entries[300].is_bought)
-        self.assertEqual(result.entries[300].tag, "BUY")
-        self.assertNotIn(400, result.entries)
-        self.assertNotIn(401, result.entries)
+        self.assertTrue(is_bought(result, result.items_by_product_id[300]))
+        self.assertEqual(item_tag(result, result.items_by_product_id[300]), "BUY")
+        self.assertNotIn(400, result.items_by_product_id)
+        self.assertNotIn(401, result.items_by_product_id)
 
     def test_children_under_bought_component_still_block_top_level_selection(self):
         idx = self.aggregate_fixture_index()
         planner = BomPlanner(idx)
-        plan = PlanConfig(
-            top_level_blueprints={
-                101: BlueprintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1),
+        plan = BuildPlan(
+            root_prints={
+                101: PrintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1),
             },
-            buy_component_type_ids={300},
+            buy_product_type_ids={300},
         )
 
         with self.assertRaisesRegex(ValueError, "already required by another selection"):
-            planner.add_top_level_blueprint(
+            planner.add_root_print(
                 plan,
-                BlueprintSettings(name="Child Y Blueprint", blueprint_type_id=104, runs=1),
+                PrintSettings(name="Child Y Blueprint", blueprint_type_id=104, runs=1),
             )
 
-        self.assertNotIn(104, plan.top_level_blueprints)
+        self.assertNotIn(104, plan.root_prints)
 
     def test_fuel_block_buy_decisions_stop_fuel_block_inputs(self):
         fuel_blocks = {
@@ -219,10 +216,10 @@ class BomPlannerTests(unittest.TestCase):
         for fuel_block_type_id in fuel_blocks:
             recipe = self.idx.build_recipe_for(fuel_block_type_id)
             fuel_block_inputs.update(row.material_typeid for row in self.idx.inputs(recipe.blueprint_type_id, recipe.activity))
-            self.assertTrue(result.entries[fuel_block_type_id].is_bought)
+            self.assertTrue(is_bought(result, result.items_by_product_id[fuel_block_type_id]))
 
         self.assertTrue(fuel_block_inputs)
-        self.assertTrue(fuel_block_inputs.isdisjoint(result.entries))
+        self.assertTrue(fuel_block_inputs.isdisjoint(result.items_by_product_id))
 
     def test_child_blueprint_override_rebuilds_descendants_inline(self):
         base_result = self.build_result([self.bp("Rhea Blueprint", 0, 0, 1, 1)])
@@ -232,12 +229,12 @@ class BomPlannerTests(unittest.TestCase):
         )
 
         updated_entry = self.built_entries(updated_result, self.jump_drive_blueprint_name)[0]
-        self.assertEqual(updated_entry.settings.material_efficiency, 10)
-        self.assertEqual(updated_entry.settings.time_efficiency, 20)
-        self.assertEqual(base_result.entries[self.reinforced_carbon_fiber].quantity, 29170.0)
-        self.assertEqual(updated_result.entries[self.reinforced_carbon_fiber].quantity, 28870.0)
-        self.assertEqual(base_result.entries[self.tritanium].quantity, 5079056.0)
-        self.assertEqual(updated_result.entries[self.tritanium].quantity, 4899056.0)
+        self.assertEqual(updated_entry.material_efficiency, 10)
+        self.assertEqual(updated_entry.time_efficiency, 20)
+        self.assertEqual(base_result.items_by_product_id[self.reinforced_carbon_fiber].quantity, 29170.0)
+        self.assertEqual(updated_result.items_by_product_id[self.reinforced_carbon_fiber].quantity, 28870.0)
+        self.assertEqual(base_result.items_by_product_id[self.tritanium].quantity, 5079056.0)
+        self.assertEqual(updated_result.items_by_product_id[self.tritanium].quantity, 4899056.0)
 
     def test_reaction_formula_me_and_te_are_ignored(self):
         base_result = self.build_result([self.bp("Rhea Blueprint", 0, 0, 1, 1)])
@@ -247,20 +244,20 @@ class BomPlannerTests(unittest.TestCase):
         )
 
         ferrogel_entry = self.built_entries(updated_result, self.ferrogel_formula_name)[0]
-        self.assertEqual(ferrogel_entry.settings.material_efficiency, 0)
-        self.assertEqual(ferrogel_entry.settings.time_efficiency, 0)
-        self.assertEqual(base_result.entries[self.fulleroferrocene].quantity, 660.0)
-        self.assertEqual(updated_result.entries[self.fulleroferrocene].quantity, 660.0)
+        self.assertEqual(ferrogel_entry.material_efficiency, 0)
+        self.assertEqual(ferrogel_entry.time_efficiency, 0)
+        self.assertEqual(base_result.items_by_product_id[self.fulleroferrocene].quantity, 660.0)
+        self.assertEqual(updated_result.items_by_product_id[self.fulleroferrocene].quantity, 660.0)
 
     def test_runs_and_prints_drive_output_quantity(self):
         result = self.build_result(
             [self.bp("Rhea Blueprint", 0, 0, 2, 3)],
         )
 
-        self.assertEqual(result.root.runs, 2.0)
-        self.assertEqual(result.root.prints, 3)
-        self.assertEqual(result.root.output_quantity, 6.0)
-        self.assertEqual(result.entries[self.capital_jump_drive].quantity, 180.0)
+        self.assertEqual(result.roots[0].runs, 2.0)
+        self.assertEqual(result.roots[0].prints, 3)
+        self.assertEqual(result.roots[0].output_quantity, 6.0)
+        self.assertEqual(result.items_by_product_id[self.capital_jump_drive].quantity, 180.0)
 
     def test_top_level_selection_cannot_duplicate_a_child_requirement(self):
         with self.assertRaisesRegex(ValueError, "already required by another selection"):
@@ -293,18 +290,18 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(result.roots[1].blueprint_name, self.auto_integrity_seal_blueprint_name)
 
     def test_top_level_selection_cannot_duplicate_existing_selection(self):
-        plan = PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
+        plan = BuildPlan(root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
 
         with self.assertRaisesRegex(ValueError, "already selected"):
-            self.planner.add_top_level_blueprint(plan, self.bp("Rhea Blueprint", 10, 0, 2, 2))
+            self.planner.add_root_print(plan, self.bp("Rhea Blueprint", 10, 0, 2, 2))
 
     def test_time_efficiency_reduces_total_time(self):
         base_result = self.build_result([self.bp("Rhea Blueprint", 0, 0, 1, 1)])
         updated_result = self.build_result([self.bp("Rhea Blueprint", 0, 20, 1, 1)])
         base_time = self.idx.activity_time(self.rhea_blueprint_typeid, 1)
 
-        self.assertEqual(base_result.root.total_time_seconds, base_time)
-        self.assertEqual(updated_result.root.total_time_seconds, base_time * 0.8)
+        self.assertEqual(base_result.roots[0].total_time_seconds, base_time)
+        self.assertEqual(updated_result.roots[0].total_time_seconds, base_time * 0.8)
 
     def test_buy_decision_stops_recursion_for_that_component(self):
         result = self.build_result(
@@ -312,16 +309,16 @@ class BomPlannerTests(unittest.TestCase):
             buy_components={"Capital Jump Drive"},
         )
 
-        self.assertIn(self.capital_jump_drive, result.request.buy_component_type_ids)
-        self.assertTrue(result.entries[self.capital_jump_drive].is_bought)
-        self.assertEqual(result.entries[self.capital_jump_drive].tag, "BUY")
-        self.assertIsNone(result.entries[self.capital_jump_drive].recipe)
-        self.assertEqual(result.entries[self.capital_jump_drive].quantity, 30.0)
+        self.assertIn(self.capital_jump_drive, result.plan.buy_product_type_ids)
+        self.assertTrue(is_bought(result, result.items_by_product_id[self.capital_jump_drive]))
+        self.assertEqual(item_tag(result, result.items_by_product_id[self.capital_jump_drive]), "BUY")
+        self.assertIsNone(result.items_by_product_id[self.capital_jump_drive].blueprint_type_id)
+        self.assertEqual(result.items_by_product_id[self.capital_jump_drive].quantity, 30.0)
         self.assertNotIn(
             self.jump_drive_blueprint_name,
-            {entry.blueprint_name for entry in result.rows if entry.is_built},
+            {entry.blueprint_name for entry in rows(result) if is_built(entry)},
         )
-        self.assertEqual(result.entries[self.wetware_mainframe].quantity, 1.0)
+        self.assertEqual(result.items_by_product_id[self.wetware_mainframe].quantity, 1.0)
 
     def test_child_expansion_prefers_published_blueprint_when_multiple_producers_exist(self):
         recipe = self.idx.build_recipe_for(self.tungsten_carbide)
@@ -335,21 +332,21 @@ class BomPlannerTests(unittest.TestCase):
             buy_components={"Capital Jump Drive"},
         )
 
-        shopping_list = result.get_shopping_list()
+        shopping_list = shopping_list_for(result)
         names = {material["name"] for material in shopping_list}
         type_ids = [material["type_id"] for material in shopping_list]
 
         self.assertIn("Tritanium", names)
         self.assertIn("Capital Jump Drive", names)
         self.assertNotIn("Charon", names)
-        self.assertEqual(result.entries[self.capital_jump_drive].tag, "BUY")
+        self.assertEqual(item_tag(result, result.items_by_product_id[self.capital_jump_drive]), "BUY")
         self.assertEqual(type_ids, sorted(type_ids))
 
     def test_shopping_list_can_filter_minerals_and_gas(self):
         result = self.build_result([self.bp("Rhea Blueprint", 0, 0, 1, 1)])
 
-        minerals = {material["name"] for material in result.get_shopping_list("minerals")}
-        gas = {material["name"] for material in result.get_shopping_list("gas")}
+        minerals = {material["name"] for material in shopping_list_for(result, "minerals")}
+        gas = {material["name"] for material in shopping_list_for(result, "gas")}
 
         self.assertIn("Tritanium", minerals)
         self.assertIn("Morphite", minerals)
@@ -362,7 +359,7 @@ class BomPlannerTests(unittest.TestCase):
         result = self.build_result([self.bp("Rhea Blueprint", 0, 0, 1, 1)])
 
         with self.assertRaisesRegex(ValueError, "Unknown shopping list group"):
-            result.get_shopping_list("moon")
+            shopping_list_for(result, "moon")
 
     def test_print_shopping_list_uses_plain_rows(self):
         from prints import print_shopping_list
@@ -376,13 +373,14 @@ class BomPlannerTests(unittest.TestCase):
         self.assertIs(result, shopping_list)
         self.assertEqual(output.getvalue(), "\nShopping list:\n  Tritanium 12\n")
 
-    def test_plan_config_applies_top_level_update(self):
-        plan = PlanConfig(
+    def test_plan_service_applies_root_print_update(self):
+        plan = BuildPlan(
             plan_id="test-plan",
-            top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
+            root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
         )
 
-        plan.update_top_level_blueprints(
+        update_root_prints(
+            plan,
             {
                 self.rhea_blueprint_typeid: {
                     "material_efficiency": 10,
@@ -394,51 +392,53 @@ class BomPlannerTests(unittest.TestCase):
         )
         result = self.planner.build_result(plan)
 
-        settings = plan.top_level_blueprints[self.rhea_blueprint_typeid]
+        settings = plan.root_prints[self.rhea_blueprint_typeid]
         self.assertEqual(plan.plan_id, "test-plan")
         self.assertEqual(settings.material_efficiency, 10)
         self.assertEqual(settings.time_efficiency, 20)
         self.assertEqual(settings.runs, 2.0)
         self.assertEqual(settings.prints, 3)
-        self.assertEqual(result.root.output_quantity, 6.0)
+        self.assertEqual(result.roots[0].output_quantity, 6.0)
 
-    def test_plan_config_updates_only_the_selected_plan_object(self):
-        first_plan = PlanConfig(
+    def test_plan_service_updates_only_the_selected_plan_object(self):
+        first_plan = BuildPlan(
             plan_id="first-plan",
-            top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
+            root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
         )
-        second_plan = PlanConfig(
+        second_plan = BuildPlan(
             plan_id="second-plan",
-            top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
+            root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
         )
 
-        first_plan.update_top_level_blueprints({self.rhea_blueprint_typeid: {"material_efficiency": 10}})
+        update_root_prints(first_plan, {self.rhea_blueprint_typeid: {"material_efficiency": 10}})
 
-        self.assertEqual(first_plan.top_level_blueprints[self.rhea_blueprint_typeid].material_efficiency, 10)
-        self.assertEqual(second_plan.top_level_blueprints[self.rhea_blueprint_typeid].material_efficiency, 0)
+        self.assertEqual(first_plan.root_prints[self.rhea_blueprint_typeid].material_efficiency, 10)
+        self.assertEqual(second_plan.root_prints[self.rhea_blueprint_typeid].material_efficiency, 0)
 
-    def test_plan_config_updates_selected_blueprints_without_depth(self):
-        plan = PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
+    def test_plan_service_updates_selected_prints_without_depth(self):
+        plan = BuildPlan(root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
         jump_drive_id = self.to_type("Capital Jump Drive Blueprint")
         propulsion_id = self.to_type("Capital Propulsion Engine Blueprint")
 
-        plan.update_blueprints(
+        update_prints(
+            plan,
             {
                 jump_drive_id: {"material_efficiency": 10},
                 propulsion_id: {"material_efficiency": 10},
             },
         )
 
-        self.assertEqual(plan.blueprint_settings[jump_drive_id].material_efficiency, 10)
-        self.assertEqual(plan.blueprint_settings[propulsion_id].material_efficiency, 10)
+        self.assertEqual(plan.print_overrides[jump_drive_id].material_efficiency, 10)
+        self.assertEqual(plan.print_overrides[propulsion_id].material_efficiency, 10)
 
-    def test_plan_config_applies_different_updates_in_one_request(self):
-        plan = PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
+    def test_plan_service_applies_different_updates_in_one_request(self):
+        plan = BuildPlan(root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
         jump_drive_id = self.to_type("Capital Jump Drive Blueprint")
         propulsion_id = self.to_type("Capital Propulsion Engine Blueprint")
         armor_plates_id = self.to_type("Capital Armor Plates Blueprint")
 
-        plan.update_blueprints(
+        update_prints(
+            plan,
             {
                 jump_drive_id: {"material_efficiency": 10},
                 propulsion_id: {"material_efficiency": 10},
@@ -446,15 +446,16 @@ class BomPlannerTests(unittest.TestCase):
             },
         )
 
-        self.assertEqual(plan.blueprint_settings[jump_drive_id].material_efficiency, 10)
-        self.assertEqual(plan.blueprint_settings[propulsion_id].material_efficiency, 10)
-        self.assertEqual(plan.blueprint_settings[armor_plates_id].material_efficiency, 8)
+        self.assertEqual(plan.print_overrides[jump_drive_id].material_efficiency, 10)
+        self.assertEqual(plan.print_overrides[propulsion_id].material_efficiency, 10)
+        self.assertEqual(plan.print_overrides[armor_plates_id].material_efficiency, 8)
 
-    def test_plan_config_rebuilds_after_child_update(self):
-        plan = PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
+    def test_plan_service_rebuilds_after_child_update(self):
+        plan = BuildPlan(root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
         jump_drive_id = self.to_type(self.jump_drive_blueprint_name)
 
-        plan.update_blueprints(
+        update_prints(
+            plan,
             {
                 jump_drive_id: {
                     "material_efficiency": 10,
@@ -464,45 +465,45 @@ class BomPlannerTests(unittest.TestCase):
         )
         result = self.planner.build_result(plan)
 
-        settings = plan.blueprint_settings[jump_drive_id]
+        settings = plan.print_overrides[jump_drive_id]
         self.assertEqual(settings.material_efficiency, 10)
         self.assertEqual(settings.time_efficiency, 20)
         self.assertIsNone(settings.runs)
-        self.assertEqual(result.entries[self.reinforced_carbon_fiber].quantity, 28870.0)
+        self.assertEqual(result.items_by_product_id[self.reinforced_carbon_fiber].quantity, 28870.0)
 
-    def test_plan_config_rejects_runs_update_below_top_level(self):
-        plan = PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
+    def test_plan_service_rejects_runs_update_below_root(self):
+        plan = BuildPlan(root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]))
 
         with self.assertRaisesRegex(ValueError, "runs can only be updated"):
-            plan.update_blueprints({self.to_type(self.jump_drive_blueprint_name): {"runs": 2}})
+            update_prints(plan, {self.to_type(self.jump_drive_blueprint_name): {"runs": 2}})
 
-    def test_plan_config_rejects_child_settings_with_manual_runs(self):
+    def test_build_plan_rejects_child_settings_with_manual_runs(self):
         with self.assertRaisesRegex(ValueError, "runs can only be set"):
-            PlanConfig(
-                top_level_blueprints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
-                blueprint_settings=self.settings_by_id([self.bp(self.jump_drive_blueprint_name, runs=2)]),
+            BuildPlan(
+                root_prints=self.settings_by_id([self.bp("Rhea Blueprint", 0, 0, 1, 1)]),
+                print_overrides=self.settings_by_id([self.bp(self.jump_drive_blueprint_name, runs=2)]),
             )
 
     def test_planner_add_top_level_blueprint_does_not_mutate_on_validation_failure(self):
-        plan = PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Raven Blueprint", 0, 0, 1, 1)]))
+        plan = BuildPlan(root_prints=self.settings_by_id([self.bp("Raven Blueprint", 0, 0, 1, 1)]))
         auto_integrity_seal = self.bp(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1)
 
         with self.assertRaisesRegex(ValueError, "already required by another selection"):
-            self.planner.add_top_level_blueprint(plan, auto_integrity_seal)
+            self.planner.add_root_print(plan, auto_integrity_seal)
 
-        self.assertNotIn(auto_integrity_seal.blueprint_type_id, plan.top_level_blueprints)
+        self.assertNotIn(auto_integrity_seal.blueprint_type_id, plan.root_prints)
 
     def test_planner_add_top_level_blueprint_mutates_after_validation_success(self):
-        plan = PlanConfig(top_level_blueprints=self.settings_by_id([self.bp("Heron Blueprint", 0, 0, 1, 1)]))
+        plan = BuildPlan(root_prints=self.settings_by_id([self.bp("Heron Blueprint", 0, 0, 1, 1)]))
         auto_integrity_seal = self.bp(self.auto_integrity_seal_blueprint_name, 0, 0, 1, 1)
 
-        self.planner.add_top_level_blueprint(plan, auto_integrity_seal)
+        self.planner.add_root_print(plan, auto_integrity_seal)
 
-        self.assertIn(auto_integrity_seal.blueprint_type_id, plan.top_level_blueprints)
+        self.assertIn(auto_integrity_seal.blueprint_type_id, plan.root_prints)
         self.assertEqual(len(self.planner.build_result(plan).roots), 2)
 
-    def test_plan_config_does_not_expose_unsafe_add_top_level_blueprint(self):
-        self.assertFalse(hasattr(PlanConfig, "add_top_level_blueprint"))
+    def test_build_plan_does_not_expose_unsafe_add_root_print(self):
+        self.assertFalse(hasattr(BuildPlan, "add_root_print"))
 
     def test_main_output_matches_example_fixture(self):
         from main import main

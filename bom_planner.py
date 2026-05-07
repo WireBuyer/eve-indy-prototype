@@ -2,144 +2,94 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from industry_index import IndustryIndex
-from model import (
-    MANUFACTURING_ACTIVITY,
-    BomEntry,
+from build_models import (
+    BuildPlan,
+    BuildRoot,
+    BuildTree,
+    BomItem,
     BomResult,
-    BlueprintSettings,
-    PlanConfig,
-    ProductionMath,
+    PrintSettings,
     ProductionRecipe,
 )
+from industry_index import IndustryIndex
+from model import MANUFACTURING_ACTIVITY
+from production_math import ProductionMath
 
 
 class BomPlanner:
-    """Builds a BOM in two passes: discover the blueprint tree, then aggregate demand."""
+    """Builds the recipe tree first, then calculates product demand by depth."""
 
     def __init__(self, idx: IndustryIndex, use_estimate_math: bool = False):
         self.idx = idx
         self.math = ProductionMath(use_estimate_math)
         self.use_estimate_math = use_estimate_math
 
-    def build_result(self, plan: PlanConfig) -> BomResult:
-        roots, max_depth_by_type_id = self._collect_top_level_blueprints(plan)
+    def build_result(self, plan: BuildPlan) -> BomResult:
+        tree = self._build_tree(plan)
         demand_by_type_id: defaultdict[int, float] = defaultdict(float)
-        root_entries: list[BomEntry] = []
-        entries: dict[int, BomEntry] = {}
+        root_items: list[BomItem] = []
+        items_by_product_id: dict[int, BomItem] = {}
 
-        # Roots seed material demand. Child blueprints are not expanded here because
-        # the same child product may be required by multiple parents and must be
-        # aggregated before its runs and child materials are calculated.
-        for recipe, settings in roots:
-            runs = self.math.runs_for(recipe, settings, None)
-            output_quantity = self.math.output_quantity(recipe, settings, runs)
-            root_entries.append(
-                BomEntry(
-                    type_id=recipe.product_type_id,
-                    name=recipe.product_name,
-                    quantity=output_quantity,
-                    depth=0,
-                    group_id=recipe.product_group_id,
-                    recipe=recipe,
-                    settings=settings,
-                    runs=runs,
-                    output_quantity=output_quantity,
-                    total_time_seconds=self.math.total_time(recipe, settings, runs),
-                )
-            )
+        # Root prints create initial material demand. Child prints are calculated
+        # later so repeated component demand is aggregated before runs are chosen.
+        for root in tree.roots:
+            root_items.append(self._record_build(root.recipe, root.settings, None, 0, demand_by_type_id))
 
-            for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
-                demand_by_type_id[material.material_typeid] += self.math.material_quantity(
-                    recipe,
-                    settings,
-                    material.quantity,
-                    runs,
-                )
-
-        # Depth order turns parent demand into child demand before deeper products
-        # are evaluated. A bought component stays terminal even if it has a recipe.
-        for type_id, depth in sorted(max_depth_by_type_id.items(), key=lambda item: (item[1], item[0])):
+        # Depth order ensures child demand exists before deeper products are built.
+        for type_id, depth in sorted(tree.max_depth_by_type_id.items(), key=lambda item: (item[1], item[0])):
             quantity = demand_by_type_id[type_id]
             if quantity <= 0:
                 continue
 
-            bought = type_id in plan.buy_component_type_ids
-            recipe = None if bought else self.idx.build_recipe_for(type_id)
+            recipe = None if type_id in plan.buy_product_type_ids else self.idx.build_recipe_for(type_id)
             if recipe is None:
-                entries[type_id] = BomEntry(
+                items_by_product_id[type_id] = BomItem(
                     type_id=type_id,
                     name=self.idx.type_name(type_id),
                     quantity=quantity,
                     depth=depth,
                     group_id=self.idx.group_id(type_id),
                     output_quantity=quantity,
-                    bought=bought,
                 )
                 continue
 
-            settings = plan.settings_for(recipe.blueprint_type_id, recipe.blueprint_name)
-            if recipe.activity != MANUFACTURING_ACTIVITY:
-                # Reaction formulas ignore ME/TE, but still respect runs and prints.
-                settings = BlueprintSettings(
-                    settings.name,
-                    settings.blueprint_type_id,
-                    runs=settings.runs,
-                    prints=settings.prints,
-                )
-
-            runs = self.math.runs_for(recipe, settings, quantity)
-            output_quantity = self.math.output_quantity(recipe, settings, runs)
-            entries[type_id] = BomEntry(
-                type_id=recipe.product_type_id,
-                name=recipe.product_name,
-                quantity=float(quantity),
-                depth=depth,
-                group_id=recipe.product_group_id,
-                recipe=recipe,
-                settings=settings,
-                runs=runs,
-                output_quantity=output_quantity,
-                total_time_seconds=self.math.total_time(recipe, settings, runs),
+            settings = plan.print_overrides.get(
+                recipe.blueprint_type_id,
+                PrintSettings(recipe.blueprint_name, blueprint_type_id=recipe.blueprint_type_id),
+            )
+            items_by_product_id[type_id] = self._record_build(
+                recipe,
+                settings,
+                quantity,
+                depth,
+                demand_by_type_id,
             )
 
-            for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
-                demand_by_type_id[material.material_typeid] += self.math.material_quantity(
-                    recipe,
-                    settings,
-                    material.quantity,
-                    runs,
-                )
-
         return BomResult(
-            request=plan,
-            roots=root_entries,
-            entries=entries,
+            plan=plan,
+            roots=root_items,
+            items_by_product_id=items_by_product_id,
+            buy_product_type_ids=set(plan.buy_product_type_ids),
             use_estimate_math=self.use_estimate_math,
         )
 
-    def _collect_top_level_blueprints(
-        self,
-        plan: PlanConfig,
-    ) -> tuple[list[tuple[ProductionRecipe, BlueprintSettings]], dict[int, int]]:
-        roots: list[tuple[ProductionRecipe, BlueprintSettings]] = []
+    def _build_tree(self, plan: BuildPlan) -> BuildTree:
+        roots: list[BuildRoot] = []
         selected_product_type_ids: set[int] = set()
         used_child_type_ids: set[int] = set()
         max_depth_by_type_id: dict[int, int] = {}
 
-        # This validates complete selected blueprint trees before quantity math.
-        # Buy choices do not hide descendants from duplicate selection checks.
-        for settings in plan.top_level_blueprints.values():
+        # Buy choices do not hide descendants here; the complete tree is needed
+        # to prevent a root print from duplicating any selected child product.
+        for settings in plan.root_prints.values():
             recipe = self.idx.recipe_for_blueprint(settings.blueprint_type_id)
             if recipe is None:
                 raise ValueError(f"{settings.name} does not produce an item.")
 
             child_type_ids: set[int] = set()
             child_depths: dict[int, int] = {}
-            self._walk_blueprint_tree(recipe, plan, child_type_ids, child_depths)
+            self._walk_recipe_tree(recipe, plan, child_type_ids, child_depths)
 
-            # Selected root products must be disjoint from other selected roots
-            # and from every descendant of every selected root.
             if recipe.product_type_id in selected_product_type_ids:
                 raise ValueError(
                     f"{recipe.blueprint_name} cannot be selected because "
@@ -159,26 +109,18 @@ class BomPlanner:
                     f"it requires an existing top-level selection: {conflict_name}."
                 )
 
-            if recipe.activity != MANUFACTURING_ACTIVITY:
-                # Reaction formulas ignore ME/TE, but still respect runs and prints.
-                settings = BlueprintSettings(
-                    settings.name,
-                    settings.blueprint_type_id,
-                    runs=settings.runs,
-                    prints=settings.prints,
-                )
-            roots.append((recipe, settings))
+            roots.append(BuildRoot(recipe, settings))
             selected_product_type_ids.add(recipe.product_type_id)
             used_child_type_ids.update(child_type_ids)
             for type_id, depth in child_depths.items():
                 max_depth_by_type_id[type_id] = max(depth, max_depth_by_type_id.get(type_id, 0))
 
-        return roots, max_depth_by_type_id
+        return BuildTree(roots, max_depth_by_type_id)
 
-    def _walk_blueprint_tree(
+    def _walk_recipe_tree(
         self,
         recipe: ProductionRecipe,
-        plan: PlanConfig,
+        plan: BuildPlan,
         descendants: set[int],
         max_depth_by_type_id: dict[int, int],
         depth: int = 0,
@@ -191,8 +133,6 @@ class BomPlanner:
             type_id = material.material_typeid
             material_depth = depth + 1
 
-            # Descendants are always recorded for duplicate blocking. Depth is
-            # recorded only while the branch is still part of the build BOM.
             descendants.add(type_id)
             if include_in_bom:
                 max_depth_by_type_id[type_id] = max(material_depth, max_depth_by_type_id.get(type_id, 0))
@@ -201,30 +141,73 @@ class BomPlanner:
             if child_recipe is None or child_recipe.blueprint_type_id in active_blueprints:
                 continue
 
-            # Bought components still get traversed for duplicate blocking, but
-            # their children are excluded from BOM output and demand expansion.
-            self._walk_blueprint_tree(
+            # Bought products still count as descendants for duplicate blocking,
+            # but their child products are excluded from BOM output.
+            self._walk_recipe_tree(
                 recipe=child_recipe,
                 plan=plan,
                 descendants=descendants,
                 max_depth_by_type_id=max_depth_by_type_id,
                 depth=material_depth,
                 active_blueprints=active_blueprints | {child_recipe.blueprint_type_id},
-                include_in_bom=include_in_bom and type_id not in plan.buy_component_type_ids,
+                include_in_bom=include_in_bom and type_id not in plan.buy_product_type_ids,
             )
 
-    def add_top_level_blueprint(self, plan: PlanConfig, settings: BlueprintSettings) -> None:
-        if settings.blueprint_type_id in plan.top_level_blueprints:
+    def _record_build(
+        self,
+        recipe: ProductionRecipe,
+        settings: PrintSettings,
+        required_quantity: float | None,
+        depth: int,
+        demand_by_type_id: defaultdict[int, float],
+    ) -> BomItem:
+        if recipe.activity != MANUFACTURING_ACTIVITY:
+            settings = PrintSettings(
+                settings.name,
+                settings.blueprint_type_id,
+                runs=settings.runs,
+                prints=settings.prints,
+            )
+
+        runs = self.math.runs_for(recipe, settings, required_quantity)
+        output_quantity = self.math.output_quantity(recipe, settings, runs)
+
+        for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
+            demand_by_type_id[material.material_typeid] += self.math.material_quantity(
+                recipe,
+                settings,
+                material.quantity,
+                runs,
+            )
+
+        return BomItem(
+            type_id=recipe.product_type_id,
+            name=recipe.product_name,
+            quantity=output_quantity if required_quantity is None else float(required_quantity),
+            depth=depth,
+            group_id=recipe.product_group_id,
+            blueprint_type_id=recipe.blueprint_type_id,
+            blueprint_name=recipe.blueprint_name,
+            material_efficiency=settings.material_efficiency,
+            time_efficiency=settings.time_efficiency,
+            runs=runs,
+            prints=settings.prints,
+            output_quantity=output_quantity,
+            total_time_seconds=self.math.total_time(recipe, settings, runs),
+        )
+
+    def add_root_print(self, plan: BuildPlan, settings: PrintSettings) -> None:
+        if settings.blueprint_type_id in plan.root_prints:
             raise ValueError(f"{settings.name} is already selected.")
 
         # Validate a temporary selection first. If validation raises, the caller's
         # plan remains unchanged.
-        self._collect_top_level_blueprints(
-            PlanConfig(
+        self._build_tree(
+            BuildPlan(
                 plan_id=plan.plan_id,
-                top_level_blueprints={**plan.top_level_blueprints, settings.blueprint_type_id: settings},
-                blueprint_settings=plan.blueprint_settings,
-                buy_component_type_ids=plan.buy_component_type_ids,
+                root_prints={**plan.root_prints, settings.blueprint_type_id: settings},
+                print_overrides=plan.print_overrides,
+                buy_product_type_ids=plan.buy_product_type_ids,
             )
         )
-        plan.top_level_blueprints[settings.blueprint_type_id] = settings
+        plan.root_prints[settings.blueprint_type_id] = settings

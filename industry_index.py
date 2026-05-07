@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from build_models import ProductionRecipe
 from model import (
     MANUFACTURING_ACTIVITY,
     PRODUCTION_ACTIVITIES,
@@ -7,7 +8,6 @@ from model import (
     BlueprintActivityTime,
     BlueprintProduct,
     MaterialRow,
-    ProductionRecipe,
     TypeInfo,
 )
 
