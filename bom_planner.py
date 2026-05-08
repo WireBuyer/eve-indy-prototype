@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from build_models import (
     BuildPlan,
-    BuildRoot,
     BuildTree,
     BomItem,
     BomResult,
@@ -25,19 +24,13 @@ class BomPlanner:
         self.use_estimate_math = use_estimate_math
 
     def build_result(self, plan: BuildPlan) -> BomResult:
-        tree = self._build_tree(plan)
-        demand_by_type_id: defaultdict[int, float] = defaultdict(float)
-        root_items: list[BomItem] = []
+        demand: defaultdict[int, float] = defaultdict(float)
+        tree = self._build_tree(plan, demand)
         items_by_product_id: dict[int, BomItem] = {}
 
-        # Root prints create initial material demand. Child prints are calculated
-        # later so repeated component demand is aggregated before runs are chosen.
-        for root in tree.roots:
-            root_items.append(self._record_build(root.recipe, root.settings, None, 0, demand_by_type_id))
-
         # Depth order ensures child demand exists before deeper products are built.
-        for type_id, depth in sorted(tree.max_depth_by_type_id.items(), key=lambda item: (item[1], item[0])):
-            quantity = demand_by_type_id[type_id]
+        for type_id, depth in sorted(tree.depths.items(), key=lambda item: (item[1], item[0])):
+            quantity = demand[type_id]
             if quantity <= 0:
                 continue
 
@@ -62,22 +55,23 @@ class BomPlanner:
                 settings,
                 quantity,
                 depth,
-                demand_by_type_id,
+                demand,
             )
 
         return BomResult(
             plan=plan,
-            roots=root_items,
+            roots=tree.roots,
             items_by_product_id=items_by_product_id,
             buy_product_type_ids=set(plan.buy_product_type_ids),
             use_estimate_math=self.use_estimate_math,
         )
 
-    def _build_tree(self, plan: BuildPlan) -> BuildTree:
-        roots: list[BuildRoot] = []
-        selected_product_type_ids: set[int] = set()
-        used_child_type_ids: set[int] = set()
-        max_depth_by_type_id: dict[int, int] = {}
+    def _build_tree(self, plan: BuildPlan, demand: defaultdict[int, float] | None = None) -> BuildTree:
+        roots: list[BomItem] = []
+        selected_products: set[int] = set()
+        used_children: set[int] = set()
+        depths: dict[int, int] = {}
+        demand = defaultdict(float) if demand is None else demand
 
         # Buy choices do not hide descendants here; the complete tree is needed
         # to prevent a root print from duplicating any selected child product.
@@ -86,22 +80,22 @@ class BomPlanner:
             if recipe is None:
                 raise ValueError(f"{settings.name} does not produce an item.")
 
-            child_type_ids: set[int] = set()
+            children: set[int] = set()
             child_depths: dict[int, int] = {}
-            self._walk_recipe_tree(recipe, plan, child_type_ids, child_depths)
+            self._walk_recipe_tree(recipe, plan, children, child_depths)
 
-            if recipe.product_type_id in selected_product_type_ids:
+            if recipe.product_type_id in selected_products:
                 raise ValueError(
                     f"{recipe.blueprint_name} cannot be selected because "
                     f"{recipe.product_name} is already selected."
                 )
-            if recipe.product_type_id in used_child_type_ids:
+            if recipe.product_type_id in used_children:
                 raise ValueError(
                     f"{recipe.blueprint_name} cannot be selected because "
                     f"{recipe.product_name} is already required by another selection."
                 )
 
-            conflicting_roots = selected_product_type_ids.intersection(child_type_ids)
+            conflicting_roots = selected_products.intersection(children)
             if conflicting_roots:
                 conflict_name = self.idx.type_name(next(iter(conflicting_roots)))
                 raise ValueError(
@@ -109,20 +103,20 @@ class BomPlanner:
                     f"it requires an existing top-level selection: {conflict_name}."
                 )
 
-            roots.append(BuildRoot(recipe, settings))
-            selected_product_type_ids.add(recipe.product_type_id)
-            used_child_type_ids.update(child_type_ids)
+            roots.append(self._record_build(recipe, settings, None, 0, demand))
+            selected_products.add(recipe.product_type_id)
+            used_children.update(children)
             for type_id, depth in child_depths.items():
-                max_depth_by_type_id[type_id] = max(depth, max_depth_by_type_id.get(type_id, 0))
+                depths[type_id] = max(depth, depths.get(type_id, 0))
 
-        return BuildTree(roots, max_depth_by_type_id)
+        return BuildTree(roots, depths)
 
     def _walk_recipe_tree(
         self,
         recipe: ProductionRecipe,
         plan: BuildPlan,
         descendants: set[int],
-        max_depth_by_type_id: dict[int, int],
+        depths: dict[int, int],
         depth: int = 0,
         active_blueprints: set[int] | None = None,
         include_in_bom: bool = True,
@@ -135,7 +129,7 @@ class BomPlanner:
 
             descendants.add(type_id)
             if include_in_bom:
-                max_depth_by_type_id[type_id] = max(material_depth, max_depth_by_type_id.get(type_id, 0))
+                depths[type_id] = max(material_depth, depths.get(type_id, 0))
 
             child_recipe = self.idx.build_recipe_for(type_id)
             if child_recipe is None or child_recipe.blueprint_type_id in active_blueprints:
@@ -147,7 +141,7 @@ class BomPlanner:
                 recipe=child_recipe,
                 plan=plan,
                 descendants=descendants,
-                max_depth_by_type_id=max_depth_by_type_id,
+                depths=depths,
                 depth=material_depth,
                 active_blueprints=active_blueprints | {child_recipe.blueprint_type_id},
                 include_in_bom=include_in_bom and type_id not in plan.buy_product_type_ids,
@@ -159,7 +153,7 @@ class BomPlanner:
         settings: PrintSettings,
         required_quantity: float | None,
         depth: int,
-        demand_by_type_id: defaultdict[int, float],
+        demand: defaultdict[int, float],
     ) -> BomItem:
         if recipe.activity != MANUFACTURING_ACTIVITY:
             settings = PrintSettings(
@@ -173,7 +167,7 @@ class BomPlanner:
         output_quantity = self.math.output_quantity(recipe, settings, runs)
 
         for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
-            demand_by_type_id[material.material_typeid] += self.math.material_quantity(
+            demand[material.material_typeid] += self.math.material_quantity(
                 recipe,
                 settings,
                 material.quantity,

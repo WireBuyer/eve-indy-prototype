@@ -56,18 +56,6 @@ class ProductionRecipe:
 
 
 @dataclass(frozen=True)
-class BuildRoot:
-    recipe: ProductionRecipe
-    settings: PrintSettings
-
-
-@dataclass(frozen=True)
-class BuildTree:
-    roots: list[BuildRoot]
-    max_depth_by_type_id: dict[int, int]
-
-
-@dataclass(frozen=True)
 class BomItem:
     type_id: int
     name: str
@@ -82,6 +70,12 @@ class BomItem:
     prints: int = 1
     output_quantity: float = 0.0
     total_time_seconds: float = 0.0
+
+
+@dataclass(frozen=True)
+class BuildTree:
+    roots: list[BomItem]
+    depths: dict[int, int]
 
 
 @dataclass(frozen=True)
