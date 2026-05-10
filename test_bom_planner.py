@@ -320,7 +320,7 @@ class BomPlannerTests(unittest.TestCase):
         )
         self.assertEqual(result.items_by_product_id[self.wetware_mainframe].quantity, 1.0)
 
-    def test_child_expansion_prefers_published_blueprint_when_multiple_producers_exist(self):
+    def test_child_expansion_uses_published_blueprint_mapping(self):
         recipe = self.idx.build_recipe_for(self.tungsten_carbide)
 
         self.assertTrue(self.idx.is_published_type(recipe.blueprint_type_id))
@@ -537,10 +537,10 @@ class BomPlannerTests(unittest.TestCase):
             (104, MANUFACTURING_ACTIVITY): BlueprintProduct(104, MANUFACTURING_ACTIVITY, 401, 1),
         }
         bp_by_product = {
-            201: [bp_products[(101, MANUFACTURING_ACTIVITY)]],
-            202: [bp_products[(102, MANUFACTURING_ACTIVITY)]],
-            300: [bp_products[(103, MANUFACTURING_ACTIVITY)]],
-            401: [bp_products[(104, MANUFACTURING_ACTIVITY)]],
+            201: bp_products[(101, MANUFACTURING_ACTIVITY)],
+            202: bp_products[(102, MANUFACTURING_ACTIVITY)],
+            300: bp_products[(103, MANUFACTURING_ACTIVITY)],
+            401: bp_products[(104, MANUFACTURING_ACTIVITY)],
         }
         materials = {
             (101, MANUFACTURING_ACTIVITY): [MaterialRow(101, MANUFACTURING_ACTIVITY, 300, 4)],

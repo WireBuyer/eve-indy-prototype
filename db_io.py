@@ -11,7 +11,7 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
     Returns: (inv_types, bp_products, bp_by_product, materials, activities)
     - inv_types: typeID -> TypeInfo (only published types)
     - bp_products: (blueprint_typeID, activityID) -> `BlueprintProduct` (blueprint output)
-    - bp_by_product: productTypeID -> list of `BlueprintProduct` (reverse index: which blueprints produce a product)
+    - bp_by_product: productTypeID -> `BlueprintProduct` (published blueprint that produces a product)
     - materials: (blueprint_typeID, activityID) -> list of `MaterialRow` (blueprint inputs)
     - activity_times: (typeID, activityID) -> `BlueprintActivityTime` (time row for that blueprint/activity)
     """
@@ -33,10 +33,17 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         mgroup = int(marketGroupID) if marketGroupID is not None else None
         inv_types[tid] = TypeInfo(type_id=tid, name=name, volume=vol, icon_id=icon, group_id=group, market_group_id=mgroup)
 
-    # Load industryActivityProducts - blueprint outputs
-    cur.execute('SELECT typeID, activityID, productTypeID, quantity FROM "industryActivityProducts"')
+    # Load industryActivityProducts - published blueprint outputs
+    cur.execute(
+        '''
+        SELECT p.typeID, p.activityID, p.productTypeID, p.quantity
+        FROM "industryActivityProducts" p
+        JOIN "invTypes" bp ON bp.typeID = p.typeID
+        WHERE bp.published = 1
+        '''
+    )
     bp_products = {}
-    bp_by_product = defaultdict(list)
+    bp_by_product = {}
     for typeID, activityID, productTypeID, qty in cur.fetchall():
         tid = int(typeID)
         act = int(activityID)
@@ -48,12 +55,21 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         key = (tid, act)
         if key in bp_products:
             raise ValueError(f"Multiple production outputs found for blueprint {tid}, activity {act}")
+        if ptype in bp_by_product:
+            raise ValueError(f"Multiple published production blueprints found for product {ptype}")
         bp_products[key] = row
-        bp_by_product[ptype].append(row)
+        bp_by_product[ptype] = row
 
-    # Load industryActivityMaterials - blueprint inputs
+    # Load industryActivityMaterials - published blueprint inputs
     materials = defaultdict(list)
-    cur.execute('SELECT typeID, activityID, materialTypeID, quantity FROM "industryActivityMaterials"')
+    cur.execute(
+        '''
+        SELECT m.typeID, m.activityID, m.materialTypeID, m.quantity
+        FROM "industryActivityMaterials" m
+        JOIN "invTypes" bp ON bp.typeID = m.typeID
+        WHERE bp.published = 1
+        '''
+    )
     for typeID, activityID, materialTypeID, qty in cur.fetchall():
         tid = int(typeID)
         act = int(activityID)
@@ -63,7 +79,14 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
 
     # Load industryActivity - blueprint activity times
     # table columns: typeID, activityID, time
-    cur.execute('SELECT typeID, activityID, time FROM "industryActivity"')
+    cur.execute(
+        '''
+        SELECT a.typeID, a.activityID, a.time
+        FROM "industryActivity" a
+        JOIN "invTypes" bp ON bp.typeID = a.typeID
+        WHERE bp.published = 1
+        '''
+    )
     # use a single dict keyed by (typeID, activityID) -> BlueprintActivityTime to match other maps
     activity_times = {}
     for typeID, activityID, time in cur.fetchall():

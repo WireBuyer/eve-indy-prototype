@@ -3,7 +3,6 @@ from __future__ import annotations
 from build_models import ProductionRecipe
 from model import (
     MANUFACTURING_ACTIVITY,
-    PRODUCTION_ACTIVITIES,
     REACTION_ACTIVITY,
     BlueprintActivityTime,
     BlueprintProduct,
@@ -19,7 +18,7 @@ class IndustryIndex:
         self,
         inv_types: dict[int, TypeInfo],
         bp_products: dict[tuple[int, int], BlueprintProduct],
-        bp_by_product: dict[int, list[BlueprintProduct]],
+        bp_by_product: dict[int, BlueprintProduct],
         materials: dict[tuple[int, int], list[MaterialRow]],
         activity_times: dict[tuple[int, int], BlueprintActivityTime],
     ):
@@ -73,28 +72,8 @@ class IndustryIndex:
             return []
         return list(self._materials.get((blueprint_type_id, selected_activity), []))
 
-    def blueprints_for(self, product_type_id: int) -> list[BlueprintProduct]:
-        return list(self._bp_by_product.get(product_type_id, []))
-
-    def build_blueprint_for(self, product_type_id: int) -> BlueprintProduct | None:
-        blueprints = self.blueprints_for(product_type_id)
-        published_blueprints = [
-            blueprint
-            for blueprint in blueprints
-            if self.is_published_type(blueprint.type_id)
-        ]
-        selected_blueprints = published_blueprints or blueprints
-
-        for blueprint in selected_blueprints:
-            if blueprint.activity == MANUFACTURING_ACTIVITY:
-                return blueprint
-        for blueprint in selected_blueprints:
-            if blueprint.activity == REACTION_ACTIVITY:
-                return blueprint
-        return selected_blueprints[0] if selected_blueprints else None
-
     def build_recipe_for(self, product_type_id: int) -> ProductionRecipe | None:
-        blueprint = self.build_blueprint_for(product_type_id)
+        blueprint = self._bp_by_product.get(product_type_id)
         if blueprint is None:
             return None
         return self.recipe_from_product(blueprint)
