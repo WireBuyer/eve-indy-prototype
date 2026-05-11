@@ -39,7 +39,9 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         SELECT p.typeID, p.activityID, p.productTypeID, p.quantity
         FROM "industryActivityProducts" p
         JOIN "invTypes" bp ON bp.typeID = p.typeID
+        JOIN "invTypes" prod ON prod.typeID = p.productTypeID
         WHERE bp.published = 1
+        AND prod.published = 1
         '''
     )
     bp_products = {}
@@ -67,7 +69,9 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         SELECT m.typeID, m.activityID, m.materialTypeID, m.quantity
         FROM "industryActivityMaterials" m
         JOIN "invTypes" bp ON bp.typeID = m.typeID
+        JOIN "invTypes" mat ON mat.typeID = m.materialTypeID
         WHERE bp.published = 1
+        AND mat.published = 1
         '''
     )
     for typeID, activityID, materialTypeID, qty in cur.fetchall():
