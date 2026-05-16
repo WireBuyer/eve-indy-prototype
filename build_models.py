@@ -73,12 +73,6 @@ class BomItem:
 
 
 @dataclass(frozen=True)
-class BuildTree:
-    roots: list[BomItem]
-    depths: dict[int, int]
-
-
-@dataclass(frozen=True)
 class BomResult:
     plan: BuildPlan
     roots: list[BomItem]

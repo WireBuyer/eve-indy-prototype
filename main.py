@@ -7,8 +7,9 @@ from prints import *
 
 # Selection of what to make
 TOP_LEVEL_BLUEPRINTS = [
-    ("Heron Blueprint", 0, 0, 1, 1),
-    ("Raven Blueprint", 3, 14, 1, 1),
+    # ("Heron Blueprint", 0, 0, 1, 1),
+    ("Raven Blueprint", 3, 14, 1, 2),
+    ("Rokh Blueprint", 5, 14, 1, 1),
     # ("Charon Blueprint", 10, 20, 1, 1),
 ]
 
@@ -82,11 +83,11 @@ def main():
     # print_buy_components(idx, buy_product_type_ids)
     # print(f"\nTotal build time: {format_duration(result.total_time_seconds)}")
     # print_blueprint_settings(result)
-    print_depth_summary(result)
+    # print_depth_summary(result)
     shopping_list = shopping_list_for(result)
     # print_shopping_list(shopping_list)
-    print_shopping_list(shopping_list_for(result, "minerals"), "Minerals")
-    print_shopping_list(shopping_list_for(result, "gas"), "Gas")
+    # print_shopping_list(shopping_list_for(result, "minerals"), "Minerals")
+    # print_shopping_list(shopping_list_for(result, "gas"), "Gas")
 
 
 if __name__ == "__main__":

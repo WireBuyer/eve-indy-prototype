@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from build_models import (
     BuildPlan,
-    BuildTree,
     BomItem,
     BomResult,
     PrintSettings,
@@ -24,12 +23,21 @@ class BomPlanner:
         self.use_estimate_math = use_estimate_math
 
     def build_result(self, plan: BuildPlan) -> BomResult:
+        depths = self._build_tree(plan)
+
+        roots: list[BomItem] = []
         demand: defaultdict[int, float] = defaultdict(float)
-        tree = self._build_tree(plan, demand)
         items_by_product_id: dict[int, BomItem] = {}
 
+        # First get the root items built
+        for settings in plan.root_prints.values():
+            recipe = self.idx.recipe_for_blueprint(settings.blueprint_type_id)
+            if recipe is None:
+                raise ValueError(f"{settings.name} does not produce an item.")
+            roots.append(self._record_build(recipe, settings, None, 0, demand))
+
         # Depth order ensures child demand exists before deeper products are built.
-        for type_id, depth in sorted(tree.depths.items(), key=lambda item: (item[1], item[0])):
+        for type_id, depth in sorted(depths.items(), key=lambda item: (item[1], item[0])):
             quantity = demand[type_id]
             if quantity <= 0:
                 continue
@@ -60,18 +68,16 @@ class BomPlanner:
 
         return BomResult(
             plan=plan,
-            roots=tree.roots,
+            roots=roots,
             items_by_product_id=items_by_product_id,
             buy_product_type_ids=set(plan.buy_product_type_ids),
             use_estimate_math=self.use_estimate_math,
         )
 
-    def _build_tree(self, plan: BuildPlan, demand: defaultdict[int, float] | None = None) -> BuildTree:
-        roots: list[BomItem] = []
+    def _build_tree(self, plan: BuildPlan) -> dict[int, int]:
         selected_products: set[int] = set()
         used_children: set[int] = set()
         depths: dict[int, int] = {}
-        demand = defaultdict(float) if demand is None else demand
 
         # Buy choices do not hide descendants here; the complete tree is needed
         # to prevent a root print from duplicating any selected child product.
@@ -103,13 +109,12 @@ class BomPlanner:
                     f"it requires an existing top-level selection: {conflict_name}."
                 )
 
-            roots.append(self._record_build(recipe, settings, None, 0, demand))
             selected_products.add(recipe.product_type_id)
             used_children.update(children)
             for type_id, depth in child_depths.items():
                 depths[type_id] = max(depth, depths.get(type_id, 0))
 
-        return BuildTree(roots, depths)
+        return depths
 
     def _walk_recipe_tree(
         self,
@@ -165,6 +170,7 @@ class BomPlanner:
 
         runs = self.math.runs_for(recipe, settings, required_quantity)
         output_quantity = self.math.output_quantity(recipe, settings, runs)
+        print("runs for", recipe.product_name, runs, "- output:", output_quantity)
 
         for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
             demand[material.material_typeid] += self.math.material_quantity(

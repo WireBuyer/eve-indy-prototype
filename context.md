@@ -27,9 +27,9 @@ Current design:
 - `BuildPlan.plan_id` identifies a plan in the prototype. Web/API code can keep a plan-id map outside the planner and pass the selected `BuildPlan` into `BomPlanner`.
 - `plan_service.py` owns plan mutation helpers such as root print updates, override updates, and buy toggles.
 - `ProductionRecipe` is immutable catalog data for one blueprint activity/product.
-- `BuildTree` holds calculated root `BomItem`s and child product depths. Duplicate tracking sets stay local inside tree building and are not returned.
 - `BomItem` is the final BOM item for one product type ID, including quantity, max depth, group, and build fields when the item is built.
 - `BomResult` is a plain result record containing roots, items keyed by product type ID, buy product IDs, and estimate flag.
+- `BomPlanner._build_tree()` returns only child product depths. Duplicate tracking sets stay local inside tree building and are not returned.
 - `bom_view.py` owns derived projections such as rows, depth layers, total time, item tags, and shopping lists.
 - `production_math.py` owns run, material, output, time, and temporary estimate math.
 - `BomPlanner(idx, use_estimate_math=True)` temporarily switches to the older fractional math. Delete that flag and the estimate branches in `ProductionMath` later without changing planner traversal.
