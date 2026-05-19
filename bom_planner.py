@@ -170,7 +170,6 @@ class BomPlanner:
 
         runs = self.math.runs_for(recipe, settings, required_quantity)
         output_quantity = self.math.output_quantity(recipe, settings, runs)
-        print("runs for", recipe.product_name, runs, "- output:", output_quantity)
 
         for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
             demand[material.material_typeid] += self.math.material_quantity(

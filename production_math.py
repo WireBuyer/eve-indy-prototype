@@ -39,14 +39,14 @@ class ProductionMath:
         runs: float,
     ) -> float:
         if self.use_estimate_math:
-            quantity = float(quantity_per_run) * runs * settings.prints
+            quantity = quantity_per_run * runs * settings.prints
             if recipe.activity == MANUFACTURING_ACTIVITY and quantity_per_run > 1.0:
                 return quantity * self.material_modifier(recipe, settings)
             return quantity
 
-        quantity_per_print = runs * float(quantity_per_run) * self.material_modifier(recipe, settings)
+        quantity_per_print = runs * quantity_per_run * self.material_modifier(recipe, settings)
         required_per_print = max(runs, ceil(round(quantity_per_print, 2)))
-        return float(required_per_print) * settings.prints
+        return required_per_print * settings.prints
 
     def total_time(self, recipe: ProductionRecipe, settings: PrintSettings, runs: float) -> float:
         seconds = recipe.time_per_run * runs * settings.prints
