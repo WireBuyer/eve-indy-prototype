@@ -37,22 +37,31 @@ class ProductionMath:
         settings: PrintSettings,
         quantity_per_run: float,
         runs: float,
+        structure_modifier: float = 1.0,
     ) -> float:
         if self.use_estimate_math:
             quantity = quantity_per_run * runs * settings.prints
             if recipe.activity == MANUFACTURING_ACTIVITY and quantity_per_run > 1.0:
-                return quantity * self.material_modifier(recipe, settings)
+                return quantity * self.material_modifier(recipe, settings) * structure_modifier
+            if recipe.activity != MANUFACTURING_ACTIVITY:
+                return quantity * structure_modifier
             return quantity
 
-        quantity_per_print = runs * quantity_per_run * self.material_modifier(recipe, settings)
+        quantity_per_print = runs * quantity_per_run * self.material_modifier(recipe, settings) * structure_modifier
         required_per_print = max(runs, ceil(round(quantity_per_print, 2)))
         return required_per_print * settings.prints
 
-    def total_time(self, recipe: ProductionRecipe, settings: PrintSettings, runs: float) -> float:
+    def total_time(
+        self,
+        recipe: ProductionRecipe,
+        settings: PrintSettings,
+        runs: float,
+        structure_modifier: float = 1.0,
+    ) -> float:
         seconds = recipe.time_per_run * runs * settings.prints
         if recipe.activity == MANUFACTURING_ACTIVITY:
-            return seconds * (1.0 - (settings.time_efficiency / 100.0))
-        return seconds
+            return seconds * (1.0 - (settings.time_efficiency / 100.0)) * structure_modifier
+        return seconds * structure_modifier
 
     def material_modifier(self, recipe: ProductionRecipe, settings: PrintSettings) -> float:
         if recipe.activity == MANUFACTURING_ACTIVITY:

@@ -1,14 +1,23 @@
 import sqlite3
 from collections import defaultdict
 
-from model import PRODUCTION_ACTIVITIES, TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
+from model import (
+    PRODUCTION_ACTIVITIES,
+    BlueprintActivityTime,
+    BlueprintProduct,
+    MaterialRow,
+    RigAffectedProductGroup,
+    RigModifierSource,
+    TypeInfo,
+)
 from industry_index import IndustryIndex
 
 
 def load_tables(db_path: str = "eve.db") -> IndustryIndex:
     """Load relevant SDE tables from the SQLite DB and return in-memory maps.
 
-    Returns: (inv_types, bp_products, bp_by_product, materials, activities)
+    Returns an `IndustryIndex` with loaded production and rig lookup data.
+
     - inv_types: typeID -> TypeInfo (only published types)
     - bp_products: (blueprint_typeID, activityID) -> `BlueprintProduct` (blueprint output)
     - bp_by_product: productTypeID -> `BlueprintProduct` (published blueprint that produces a product)
@@ -99,6 +108,67 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         t = float(time) if time is not None else None
         activity_times[(tid, act)] = BlueprintActivityTime(type_id=tid, activity=act, time=t)
 
+    cur.execute(
+        '''
+        SELECT rigTypeID, activityKey, bonusType, dogmaAttributeID, filterID
+        FROM "rigIndustryModifierSources"
+        '''
+    )
+    rig_modifier_sources = defaultdict(list)
+    for rigTypeID, activityKey, bonusType, dogmaAttributeID, filterID in cur.fetchall():
+        row = RigModifierSource(
+            rig_type_id=int(rigTypeID),
+            activity_key=str(activityKey),
+            bonus_type=str(bonusType),
+            dogma_attribute_id=int(dogmaAttributeID),
+            filter_id=int(filterID) if filterID is not None else None,
+        )
+        rig_modifier_sources[row.rig_type_id].append(row)
+
+    cur.execute(
+        '''
+        SELECT rigTypeID, activityKey, bonusType, productGroupID, filterID
+        FROM "rigAffectedProductGroups"
+        '''
+    )
+    rig_affected_groups = defaultdict(set)
+    affected_groups_by_activity = defaultdict(set)
+    for rigTypeID, activityKey, bonusType, productGroupID, filterID in cur.fetchall():
+        row = RigAffectedProductGroup(
+            rig_type_id=int(rigTypeID),
+            activity_key=str(activityKey),
+            bonus_type=str(bonusType),
+            product_group_id=int(productGroupID),
+            filter_id=int(filterID) if filterID is not None else None,
+        )
+        key = (row.rig_type_id, row.activity_key, row.bonus_type)
+        rig_affected_groups[key].add(row.product_group_id)
+        affected_groups_by_activity[(row.activity_key, row.bonus_type)].add(row.product_group_id)
+
+    cur.execute(
+        '''
+        SELECT DISTINCT a.typeID, a.attributeID, a.valueFloat, a.valueInt
+        FROM "dgmTypeAttributes" a
+        JOIN "rigIndustryModifierSources" r ON r.rigTypeID = a.typeID
+        WHERE a.attributeID IN (2355, 2356, 2357, 2593, 2594, 2713, 2714)
+        '''
+    )
+    rig_attribute_values = defaultdict(dict)
+    for typeID, attributeID, valueFloat, valueInt in cur.fetchall():
+        value = valueFloat if valueFloat is not None else valueInt
+        if value is not None:
+            rig_attribute_values[int(typeID)][int(attributeID)] = float(value)
+
     conn.close()
     # return an index object that hides tuple-key usage
-    return IndustryIndex(inv_types, bp_products, bp_by_product, materials, activity_times)
+    return IndustryIndex(
+        inv_types,
+        bp_products,
+        bp_by_product,
+        materials,
+        activity_times,
+        dict(rig_modifier_sources),
+        dict(rig_affected_groups),
+        dict(affected_groups_by_activity),
+        dict(rig_attribute_values),
+    )

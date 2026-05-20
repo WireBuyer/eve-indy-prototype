@@ -12,7 +12,7 @@ SHOPPING_LIST_GROUPS = {
 
 
 def is_built(item: BomItem) -> bool:
-    return item.blueprint_type_id is not None
+    return item.build is not None
 
 
 def is_bought(result: BomResult, item: BomItem) -> bool:
@@ -45,8 +45,10 @@ def depth_layers(result: BomResult) -> dict[int, list[BomItem]]:
 
 
 def total_time_seconds(result: BomResult) -> float:
-    return sum(item.total_time_seconds for item in result.roots) + sum(
-        item.total_time_seconds for item in result.items_by_product_id.values()
+    return sum(item.build.total_time_seconds for item in result.roots if item.build is not None) + sum(
+        item.build.total_time_seconds
+        for item in result.items_by_product_id.values()
+        if item.build is not None
     )
 
 

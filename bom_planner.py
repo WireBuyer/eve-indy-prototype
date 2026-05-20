@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from build_models import (
+    BuildInfo,
     BuildPlan,
     BomItem,
     BomResult,
@@ -10,16 +11,23 @@ from build_models import (
     ProductionRecipe,
 )
 from industry_index import IndustryIndex
-from model import MANUFACTURING_ACTIVITY
+from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY
 from production_math import ProductionMath
+from structures import StructureBonusService, StructureConfig
 
 
 class BomPlanner:
-    """Builds the recipe tree first, then calculates product demand by depth."""
 
-    def __init__(self, idx: IndustryIndex, use_estimate_math: bool = False):
+    def __init__(
+        self,
+        idx: IndustryIndex,
+        structure_configs: dict[str, StructureConfig] | None = None,
+        use_estimate_math: bool = False,
+    ):
         self.idx = idx
         self.math = ProductionMath(use_estimate_math)
+        self.structure_bonus = StructureBonusService(idx)
+        self.structure_configs = structure_configs or {}
         self.use_estimate_math = use_estimate_math
 
     def build_result(self, plan: BuildPlan) -> BomResult:
@@ -34,7 +42,7 @@ class BomPlanner:
             recipe = self.idx.recipe_for_blueprint(settings.blueprint_type_id)
             if recipe is None:
                 raise ValueError(f"{settings.name} does not produce an item.")
-            roots.append(self._record_build(recipe, settings, None, 0, demand))
+            roots.append(self._record_build(plan, recipe, settings, None, 0, demand))
 
         # Depth order ensures child demand exists before deeper products are built.
         for type_id, depth in sorted(depths.items(), key=lambda item: (item[1], item[0])):
@@ -50,7 +58,6 @@ class BomPlanner:
                     quantity=quantity,
                     depth=depth,
                     group_id=self.idx.group_id(type_id),
-                    output_quantity=quantity,
                 )
                 continue
 
@@ -59,6 +66,7 @@ class BomPlanner:
                 PrintSettings(recipe.blueprint_name, blueprint_type_id=recipe.blueprint_type_id),
             )
             items_by_product_id[type_id] = self._record_build(
+                plan,
                 recipe,
                 settings,
                 quantity,
@@ -154,6 +162,7 @@ class BomPlanner:
 
     def _record_build(
         self,
+        plan: BuildPlan,
         recipe: ProductionRecipe,
         settings: PrintSettings,
         required_quantity: float | None,
@@ -170,6 +179,9 @@ class BomPlanner:
 
         runs = self.math.runs_for(recipe, settings, required_quantity)
         output_quantity = self.math.output_quantity(recipe, settings, runs)
+        structure_config = self._structure_config_for(plan, recipe)
+        structure_material_modifier = self.structure_bonus.material_modifier(structure_config, recipe)
+        structure_time_modifier = self.structure_bonus.time_modifier(structure_config, recipe)
 
         for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
             demand[material.material_typeid] += self.math.material_quantity(
@@ -177,6 +189,7 @@ class BomPlanner:
                 settings,
                 material.quantity,
                 runs,
+                structure_material_modifier,
             )
 
         return BomItem(
@@ -185,15 +198,32 @@ class BomPlanner:
             quantity=output_quantity if required_quantity is None else float(required_quantity),
             depth=depth,
             group_id=recipe.product_group_id,
-            blueprint_type_id=recipe.blueprint_type_id,
-            blueprint_name=recipe.blueprint_name,
-            material_efficiency=settings.material_efficiency,
-            time_efficiency=settings.time_efficiency,
-            runs=runs,
-            prints=settings.prints,
-            output_quantity=output_quantity,
-            total_time_seconds=self.math.total_time(recipe, settings, runs),
+            build=BuildInfo(
+                activity=recipe.activity,
+                blueprint_type_id=recipe.blueprint_type_id,
+                blueprint_name=recipe.blueprint_name,
+                material_efficiency=settings.material_efficiency,
+                time_efficiency=settings.time_efficiency,
+                runs=runs,
+                prints=settings.prints,
+                output_quantity=output_quantity,
+                total_time_seconds=self.math.total_time(recipe, settings, runs, structure_time_modifier),
+                structure_config_id=None if structure_config is None else structure_config.config_id,
+                structure_name=None if structure_config is None else structure_config.name,
+            ),
         )
+
+    def _structure_config_for(self, plan: BuildPlan, recipe: ProductionRecipe) -> StructureConfig | None:
+        config_id = plan.structure_overrides.get(recipe.blueprint_type_id)
+        if config_id is None and recipe.activity == MANUFACTURING_ACTIVITY:
+            config_id = plan.primary_manufacturing_structure_id
+        if config_id is None and recipe.activity == REACTION_ACTIVITY:
+            config_id = plan.primary_reaction_structure_id
+        if config_id is None:
+            return None
+        if config_id not in self.structure_configs:
+            raise ValueError(f"Structure config not found: {config_id}")
+        return self.structure_configs[config_id]
 
     def add_root_print(self, plan: BuildPlan, settings: PrintSettings) -> None:
         if settings.blueprint_type_id in plan.root_prints:
@@ -207,6 +237,9 @@ class BomPlanner:
                 root_prints={**plan.root_prints, settings.blueprint_type_id: settings},
                 print_overrides=plan.print_overrides,
                 buy_product_type_ids=plan.buy_product_type_ids,
+                primary_manufacturing_structure_id=plan.primary_manufacturing_structure_id,
+                primary_reaction_structure_id=plan.primary_reaction_structure_id,
+                structure_overrides=plan.structure_overrides,
             )
         )
         plan.root_prints[settings.blueprint_type_id] = settings

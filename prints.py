@@ -79,17 +79,18 @@ def print_blueprint_settings(result: BomResult) -> None:
     for depth in sorted(blueprints_by_depth):
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
-        for item in sorted(blueprints_by_depth[depth], key=lambda item: item.blueprint_name):
+        for item in sorted(blueprints_by_depth[depth], key=lambda item: item.build.blueprint_name):
+            build = item.build
             rows.append(
                 (
-                    item.blueprint_name,
-                    f"output {fmt(item.output_quantity)}",
-                    f"time {format_duration(item.total_time_seconds)}",
+                    build.blueprint_name,
+                    f"output {fmt(build.output_quantity)}",
+                    f"time {format_duration(build.total_time_seconds)}",
                     format_job_cell(
-                        item.material_efficiency,
-                        item.time_efficiency,
-                        item.runs,
-                        item.prints,
+                        build.material_efficiency,
+                        build.time_efficiency,
+                        build.runs,
+                        build.prints,
                     ),
                 )
             )
@@ -100,11 +101,12 @@ def entry_detail_cell(item: BomItem) -> str:
     if not is_built(item):
         return ""
 
+    build = item.build
     return format_job_cell(
-        item.material_efficiency,
-        item.time_efficiency,
-        item.runs,
-        item.prints,
+        build.material_efficiency,
+        build.time_efficiency,
+        build.runs,
+        build.prints,
     )
 
 
@@ -112,11 +114,12 @@ def print_depth_summary(result: BomResult) -> None:
     print("\nDepth 0:")
     root_rows: list[tuple[str, str, str, str]] = []
     for root in result.roots:
+        build = root.build
         root_rows.append(
             (
                 root.name,
-                f"output {fmt(root.output_quantity)}",
-                f"time {format_duration(root.total_time_seconds)}",
+                f"output {fmt(build.output_quantity)}",
+                f"time {format_duration(build.total_time_seconds)}",
                 entry_detail_cell(root),
             )
         )
@@ -132,11 +135,12 @@ def print_depth_summary(result: BomResult) -> None:
         print(f"\nDepth {depth}:")
         rows: list[tuple[str, str, str, str]] = []
         for item in items:
+            build = item.build
             rows.append(
                 (
                     item.name,
                     build_qty_cell(result, item),
-                    f"time {format_duration(item.total_time_seconds)}" if item.total_time_seconds else "",
+                    f"time {format_duration(build.total_time_seconds)}" if build is not None and build.total_time_seconds else "",
                     entry_detail_cell(item),
                 )
             )

@@ -7,6 +7,7 @@ from model import (
     BlueprintActivityTime,
     BlueprintProduct,
     MaterialRow,
+    RigModifierSource,
     TypeInfo,
 )
 
@@ -21,12 +22,20 @@ class IndustryIndex:
         bp_by_product: dict[int, BlueprintProduct],
         materials: dict[tuple[int, int], list[MaterialRow]],
         activity_times: dict[tuple[int, int], BlueprintActivityTime],
+        rig_modifier_sources: dict[int, list[RigModifierSource]] | None = None,
+        rig_affected_groups: dict[tuple[int, str, str], set[int]] | None = None,
+        affected_groups_by_activity: dict[tuple[str, str], set[int]] | None = None,
+        rig_attribute_values: dict[int, dict[int, float]] | None = None,
     ):
         self._inv_types = inv_types
         self._bp_products = bp_products
         self._bp_by_product = bp_by_product
         self._materials = materials
         self._activity_times = activity_times
+        self._rig_modifier_sources = rig_modifier_sources or {}
+        self._rig_affected_groups = rig_affected_groups or {}
+        self._affected_groups_by_activity = affected_groups_by_activity or {}
+        self._rig_attribute_values = rig_attribute_values or {}
         self._type_id_by_name = {type_info.name: type_id for type_id, type_info in inv_types.items()}
 
     def get_type(self, type_id: int) -> TypeInfo | None:
@@ -97,6 +106,24 @@ class IndustryIndex:
     def group_id(self, type_id: int) -> int | None:
         type_info = self.get_type(type_id)
         return None if type_info is None else type_info.group_id
+
+    def rig_modifier_sources(self, rig_type_id: int, activity_key: str, bonus_type: str) -> list[RigModifierSource]:
+        return [
+            source
+            for source in self._rig_modifier_sources.get(rig_type_id, [])
+            if source.activity_key == activity_key and source.bonus_type == bonus_type
+        ]
+
+    def rig_affected_product_groups(self, rig_type_id: int, activity_key: str, bonus_type: str) -> set[int]:
+        return set(self._rig_affected_groups.get((rig_type_id, activity_key, bonus_type), set()))
+
+    def has_rig_for_product_group(self, activity_key: str, bonus_type: str, product_group_id: int | None) -> bool:
+        if product_group_id is None:
+            return False
+        return product_group_id in self._affected_groups_by_activity.get((activity_key, bonus_type), set())
+
+    def rig_attribute_value(self, rig_type_id: int, attribute_id: int) -> float | None:
+        return self._rig_attribute_values.get(rig_type_id, {}).get(attribute_id)
 
     @property
     def inv_types(self) -> dict[int, TypeInfo]:

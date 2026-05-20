@@ -36,11 +36,18 @@ class BuildPlan:
     root_prints: dict[int, PrintSettings] = field(default_factory=dict)
     print_overrides: dict[int, PrintSettings] = field(default_factory=dict)
     buy_product_type_ids: set[int] = field(default_factory=set)
+    primary_manufacturing_structure_id: str | None = None
+    primary_reaction_structure_id: str | None = None
+    structure_overrides: dict[int, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        self.root_prints = _copy_prints_by_id(self.root_prints, allow_runs=True)
-        self.print_overrides = _copy_prints_by_id(self.print_overrides, allow_runs=False)
+        self.root_prints = _copy_print_settings(self.root_prints, allow_runs=True)
+        self.print_overrides = _copy_print_settings(self.print_overrides, allow_runs=False)
         self.buy_product_type_ids = {int(type_id) for type_id in (self.buy_product_type_ids or set())}
+        self.structure_overrides = {
+            int(blueprint_type_id): str(config_id)
+            for blueprint_type_id, config_id in (self.structure_overrides or {}).items()
+        }
 
 
 @dataclass(frozen=True)
@@ -56,20 +63,28 @@ class ProductionRecipe:
 
 
 @dataclass(frozen=True)
-class BomItem:
-    type_id: int
-    name: str
-    quantity: float
-    depth: int
-    group_id: int | None = None
-    blueprint_type_id: int | None = None
-    blueprint_name: str | None = None
+class BuildInfo:
+    activity: int
+    blueprint_type_id: int
+    blueprint_name: str
     material_efficiency: int = 0
     time_efficiency: int = 0
     runs: float | None = None
     prints: int = 1
     output_quantity: float = 0.0
     total_time_seconds: float = 0.0
+    structure_config_id: str | None = None
+    structure_name: str | None = None
+
+
+@dataclass(frozen=True)
+class BomItem:
+    type_id: int
+    name: str
+    quantity: float
+    depth: int
+    group_id: int | None = None
+    build: BuildInfo | None = None
 
 
 @dataclass(frozen=True)
@@ -85,20 +100,20 @@ def _clamp(value: int, minimum: int, maximum: int) -> int:
     return max(minimum, min(maximum, int(value)))
 
 
-def _copy_prints_by_id(
+def _copy_print_settings(
     settings: dict[int, PrintSettings] | None,
     allow_runs: bool,
 ) -> dict[int, PrintSettings]:
     if settings is None:
         return {}
 
-    by_id: dict[int, PrintSettings] = {}
+    copied: dict[int, PrintSettings] = {}
     for blueprint_type_id, print_settings in settings.items():
         if blueprint_type_id != print_settings.blueprint_type_id:
             raise ValueError(f"Print settings key does not match {print_settings.name}.")
         if not allow_runs and print_settings.runs is not None:
             raise ValueError("runs can only be set for root prints")
-        if print_settings.blueprint_type_id in by_id:
+        if print_settings.blueprint_type_id in copied:
             raise ValueError(f"{print_settings.name} is already selected.")
-        by_id[print_settings.blueprint_type_id] = print_settings
-    return by_id
+        copied[print_settings.blueprint_type_id] = print_settings
+    return copied

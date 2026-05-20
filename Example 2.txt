@@ -1,55 +1,43 @@
 
 Depth 0:
-  Heron | output 1 | time 1h 40m 0s | ME 0 | TE 0 | runs 1 | prints 1
-  Raven | output 1 | time 4h 18m 0s | ME 3 | TE 14 | runs 1 | prints 1
+  Raven | output 2 | time 5h 33m 20s | ME 3 | TE 14 | runs 1 | prints 2
+  Rokh  | output 1 | time 2h 46m 40s | ME 5 | TE 14 | runs 1 | prints 1
 
 Depth 1:
-  Tritanium                        | qty 5,079,200 [BASE] |                   | 
-  Pyerite                          | qty 2,528,600 [BASE] |                   | 
-  Mexallon                         | qty 381,050 [BASE]   |                   | 
-  Isogen                           | qty 126,650 [BASE]   |                   | 
-  Nocxium                          | qty 15,132 [BASE]    |                   | 
-  Zydrine                          | qty 3,783 [BASE]     |                   | 
-  Megacyte                         | qty 1,892 [BASE]     |                   | 
-  Auto-Integrity Preservation Seal | qty 146              | time 1d 0h 30m 0s | ME 0 | TE 0 | runs 49 | prints 1
-  Core Temperature Regulator       | qty 1                | time 2h 13m 20s   | ME 0 | TE 0 | runs 1 | prints 1
-  Life Support Backup Unit         | qty 73               | time 12h 30m 0s   | ME 0 | TE 0 | runs 25 | prints 1
+  Tritanium                        | qty 14,520,656 [BASE] |                    | 
+  Pyerite                          | qty 7,260,329 [BASE]  |                    | 
+  Mexallon                         | qty 1,089,050 [BASE]  |                    | 
+  Isogen                           | qty 363,017 [BASE]    |                    | 
+  Nocxium                          | qty 43,564 [BASE]     |                    | 
+  Zydrine                          | qty 10,892 [BASE]     |                    | 
+  Megacyte                         | qty 5,446 [BASE]      |                    | 
+  Auto-Integrity Preservation Seal | qty 420               | time 1d 20h 48m 0s | ME 0 | TE 0 | runs 140 | prints 1
+  Core Temperature Regulator       | qty 3                 | time 4h 18m 24s    | ME 0 | TE 0 | runs 3 | prints 1
+  Life Support Backup Unit         | qty 211               | time 22h 55m 59s   | ME 0 | TE 0 | runs 71 | prints 1
 
 Depth 2:
-  Supertensile Plastics   | qty 196 [BASE] |                | 
-  Test Cultures           | qty 200 [BASE] |                | 
-  Chiral Structures       | qty 100 [BASE] |                | 
-  Nanites                 | qty 196 [BASE] |                | 
-  Water                   | qty 100 [BASE] |                | 
-  Viral Agent             | qty 200 [BASE] |                | 
-  Pressurized Oxidizers   | qty 500        | time 9h 0m 0s  | ME 0 | TE 0 | runs 3 | prints 1
-  Reinforced Carbon Fiber | qty 1,240      | time 21h 0m 0s | ME 0 | TE 0 | runs 7 | prints 1
+  Supertensile Plastics   | qty 544 [BASE] |                  | 
+  Test Cultures           | qty 549 [BASE] |                  | 
+  Chiral Structures       | qty 290 [BASE] |                  | 
+  Nanites                 | qty 544 [BASE] |                  | 
+  Water                   | qty 290 [BASE] |                  | 
+  Viral Agent             | qty 549 [BASE] |                  | 
+  Pressurized Oxidizers   | qty 1,450      | time 1d 0h 0m 0s | ME 0 | TE 0 | runs 8 | prints 1
+  Reinforced Carbon Fiber | qty 3,496      | time 2d 6h 0m 0s | ME 0 | TE 0 | runs 18 | prints 1
 
 Depth 3:
-  Carbon Polymers       | qty 600   | time 9h 0m 0s  | ME 0 | TE 0 | runs 3 | prints 1
-  Sulfuric Acid         | qty 600   | time 9h 0m 0s  | ME 0 | TE 0 | runs 3 | prints 1
-  Carbon Fiber          | qty 1,400 | time 21h 0m 0s | ME 0 | TE 0 | runs 7 | prints 1
-  Oxy-Organic Solvents  | qty 10    | time 3h 0m 0s  | ME 0 | TE 0 | runs 1 | prints 1
-  Thermosetting Polymer | qty 1,400 | time 21h 0m 0s | ME 0 | TE 0 | runs 7 | prints 1
+  Carbon Polymers       | qty 1,600 | time 1d 0h 0m 0s | ME 0 | TE 0 | runs 8 | prints 1
+  Sulfuric Acid         | qty 1,600 | time 1d 0h 0m 0s | ME 0 | TE 0 | runs 8 | prints 1
+  Carbon Fiber          | qty 3,600 | time 2d 6h 0m 0s | ME 0 | TE 0 | runs 18 | prints 1
+  Oxy-Organic Solvents  | qty 26    | time 9h 0m 0s    | ME 0 | TE 0 | runs 3 | prints 1
+  Thermosetting Polymer | qty 3,600 | time 2d 6h 0m 0s | ME 0 | TE 0 | runs 18 | prints 1
 
 Depth 4:
-  Nitrogen Fuel Block | qty 15 [BUY]    
-  Hydrogen Fuel Block | qty 35 [BUY]    
-  Helium Fuel Block   | qty 15 [BUY]    
-  Oxygen Fuel Block   | qty 40 [BUY]    
-  Hydrocarbons        | qty 3,000 [BASE]
-  Atmospheric Gases   | qty 3,000 [BASE]
-  Evaporite Deposits  | qty 1,000 [BASE]
-  Silicates           | qty 1,000 [BASE]
-
-Minerals:
-  Tritanium 5,079,200
-  Pyerite   2,528,600
-  Mexallon  381,050
-  Isogen    126,650
-  Nocxium   15,132
-  Zydrine   3,783
-  Megacyte  1,892
-
-Gas:
-  (none)
+  Nitrogen Fuel Block | qty 40 [BUY]    
+  Hydrogen Fuel Block | qty 90 [BUY]    
+  Helium Fuel Block   | qty 40 [BUY]    
+  Oxygen Fuel Block   | qty 105 [BUY]   
+  Hydrocarbons        | qty 8,600 [BASE]
+  Atmospheric Gases   | qty 8,600 [BASE]
+  Evaporite Deposits  | qty 2,600 [BASE]
+  Silicates           | qty 2,600 [BASE]
