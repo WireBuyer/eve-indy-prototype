@@ -7,7 +7,6 @@ from model import (
     BlueprintProduct,
     MaterialRow,
     RigAffectedProductGroup,
-    RigModifierSource,
     TypeInfo,
 )
 from industry_index import IndustryIndex
@@ -110,29 +109,11 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
 
     cur.execute(
         '''
-        SELECT rigTypeID, activityKey, bonusType, dogmaAttributeID, filterID
-        FROM "rigIndustryModifierSources"
-        '''
-    )
-    rig_modifier_sources = defaultdict(list)
-    for rigTypeID, activityKey, bonusType, dogmaAttributeID, filterID in cur.fetchall():
-        row = RigModifierSource(
-            rig_type_id=int(rigTypeID),
-            activity_key=str(activityKey),
-            bonus_type=str(bonusType),
-            dogma_attribute_id=int(dogmaAttributeID),
-            filter_id=int(filterID) if filterID is not None else None,
-        )
-        rig_modifier_sources[row.rig_type_id].append(row)
-
-    cur.execute(
-        '''
         SELECT rigTypeID, activityKey, bonusType, productGroupID, filterID
         FROM "rigAffectedProductGroups"
         '''
     )
     rig_affected_groups = defaultdict(set)
-    affected_groups_by_activity = defaultdict(set)
     for rigTypeID, activityKey, bonusType, productGroupID, filterID in cur.fetchall():
         row = RigAffectedProductGroup(
             rig_type_id=int(rigTypeID),
@@ -143,21 +124,19 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         )
         key = (row.rig_type_id, row.activity_key, row.bonus_type)
         rig_affected_groups[key].add(row.product_group_id)
-        affected_groups_by_activity[(row.activity_key, row.bonus_type)].add(row.product_group_id)
 
     cur.execute(
         '''
-        SELECT DISTINCT a.typeID, a.attributeID, a.valueFloat, a.valueInt
-        FROM "dgmTypeAttributes" a
-        JOIN "rigIndustryModifierSources" r ON r.rigTypeID = a.typeID
-        WHERE a.attributeID IN (2355, 2356, 2357, 2593, 2594, 2713, 2714)
+        SELECT DISTINCT mt.typeID, mt.metaGroupID
+        FROM "invMetaTypes" mt
+        JOIN "rigAffectedProductGroups" r ON r.rigTypeID = mt.typeID
         '''
     )
-    rig_attribute_values = defaultdict(dict)
-    for typeID, attributeID, valueFloat, valueInt in cur.fetchall():
-        value = valueFloat if valueFloat is not None else valueInt
-        if value is not None:
-            rig_attribute_values[int(typeID)][int(attributeID)] = float(value)
+    rig_meta_groups = {
+        int(typeID): int(metaGroupID)
+        for typeID, metaGroupID in cur.fetchall()
+        if metaGroupID is not None
+    }
 
     conn.close()
     # return an index object that hides tuple-key usage
@@ -167,8 +146,6 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         bp_by_product,
         materials,
         activity_times,
-        dict(rig_modifier_sources),
         dict(rig_affected_groups),
-        dict(affected_groups_by_activity),
-        dict(rig_attribute_values),
+        rig_meta_groups,
     )

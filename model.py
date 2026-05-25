@@ -43,15 +43,6 @@ class BlueprintActivityTime:
 
 
 @dataclass(frozen=True)
-class RigModifierSource:
-    rig_type_id: int
-    activity_key: str
-    bonus_type: str
-    dogma_attribute_id: int
-    filter_id: int | None
-
-
-@dataclass(frozen=True)
 class RigAffectedProductGroup:
     rig_type_id: int
     activity_key: str

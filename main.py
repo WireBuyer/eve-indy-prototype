@@ -2,7 +2,7 @@ from bom_planner import BomPlanner
 from bom_view import shopping_list_for
 from build_models import BuildPlan, PrintSettings
 from db_io import load_tables
-from structures import StructureConfig, structure_catalog
+from structures import RIG_TIER_BY_META_GROUP, RigMode, RigTier, StructureConfig, structure_catalog
 
 from prints import *
 
@@ -33,28 +33,6 @@ BUY_COMPONENTS = [
     "Oxygen Fuel Block",
 ]
 
-AVAILABLE_STRUCTURES = [
-    StructureConfig(
-        config_id="t2_large_raitaru",
-        name="T2 Large Raitaru",
-        structure="Raitaru",
-        security="highsec",
-        rig_mode="simple",
-        manufacturing_me="t2",
-        manufacturing_te="t2",
-    ),
-    StructureConfig(
-        config_id="component_azbel",
-        name="Component Azbel",
-        structure="Azbel",
-        security="highsec",
-        rig_mode="simple",
-        manufacturing_me="t1",
-        manufacturing_te="t1",
-    ),
-]
-
-
 STRUCTURE_OVERRIDES = {
     "Auto-Integrity Preservation Seal Blueprint": "component_azbel",
 }
@@ -62,16 +40,71 @@ STRUCTURE_OVERRIDES = {
 
 def main():
     idx = load_tables("eve.db")
-    structure_configs = structure_catalog(AVAILABLE_STRUCTURES)
-    planner = BomPlanner(idx, structure_configs=structure_configs)
-    # planner = BomPlanner(idx, use_estimate_math=True)
 
     def to_type(name: str) -> int:
         type_id = idx.find_type_id_by_name(name)
         if type_id is None:
             raise ValueError(f"Type not found: {name}")
         return type_id
+
+    def structure_config(
+        config_id: str,
+        name: str,
+        structure: str,
+        security: str,
+        rig_mode: RigMode = RigMode.SIMPLE,
+        me: RigTier | None = None,
+        te: RigTier | None = None,
+        rigs: list[str] | None = None,
+    ) -> StructureConfig:
+        def resolved_rig(rig_name: str) -> tuple[str, int, RigTier]:
+            rig_type_id = to_type(rig_name)
+            return rig_name, rig_type_id, RIG_TIER_BY_META_GROUP[idx.rig_meta_group(rig_type_id)]
+
+        return StructureConfig(
+            config_id=config_id,
+            name=name,
+            structure=structure,
+            security=security,
+            rig_mode=rig_mode,
+            me=me,
+            te=te,
+            rigs=[resolved_rig(rig_name) for rig_name in (rigs or [])],
+        )
     
+    available_structures = [
+        structure_config(
+            config_id="t2_large_raitaru",
+            name="T2 Large Raitaru",
+            structure="Raitaru",
+            security="highsec",
+            rig_mode=RigMode.SIMPLE,
+            me=RigTier.T2,
+            te=RigTier.T2,
+        ),
+        structure_config(
+            config_id="component_azbel",
+            name="Component Azbel",
+            structure="Azbel",
+            security="highsec",
+            rig_mode=RigMode.SIMPLE,
+            me=RigTier.T1,
+            te=RigTier.T1,
+        ),
+        structure_config(
+            config_id="advanced_large_ship_raitaru",
+            name="Advanced Large Ship Raitaru",
+            structure="Raitaru",
+            security="highsec",
+            rig_mode=RigMode.ADVANCED,
+            rigs=[
+                "Standup M-Set Basic Large Ship Manufacturing Material Efficiency II",
+                "Standup M-Set Basic Large Ship Manufacturing Time Efficiency II",
+            ],
+        ),
+    ]
+
+    # generate a key value dict of root prints with the blueprint type id as the key
     root_prints = {}
     for name, material_efficiency, time_efficiency, runs, prints in TOP_LEVEL_BLUEPRINTS:
         settings = PrintSettings(
@@ -84,6 +117,7 @@ def main():
         )
         root_prints[settings.blueprint_type_id] = settings
 
+    # generate a key value dict of print overrides with the blueprint type id as the key
     print_overrides = {}
     for name, material_efficiency, time_efficiency, runs, prints in BLUEPRINT_ME_UPDATES:
         settings = PrintSettings(
@@ -97,6 +131,10 @@ def main():
 
     buy_product_type_ids = {to_type(name) for name in BUY_COMPONENTS}
     structure_overrides = {to_type(name): config_id for name, config_id in STRUCTURE_OVERRIDES.items()}
+    # generates a key value dict of structure configs with the id as the key
+    structure_configs = structure_catalog(available_structures)
+    planner = BomPlanner(idx, structure_configs=structure_configs)
+    # planner = BomPlanner(idx, use_estimate_math=True)
 
     result = planner.build_result(
         BuildPlan(
