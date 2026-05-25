@@ -2,7 +2,7 @@ from bom_planner import BomPlanner
 from bom_view import shopping_list_for
 from build_models import BuildPlan, PrintSettings
 from db_io import load_tables
-from structures import RIG_TIER_BY_META_GROUP, RigMode, RigTier, StructureConfig, structure_catalog
+from structures import RIG_TIER_BY_META_GROUP, RigMode, RigTier, StructureConfig
 
 from prints import *
 
@@ -71,6 +71,9 @@ def main():
             te=te,
             rigs=[resolved_rig(rig_name) for rig_name in (rigs or [])],
         )
+
+    def structure_catalog(configs: list[StructureConfig]) -> dict[str, StructureConfig]:
+        return {config.config_id: config for config in configs}
     
     available_structures = [
         structure_config(

@@ -33,6 +33,9 @@ Current design:
 - `bom_view.py` owns derived projections such as rows, depth layers, total time, item tags, and shopping lists.
 - `production_math.py` owns run, material, output, time, and temporary estimate math.
 - `BomPlanner(idx, use_estimate_math=True)` temporarily switches to the older fractional math. Delete that flag and the estimate branches in `ProductionMath` later without changing planner traversal.
+- `structures/` owns structure bonus behavior. `models.py` contains structure config/enums, `bonus_data.py` contains static EVE structure/rig lookup values, and `service.py` contains `StructureBonusService`.
+- `StructureConfig` is the user-facing structure setup record. Simple mode uses `me`/`te` enum tiers directly and does not check rig affected groups. Advanced mode stores resolved rig tuples `(name, type_id, tier)` and checks the exact rig's affected product groups before applying a modifier.
+- Demo/setup code such as `main.py` may accept structure rig names, but should resolve them to type IDs and tiers before passing configs into `BomPlanner`.
 
 Important Spring Boot/API direction:
 The planner should keep using blueprint/product type IDs internally. UI/API code can still accept names for search/debug and resolve them to IDs before updating the plan.

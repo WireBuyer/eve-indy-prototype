@@ -18,7 +18,11 @@ from model import (
 )
 from plan_service import update_prints, update_root_prints
 from production_math import ProductionMath
-from structures import RigMode, RigTier, StructureConfig, structure_catalog
+from structures import RigMode, RigTier, StructureConfig
+
+
+def structure_catalog(configs: list[StructureConfig]) -> dict[str, StructureConfig]:
+    return {config.config_id: config for config in configs}
 
 
 class BomPlannerTests(unittest.TestCase):
