@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from industry_fees import JobFees
+
 
 @dataclass(frozen=True)
 class PrintSettings:
@@ -75,6 +77,7 @@ class BuildInfo:
     total_time_seconds: float = 0.0
     structure_config_id: str | None = None
     structure_name: str | None = None
+    fees: JobFees = field(default_factory=JobFees)
 
 
 @dataclass(frozen=True)

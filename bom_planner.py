@@ -11,6 +11,7 @@ from build_models import (
     ProductionRecipe,
 )
 from industry_index import IndustryIndex
+from industry_fees import IndustryFeeCalculator
 from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY
 from production_math import ProductionMath
 from structures import StructureBonusService, StructureConfig
@@ -23,9 +24,11 @@ class BomPlanner:
         idx: IndustryIndex,
         structure_configs: dict[str, StructureConfig] | None = None,
         use_estimate_math: bool = False,
+        fee_calculator: IndustryFeeCalculator | None = None,
     ):
         self.idx = idx
         self.math = ProductionMath(use_estimate_math)
+        self.fees = fee_calculator or IndustryFeeCalculator()
         self.structure_bonus = StructureBonusService(idx)
         self.structure_configs = structure_configs or {}
         self.use_estimate_math = use_estimate_math
@@ -182,8 +185,10 @@ class BomPlanner:
         structure_config = self._structure_config_for(plan, recipe)
         structure_material_modifier = self.structure_bonus.material_modifier(structure_config, recipe)
         structure_time_modifier = self.structure_bonus.time_modifier(structure_config, recipe)
+        materials = self.idx.inputs(recipe.blueprint_type_id, recipe.activity)
+        fees = self.fees.job_fees(materials, runs, settings.prints)
 
-        for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
+        for material in materials:
             demand[material.material_typeid] += self.math.material_quantity(
                 recipe,
                 settings,
@@ -210,6 +215,7 @@ class BomPlanner:
                 total_time_seconds=self.math.total_time(recipe, settings, runs, structure_time_modifier),
                 structure_config_id=None if structure_config is None else structure_config.config_id,
                 structure_name=None if structure_config is None else structure_config.name,
+                fees=fees,
             ),
         )
 

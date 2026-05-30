@@ -7,6 +7,7 @@ from bom_planner import BomPlanner
 from bom_view import is_bought, is_built, item_tag, rows, shopping_list_for
 from build_models import BuildPlan, PrintSettings, ProductionRecipe
 from db_io import load_tables
+from industry_fees import IndustryFeeCalculator
 from industry_index import IndustryIndex
 from model import (
     MANUFACTURING_ACTIVITY,
@@ -23,6 +24,14 @@ from structures import RigMode, RigTier, StructureConfig
 
 def structure_catalog(configs: list[StructureConfig]) -> dict[str, StructureConfig]:
     return {config.config_id: config for config in configs}
+
+
+class FixedPriceFeeCalculator(IndustryFeeCalculator):
+    def __init__(self, adjusted_prices: dict[int, float]):
+        self.adjusted_prices = adjusted_prices
+
+    def adjusted_price(self, type_id: int) -> float:
+        return self.adjusted_prices.get(type_id, 0.0)
 
 
 class BomPlannerTests(unittest.TestCase):
@@ -386,6 +395,55 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(result.items_by_product_id[300].quantity, 8.0)
         self.assertEqual(result.items_by_product_id[300].build.runs, 1.0)
         self.assertEqual(result.items_by_product_id[400].quantity, 100.0)
+
+    def test_built_jobs_record_scc_fee_breakdown(self):
+        idx = self.aggregate_fixture_index()
+        result = BomPlanner(
+            idx,
+            fee_calculator=FixedPriceFeeCalculator({300: 10.0, 400: 2.0, 401: 5.0}),
+        ).build_result(
+            BuildPlan(root_prints={101: PrintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1)})
+        )
+
+        root_fees = result.roots[0].build.fees
+        component_fees = result.items_by_product_id[300].build.fees
+
+        self.assertEqual(root_fees.scc_fee, 1.6)
+        self.assertEqual(root_fees.system_index_fee, 0.0)
+        self.assertEqual(root_fees.tax_fee, 0.0)
+        self.assertEqual(component_fees.scc_fee, 8.2)
+        self.assertEqual(component_fees.system_index_fee, 0.0)
+        self.assertEqual(component_fees.tax_fee, 0.0)
+        self.assertIsNone(result.items_by_product_id[400].build)
+
+    def test_scc_fee_uses_base_inputs_before_me_and_structure_modifiers(self):
+        idx = self.structure_fixture_index()
+        planner = BomPlanner(
+            idx,
+            fee_calculator=FixedPriceFeeCalculator({300: 10.0, 400: 2.0}),
+            structure_configs=structure_catalog(
+                [
+                    StructureConfig(
+                        config_id="raitaru",
+                        name="Raitaru",
+                        structure="Raitaru",
+                        security="highsec",
+                        me=RigTier.T1,
+                        te=RigTier.T1,
+                    )
+                ]
+            ),
+        )
+
+        result = planner.build_result(
+            BuildPlan(
+                root_prints={101: PrintSettings("Root Blueprint", 101, material_efficiency=10, runs=1)},
+                primary_manufacturing_structure_id="raitaru",
+            )
+        )
+
+        self.assertEqual(result.items_by_product_id[300].quantity, 88.0)
+        self.assertEqual(result.roots[0].build.fees.scc_fee, 40.0)
 
     def test_bought_buildable_component_does_not_expand_child_materials(self):
         idx = self.aggregate_fixture_index()
