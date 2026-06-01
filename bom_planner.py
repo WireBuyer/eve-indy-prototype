@@ -7,9 +7,11 @@ from build_models import (
     BuildPlan,
     BomItem,
     BomResult,
+    JobFees,
     PrintSettings,
     ProductionRecipe,
 )
+from fee_calc import JobFeeCalculator
 from industry_index import IndustryIndex
 from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY
 from production_math import ProductionMath
@@ -28,6 +30,8 @@ class BomPlanner:
         self.math = ProductionMath(use_estimate_math)
         self.structure_bonus = StructureBonusService(idx)
         self.structure_configs = structure_configs or {}
+        adjusted_prices = idx.adjusted_prices
+        self.fee_calculator = JobFeeCalculator(adjusted_prices) if adjusted_prices else None
         self.use_estimate_math = use_estimate_math
 
     def build_result(self, plan: BuildPlan) -> BomResult:
@@ -183,7 +187,18 @@ class BomPlanner:
         structure_material_modifier = self.structure_bonus.material_modifier(structure_config, recipe)
         structure_time_modifier = self.structure_bonus.time_modifier(structure_config, recipe)
 
-        for material in self.idx.inputs(recipe.blueprint_type_id, recipe.activity):
+        # need to pass materials into both the fee calculator and the modifier appliers
+        materials = self.idx.inputs(recipe.blueprint_type_id, recipe.activity)
+        fees = JobFees()
+        if self.fee_calculator is not None:
+            per_print_fees = self.fee_calculator.get_production_fees(materials, runs, 1)
+            fees = self.fee_calculator.get_production_fees(materials, runs, settings.prints)
+            print(f"{recipe.blueprint_name}: {per_print_fees}")
+            if settings.prints > 1:
+                print(f"|||| {recipe.blueprint_name}: {settings.prints} prints {fees}")
+
+        # apply the modifiers to get the needed quantity 
+        for material in materials:
             demand[material.material_typeid] += self.math.material_quantity(
                 recipe,
                 settings,
@@ -210,6 +225,7 @@ class BomPlanner:
                 total_time_seconds=self.math.total_time(recipe, settings, runs, structure_time_modifier),
                 structure_config_id=None if structure_config is None else structure_config.config_id,
                 structure_name=None if structure_config is None else structure_config.name,
+                fees=fees,
             ),
         )
 

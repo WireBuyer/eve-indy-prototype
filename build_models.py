@@ -61,6 +61,28 @@ class ProductionRecipe:
     time_per_run: float
     product_group_id: int | None = None
 
+@dataclass(frozen=True)
+class JobFees:
+    scc_surcharge: float = 0.0
+    index_fee: float = 0.0
+    tax_fee: float = 0.0
+
+    @property
+    def total(self) -> float:
+        return self.scc_surcharge + self.index_fee + self.tax_fee
+
+    def __str__(self) -> str:
+        return (
+            f"SCC surcharge {_format_isk(self.scc_surcharge)} | "
+            f"index fee {_format_isk(self.index_fee)} | "
+            # f"Tax {_format_isk(self.tax_fee)} | "
+            # f"Total {_format_isk(self.total)}"
+        )
+
+
+def _format_isk(value: float) -> str:
+    return f"{float(value):,.2f} ISK"
+
 
 @dataclass(frozen=True)
 class BuildInfo:
@@ -75,6 +97,7 @@ class BuildInfo:
     total_time_seconds: float = 0.0
     structure_config_id: str | None = None
     structure_name: str | None = None
+    fees: JobFees = field(default_factory=JobFees)
 
 
 @dataclass(frozen=True)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from build_models import ProductionRecipe
 from model import (
     MANUFACTURING_ACTIVITY,
@@ -31,6 +33,7 @@ class IndustryIndex:
         self._activity_times = activity_times
         self._rig_affected_groups = rig_affected_groups or {}
         self._rig_meta_groups = rig_meta_groups or {}
+        self._adjusted_prices: dict[int, float] = {}
         self._type_id_by_name = {type_info.name: type_id for type_id, type_info in inv_types.items()}
 
     def get_type(self, type_id: int) -> TypeInfo | None:
@@ -45,6 +48,15 @@ class IndustryIndex:
 
     def rig_meta_group(self, type_id: int) -> int | None:
         return self._rig_meta_groups.get(type_id)
+
+    def load_adjusted_prices(self, path: str = "adjusted_prices.json") -> None:
+        with open(path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        if not isinstance(data, dict):
+            raise ValueError("Adjusted price file must contain a JSON object.")
+
+        self._adjusted_prices = {int(type_id): float(price) for type_id, price in data.items()}
 
     def is_published_type(self, type_id: int) -> bool:
         return type_id in self._inv_types
@@ -112,3 +124,7 @@ class IndustryIndex:
     @property
     def inv_types(self) -> dict[int, TypeInfo]:
         return self._inv_types
+
+    @property
+    def adjusted_prices(self) -> dict[int, float]:
+        return dict(self._adjusted_prices)

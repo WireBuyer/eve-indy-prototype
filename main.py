@@ -10,7 +10,7 @@ from prints import *
 TOP_LEVEL_BLUEPRINTS = [
     # ("Heron Blueprint", 0, 0, 1, 1),
     # ("Raven Blueprint", 3, 14, 1, 2),
-    ("Rokh Blueprint", 5, 14, 1, 1),
+    ("Rokh Blueprint", 10, 14, 1, 1),
     # ("Charon Blueprint", 10, 20, 1, 1),
 ]
 
@@ -40,6 +40,7 @@ STRUCTURE_OVERRIDES = {
 
 def main():
     idx = load_tables("eve.db")
+    idx.load_adjusted_prices("adjusted_prices.json")
 
     def to_type(name: str) -> int:
         type_id = idx.find_type_id_by_name(name)
@@ -145,7 +146,8 @@ def main():
             root_prints=root_prints,
             print_overrides=print_overrides,
             buy_product_type_ids=buy_product_type_ids,
-            primary_manufacturing_structure_id="t2_large_raitaru",
+            # primary_manufacturing_structure_id="t2_large_raitaru",
+            primary_manufacturing_structure_id=None,
             primary_reaction_structure_id=None,
             structure_overrides=structure_overrides,
         )
