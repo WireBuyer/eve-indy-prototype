@@ -38,9 +38,11 @@ STRUCTURE_OVERRIDES = {
 }
 
 
+
 def main():
     idx = load_tables("eve.db")
     idx.load_adjusted_prices("adjusted_prices.json")
+    idx.load_indexes("system_indexes.json")
 
     def to_type(name: str) -> int:
         type_id = idx.find_type_id_by_name(name)

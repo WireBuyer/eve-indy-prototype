@@ -138,6 +138,18 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         if metaGroupID is not None
     }
 
+    cur.execute(
+        '''
+        SELECT solarSystemName, solarSystemID
+        FROM "mapSolarSystems"
+        WHERE solarSystemName IS NOT NULL
+        '''
+    )
+    solar_system_ids_by_name = {
+        str(solarSystemName): int(solarSystemID)
+        for solarSystemName, solarSystemID in cur.fetchall()
+    }
+
     conn.close()
     # return an index object that hides tuple-key usage
     return IndustryIndex(
@@ -148,4 +160,5 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         activity_times,
         dict(rig_affected_groups),
         rig_meta_groups,
+        solar_system_ids_by_name,
     )

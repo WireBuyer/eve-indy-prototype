@@ -17,7 +17,6 @@ from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY
 from production_math import ProductionMath
 from structures import StructureBonusService, StructureConfig
 
-
 class BomPlanner:
 
     def __init__(
@@ -30,9 +29,9 @@ class BomPlanner:
         self.math = ProductionMath(use_estimate_math)
         self.structure_bonus = StructureBonusService(idx)
         self.structure_configs = structure_configs or {}
-        adjusted_prices = idx.adjusted_prices
-        self.fee_calculator = JobFeeCalculator(adjusted_prices) if adjusted_prices else None
+        self.fee_calculator = JobFeeCalculator(idx.adjusted_prices)
         self.use_estimate_math = use_estimate_math
+        self.system_id = idx.get_system_id("jita")
 
     def build_result(self, plan: BuildPlan) -> BomResult:
         depths = self._build_tree(plan)
@@ -190,9 +189,10 @@ class BomPlanner:
         # need to pass materials into both the fee calculator and the modifier appliers
         materials = self.idx.inputs(recipe.blueprint_type_id, recipe.activity)
         fees = JobFees()
+        system_index = self.idx.get_system_index(self.system_id, recipe.activity)
         if self.fee_calculator is not None:
-            per_print_fees = self.fee_calculator.get_production_fees(materials, runs, 1)
-            fees = self.fee_calculator.get_production_fees(materials, runs, settings.prints)
+            per_print_fees = self.fee_calculator.get_production_fees(materials, runs, 1, system_index)
+            fees = self.fee_calculator.get_production_fees(materials, runs, settings.prints, system_index)
             print(f"{recipe.blueprint_name}: {per_print_fees}")
             if settings.prints > 1:
                 print(f"|||| {recipe.blueprint_name}: {settings.prints} prints {fees}")

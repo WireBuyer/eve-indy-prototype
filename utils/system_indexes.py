@@ -7,6 +7,14 @@ from urllib.request import Request, urlopen
 
 ESI_INDUSTRY_SYSTEMS_URL = "https://esi.evetech.net/latest/industry/systems/?datasource=tranquility"
 OUTPUT_PATH = Path(__file__).with_name("system_indexes.json")
+ACTIVITY_IDS_BY_NAME = {
+    "manufacturing": 1,
+    "researching_time_efficiency": 3,
+    "researching_material_efficiency": 4,
+    "copying": 5,
+    "invention": 8,
+    "reaction": 11,
+}
 
 
 def main() -> None:
@@ -35,8 +43,8 @@ def main() -> None:
 
         activity_index = {}
         for index in cost_indices:
-            activity = index["activity"]
-            cost_index = float(index["cost_index"])
+            activity = ACTIVITY_IDS_BY_NAME[index["activity"]]
+            cost_index = index["cost_index"]
             activity_index[activity] = cost_index
         
         system_indexes[system_id] = activity_index

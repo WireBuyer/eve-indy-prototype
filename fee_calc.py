@@ -18,6 +18,7 @@ class JobFeeCalculator:
         materials: list[MaterialRow],
         runs: float,
         prints: int,
+        system_index: float = 0.0,
     ) -> JobFees:
         eiv = 0.0
         for material in materials:
@@ -25,10 +26,11 @@ class JobFeeCalculator:
             eiv += material.quantity * runs * adjusted_price
 
         scc_surcharge = ceil(eiv * SCC_SURCHARGE_RATE) * prints
+        index_fee = eiv * system_index
 
         return JobFees(
             scc_surcharge=scc_surcharge,
-            index_fee=0.0,
+            index_fee=index_fee,
             tax_fee=0.0,
         )
 

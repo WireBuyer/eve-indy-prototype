@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-
 from build_models import ProductionRecipe
 from model import (
     MANUFACTURING_ACTIVITY,
@@ -25,6 +24,7 @@ class IndustryIndex:
         activity_times: dict[tuple[int, int], BlueprintActivityTime],
         rig_affected_groups: dict[tuple[int, str, str], set[int]] | None = None,
         rig_meta_groups: dict[int, int] | None = None,
+        solar_system_ids_by_name: dict[str, int] | None = None,
     ):
         self._inv_types = inv_types
         self._bp_products = bp_products
@@ -34,7 +34,12 @@ class IndustryIndex:
         self._rig_affected_groups = rig_affected_groups or {}
         self._rig_meta_groups = rig_meta_groups or {}
         self._adjusted_prices: dict[int, float] = {}
+        self._system_indexes: dict[int, dict[int, float]] = {}
         self._type_id_by_name = {type_info.name: type_id for type_id, type_info in inv_types.items()}
+        self._solar_system_ids_by_name = {
+            name.casefold(): int(system_id)
+            for name, system_id in (solar_system_ids_by_name or {}).items()
+        }
 
     def get_type(self, type_id: int) -> TypeInfo | None:
         return self._inv_types.get(type_id)
@@ -49,6 +54,9 @@ class IndustryIndex:
     def rig_meta_group(self, type_id: int) -> int | None:
         return self._rig_meta_groups.get(type_id)
 
+    def get_system_id(self, name: str) -> int | None:
+        return self._solar_system_ids_by_name.get(name.lower())
+
     def load_adjusted_prices(self, path: str = "adjusted_prices.json") -> None:
         with open(path, "r", encoding="utf-8") as file:
             data = json.load(file)
@@ -57,7 +65,25 @@ class IndustryIndex:
             raise ValueError("Adjusted price file must contain a JSON object.")
 
         self._adjusted_prices = {int(type_id): float(price) for type_id, price in data.items()}
+    
+    def load_indexes(self, path: str = "system_indexes.json") -> None:
+        with open(path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
 
+        system_indexes = {}
+        for system_id, cost_indices in data.items():
+
+            activity_indexes: dict[int, float] = {}
+            for activity_id, cost_index in cost_indices.items():
+                activity_indexes[int(activity_id)] = float(cost_index)
+
+            system_indexes[int(system_id)] = activity_indexes
+
+        self._system_indexes = system_indexes
+
+    def get_system_index(self, system_id: int, activity_id: int) -> float:
+        return self._system_indexes[system_id][activity_id]
+    
     def is_published_type(self, type_id: int) -> bool:
         return type_id in self._inv_types
 
