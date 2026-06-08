@@ -18,6 +18,7 @@ class RigTier(str, Enum):
 class BonusType(str, Enum):
     MATERIAL = "material"
     TIME = "time"
+    JOB_COST = "job_cost"
 
 
 @dataclass
@@ -30,3 +31,4 @@ class StructureConfig:
     me: RigTier | None = None
     te: RigTier | None = None
     rigs: list[tuple[str, int, RigTier]] = field(default_factory=list)
+    system_id: int | None = None

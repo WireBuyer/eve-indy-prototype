@@ -6,9 +6,9 @@ from industry_index import IndustryIndex
 from .bonus_data import (
     ACTIVITY_KEYS,
     CAPITAL_CONSTRUCTION_COMPONENT_GROUP_ID,
-    HULL_MODIFIERS,
     SIMPLE_RIG_REDUCTION,
     SIMPLE_SECURITY_MULTIPLIER,
+    STRUCTURE_MODIFIERS,
 )
 from .models import BonusType, RigMode, RigTier, StructureConfig
 
@@ -23,8 +23,7 @@ class StructureBonusService:
             return 1.0
 
         activity_id = ACTIVITY_KEYS[recipe.activity]
-        # modifier = self._hull_modifier(structureConfig, activity_id, BonusType.MATERIAL)
-        modifier = HULL_MODIFIERS.get(structureConfig.structure).get(activity_id).get(BonusType.MATERIAL)
+        modifier = self._structure_modifier(structureConfig, activity_id, BonusType.MATERIAL)
         if structureConfig.rig_mode == RigMode.SIMPLE:
             return modifier * self._simple_rig_modifier(
                 structureConfig, recipe, activity_id, BonusType.MATERIAL, structureConfig.me
@@ -40,7 +39,7 @@ class StructureBonusService:
             return 1.0
 
         activity_id = ACTIVITY_KEYS.get(recipe.activity)
-        modifier = HULL_MODIFIERS.get(structureConfig.structure).get(activity_id).get(BonusType.TIME)
+        modifier = self._structure_modifier(structureConfig, activity_id, BonusType.TIME)
         if structureConfig.rig_mode == RigMode.SIMPLE:
             return modifier * self._simple_rig_modifier(
                 structureConfig, recipe, activity_id, BonusType.TIME, structureConfig.te
@@ -50,6 +49,26 @@ class StructureBonusService:
                 structureConfig, recipe, activity_id, BonusType.TIME
             )
         raise ValueError(f"Unknown rig mode for {structureConfig.name}: {structureConfig.rig_mode}")
+
+    def job_cost_modifier(self, structureConfig: StructureConfig | None, activity_id: int) -> float:
+        if structureConfig is None:
+            return 1.0
+
+        activity_key = ACTIVITY_KEYS.get(activity_id)
+        if activity_key is None:
+            return 1.0
+
+        return self._structure_modifier(structureConfig, activity_key, BonusType.JOB_COST)
+
+    def _structure_modifier(
+        self,
+        structureConfig: StructureConfig,
+        activity_key: str | None,
+        bonus_type: BonusType,
+    ) -> float:
+        if activity_key is None:
+            return 1.0
+        return STRUCTURE_MODIFIERS.get(structureConfig.structure, {}).get(activity_key, {}).get(bonus_type, 1.0)
 
     def _simple_rig_modifier(
         self,

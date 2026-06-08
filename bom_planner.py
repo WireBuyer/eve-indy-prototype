@@ -13,7 +13,7 @@ from build_models import (
 )
 from fee_calc import JobFeeCalculator
 from industry_index import IndustryIndex
-from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY
+from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY, MaterialRow
 from production_math import ProductionMath
 from structures import StructureBonusService, StructureConfig
 
@@ -29,7 +29,8 @@ class BomPlanner:
         self.math = ProductionMath(use_estimate_math)
         self.structure_bonus = StructureBonusService(idx)
         self.structure_configs = structure_configs or {}
-        self.fee_calculator = JobFeeCalculator(idx.adjusted_prices)
+        adjusted_prices = idx.adjusted_prices
+        self.fee_calculator = JobFeeCalculator(adjusted_prices) if adjusted_prices else None
         self.use_estimate_math = use_estimate_math
         self.system_id = idx.get_system_id("jita")
 
@@ -188,11 +189,9 @@ class BomPlanner:
 
         # need to pass materials into both the fee calculator and the modifier appliers
         materials = self.idx.inputs(recipe.blueprint_type_id, recipe.activity)
-        fees = JobFees()
-        system_index = self.idx.get_system_index(self.system_id, recipe.activity)
+        fees = self._job_fees_for(recipe, structure_config, materials, runs, settings.prints)
         if self.fee_calculator is not None:
-            per_print_fees = self.fee_calculator.get_production_fees(materials, runs, 1, system_index)
-            fees = self.fee_calculator.get_production_fees(materials, runs, settings.prints, system_index)
+            per_print_fees = self._job_fees_for(recipe, structure_config, materials, runs, 1)
             print(f"{recipe.blueprint_name}: {per_print_fees}")
             if settings.prints > 1:
                 print(f"|||| {recipe.blueprint_name}: {settings.prints} prints {fees}")
@@ -227,6 +226,34 @@ class BomPlanner:
                 structure_name=None if structure_config is None else structure_config.name,
                 fees=fees,
             ),
+        )
+
+    def _job_fees_for(
+        self,
+        recipe: ProductionRecipe,
+        structure_config: StructureConfig | None,
+        materials: list[MaterialRow],
+        runs: float,
+        prints: int,
+    ) -> JobFees:
+        if self.fee_calculator is None:
+            return JobFees()
+
+        system_id = self.system_id
+        if structure_config is not None and structure_config.system_id is not None:
+            system_id = structure_config.system_id
+        if system_id is None:
+            raise ValueError("System id is required for job fee calculation")
+
+        system_index = self.idx.get_system_index(system_id, recipe.activity)
+        job_cost_modifier = self.structure_bonus.job_cost_modifier(structure_config, recipe.activity)
+
+        return self.fee_calculator.get_production_fees(
+            materials,
+            runs,
+            prints,
+            system_index,
+            job_cost_modifier,
         )
 
     def _structure_config_for(self, plan: BuildPlan, recipe: ProductionRecipe) -> StructureConfig | None:

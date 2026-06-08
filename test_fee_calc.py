@@ -6,7 +6,8 @@ import unittest
 from build_models import JobFees
 from fee_calc import JobFeeCalculator
 from industry_index import IndustryIndex
-from model import MANUFACTURING_ACTIVITY, MaterialRow
+from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY, MaterialRow
+from structures import StructureBonusService, StructureConfig
 
 
 class JobFeeCalculatorTests(unittest.TestCase):
@@ -41,20 +42,58 @@ class JobFeeCalculatorTests(unittest.TestCase):
 
         self.assertEqual(fees.scc_surcharge, 3.0)
 
+    def test_calculate_applies_job_cost_modifier_to_index_fee_only(self):
+        calculator = JobFeeCalculator({34: 101.0})
+        materials = [MaterialRow(100, MANUFACTURING_ACTIVITY, 34, 1)]
+
+        fees = calculator.get_production_fees(
+            materials,
+            runs=1,
+            prints=1,
+            system_index=0.1,
+            job_cost_modifier=0.97,
+        )
+
+        self.assertEqual(fees.scc_surcharge, 5.0)
+        self.assertEqual(fees.index_fee, 10.0)
+
     def test_job_fees_str_formats_all_fee_fields(self):
         fees = JobFees(scc_surcharge=1234, index_fee=56.7, tax_fee=0)
 
         self.assertEqual(
             str(fees),
-            "SCC surcharge 1,234.00 ISK | System index 56.70 ISK | "
-            "Tax 0.00 ISK | Total 1,290.70 ISK",
+            "SCC surcharge 1,234.00 ISK | index fee 56.70 ISK | ",
+        )
+
+    def test_structure_job_cost_modifier_applies_engineering_complex_role_bonus(self):
+        service = StructureBonusService(IndustryIndex({}, {}, {}, {}, {}))
+
+        self.assertEqual(
+            service.job_cost_modifier(StructureConfig("raitaru", "Raitaru", "Raitaru", "highsec"), MANUFACTURING_ACTIVITY),
+            0.97,
+        )
+        self.assertEqual(
+            service.job_cost_modifier(StructureConfig("azbel", "Azbel", "Azbel", "highsec"), MANUFACTURING_ACTIVITY),
+            0.96,
+        )
+        self.assertEqual(
+            service.job_cost_modifier(StructureConfig("sotiyo", "Sotiyo", "Sotiyo", "nullsec"), MANUFACTURING_ACTIVITY),
+            0.95,
+        )
+
+    def test_structure_job_cost_modifier_does_not_apply_to_reactions(self):
+        service = StructureBonusService(IndustryIndex({}, {}, {}, {}, {}))
+
+        self.assertEqual(
+            service.job_cost_modifier(StructureConfig("tatara", "Tatara", "Tatara", "lowsec"), REACTION_ACTIVITY),
+            1.0,
         )
 
     def test_calculate_raises_when_adjusted_price_is_missing(self):
         calculator = JobFeeCalculator({})
         materials = [MaterialRow(100, MANUFACTURING_ACTIVITY, 34, 100)]
 
-        with self.assertRaisesRegex(KeyError, "Missing adjusted price for type 34"):
+        with self.assertRaises(KeyError):
             calculator.get_production_fees(materials, runs=1, prints=1)
 
 

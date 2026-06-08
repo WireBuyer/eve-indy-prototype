@@ -19,15 +19,15 @@ ACTIVITY_KEYS = {
 # for thukker
 CAPITAL_CONSTRUCTION_COMPONENT_GROUP_ID = 873
 
-HULL_MODIFIERS = {
+STRUCTURE_MODIFIERS = {
     "Raitaru": {
-        "manufacturing": {BonusType.MATERIAL: 0.99, BonusType.TIME: 0.85},
+        "manufacturing": {BonusType.MATERIAL: 0.99, BonusType.TIME: 0.85, BonusType.JOB_COST: 0.97},
     },
     "Azbel": {
-        "manufacturing": {BonusType.MATERIAL: 0.99, BonusType.TIME: 0.80},
+        "manufacturing": {BonusType.MATERIAL: 0.99, BonusType.TIME: 0.80, BonusType.JOB_COST: 0.96},
     },
     "Sotiyo": {
-        "manufacturing": {BonusType.MATERIAL: 0.99, BonusType.TIME: 0.70},
+        "manufacturing": {BonusType.MATERIAL: 0.99, BonusType.TIME: 0.70, BonusType.JOB_COST: 0.95},
     },
     "Athanor": {
         "reaction": {BonusType.MATERIAL: 1.0, BonusType.TIME: 1.0},
