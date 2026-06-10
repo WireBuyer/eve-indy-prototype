@@ -4,7 +4,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 
 from bom_planner import BomPlanner
-from bom_view import is_bought, is_built, item_tag, rows, shopping_list_for
+from bom_view import is_bought, is_built, item_tag, required_skills_for, rows, shopping_list_for
 from build_models import BuildPlan, PrintSettings, ProductionRecipe
 from db_io import load_tables
 from industry_index import IndustryIndex
@@ -13,6 +13,7 @@ from model import (
     REACTION_ACTIVITY,
     BlueprintActivityTime,
     BlueprintProduct,
+    IndustryActivitySkill,
     MaterialRow,
     TypeInfo,
 )
@@ -599,6 +600,107 @@ class BomPlannerTests(unittest.TestCase):
         self.assertIs(result, shopping_list)
         self.assertEqual(output.getvalue(), "\nShopping list:\n  Tritanium 12\n")
 
+    def test_required_skills_use_highest_level_and_prints_at_that_level(self):
+        idx = self.aggregate_fixture_index(
+            activity_skills={
+                (101, MANUFACTURING_ACTIVITY): [
+                    IndustryActivitySkill(101, MANUFACTURING_ACTIVITY, 9001, 1),
+                    IndustryActivitySkill(101, MANUFACTURING_ACTIVITY, 9002, 2),
+                ],
+                (102, MANUFACTURING_ACTIVITY): [
+                    IndustryActivitySkill(102, MANUFACTURING_ACTIVITY, 9001, 3),
+                ],
+                (103, MANUFACTURING_ACTIVITY): [
+                    IndustryActivitySkill(103, MANUFACTURING_ACTIVITY, 9001, 3),
+                    IndustryActivitySkill(103, MANUFACTURING_ACTIVITY, 9002, 4),
+                ],
+                (104, MANUFACTURING_ACTIVITY): [
+                    IndustryActivitySkill(104, MANUFACTURING_ACTIVITY, 9002, 4),
+                    IndustryActivitySkill(104, MANUFACTURING_ACTIVITY, 9003, 2),
+                ],
+            }
+        )
+        result = BomPlanner(idx).build_result(
+            BuildPlan(
+                root_prints={
+                    101: PrintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1),
+                    102: PrintSettings(name="Root B Blueprint", blueprint_type_id=102, runs=1),
+                }
+            )
+        )
+
+        skills = {skill["name"]: skill for skill in required_skills_for(result, idx)}
+
+        self.assertEqual(skills["Industry"]["level"], 3)
+        self.assertEqual(
+            skills["Industry"]["print_names"],
+            ["Component X Blueprint", "Root B Blueprint"],
+        )
+        self.assertEqual(skills["Science"]["level"], 4)
+        self.assertEqual(
+            skills["Science"]["print_names"],
+            ["Child Y Blueprint", "Component X Blueprint"],
+        )
+        self.assertEqual(skills["Reactions"]["level"], 2)
+        self.assertEqual(skills["Reactions"]["print_names"], ["Child Y Blueprint"])
+
+    def test_required_skills_exclude_bought_components(self):
+        idx = self.aggregate_fixture_index(
+            activity_skills={
+                (101, MANUFACTURING_ACTIVITY): [
+                    IndustryActivitySkill(101, MANUFACTURING_ACTIVITY, 9001, 1),
+                ],
+                (103, MANUFACTURING_ACTIVITY): [
+                    IndustryActivitySkill(103, MANUFACTURING_ACTIVITY, 9001, 5),
+                ],
+            }
+        )
+        result = BomPlanner(idx).build_result(
+            BuildPlan(
+                root_prints={101: PrintSettings(name="Root A Blueprint", blueprint_type_id=101, runs=1)},
+                buy_product_type_ids={300},
+            )
+        )
+
+        skills = required_skills_for(result, idx)
+
+        self.assertEqual(
+            skills,
+            [
+                {
+                    "type_id": 9001,
+                    "name": "Industry",
+                    "level": 1,
+                    "print_names": ["Root A Blueprint"],
+                }
+            ],
+        )
+
+    def test_print_required_skills_uses_plain_rows(self):
+        from prints import print_required_skills
+
+        skills = [
+            {"type_id": 9001, "name": "Industry", "level": 1, "print_names": ["Rokh Blueprint"]},
+            {
+                "type_id": 9002,
+                "name": "Science",
+                "level": 5,
+                "print_names": ["Core Temperature Regulator Blueprint", "Other Blueprint"],
+            },
+        ]
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            result = print_required_skills(skills)
+
+        self.assertIs(result, skills)
+        self.assertEqual(
+            output.getvalue(),
+            "\nRequired skills:\n"
+            "  Industry level 1 Rokh Blueprint\n"
+            "  Science  level 5 Core Temperature Regulator Blueprint, Other Blueprint\n",
+        )
+
     def test_plan_service_applies_root_print_update(self):
         plan = BuildPlan(
             plan_id="test-plan",
@@ -740,7 +842,7 @@ class BomPlannerTests(unittest.TestCase):
 
         self.assertEqual(output.getvalue(), Path("Example 2.txt").read_text())
 
-    def aggregate_fixture_index(self):
+    def aggregate_fixture_index(self, activity_skills=None):
         names = {
             101: "Root A Blueprint",
             102: "Root B Blueprint",
@@ -751,6 +853,9 @@ class BomPlannerTests(unittest.TestCase):
             300: "Component X",
             400: "Base Material",
             401: "Child Y",
+            9001: "Industry",
+            9002: "Science",
+            9003: "Reactions",
         }
         inv_types = {
             type_id: TypeInfo(type_id, name, 0, None, None, None)
@@ -782,7 +887,14 @@ class BomPlannerTests(unittest.TestCase):
             (103, MANUFACTURING_ACTIVITY): BlueprintActivityTime(103, MANUFACTURING_ACTIVITY, 0),
             (104, MANUFACTURING_ACTIVITY): BlueprintActivityTime(104, MANUFACTURING_ACTIVITY, 0),
         }
-        return IndustryIndex(inv_types, bp_products, bp_by_product, materials, activity_times)
+        return IndustryIndex(
+            inv_types,
+            bp_products,
+            bp_by_product,
+            materials,
+            activity_times,
+            activity_skills=activity_skills,
+        )
 
     def structure_fixture_index(
         self,

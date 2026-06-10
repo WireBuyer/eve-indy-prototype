@@ -159,6 +159,22 @@ def print_shopping_list(shopping_list: list[dict], title: str = "Shopping list")
     return shopping_list
 
 
+def print_required_skills(skills: list[dict]) -> list[dict]:
+    print("\nRequired skills:")
+    if not skills:
+        print("  (none)")
+        return skills
+
+    name_width = max(len(skill["name"]) for skill in skills)
+    level_cells = [f"level {skill['level']}" for skill in skills]
+    level_width = max(len(level_cell) for level_cell in level_cells)
+
+    for skill, level_cell in zip(skills, level_cells):
+        print_names = ", ".join(skill["print_names"])
+        print(f"  {skill['name']:<{name_width}} {level_cell:<{level_width}} {print_names}")
+    return skills
+
+
 def print_top_level_blueprints(idx, blueprints: dict[int, PrintSettings]) -> None:
     print("Top-level blueprints:")
     rows: list[tuple[str, str, str, str]] = []

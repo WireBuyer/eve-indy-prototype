@@ -43,6 +43,14 @@ class BlueprintActivityTime:
 
 
 @dataclass(frozen=True)
+class IndustryActivitySkill:
+    type_id: int
+    activity: int
+    skill_id: int
+    level: int
+
+
+@dataclass(frozen=True)
 class RigAffectedProductGroup:
     rig_type_id: int
     activity_key: str

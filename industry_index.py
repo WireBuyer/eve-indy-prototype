@@ -7,6 +7,7 @@ from model import (
     REACTION_ACTIVITY,
     BlueprintActivityTime,
     BlueprintProduct,
+    IndustryActivitySkill,
     MaterialRow,
     TypeInfo,
 )
@@ -25,12 +26,14 @@ class IndustryIndex:
         rig_affected_groups: dict[tuple[int, str, str], set[int]] | None = None,
         rig_meta_groups: dict[int, int] | None = None,
         solar_system_ids_by_name: dict[str, int] | None = None,
+        activity_skills: dict[tuple[int, int], list[IndustryActivitySkill]] | None = None,
     ):
         self._inv_types = inv_types
         self._bp_products = bp_products
         self._bp_by_product = bp_by_product
         self._materials = materials
         self._activity_times = activity_times
+        self._activity_skills = activity_skills or {}
         self._rig_affected_groups = rig_affected_groups or {}
         self._rig_meta_groups = rig_meta_groups or {}
         self._adjusted_prices: dict[int, float] = {}
@@ -116,6 +119,12 @@ class IndustryIndex:
         if selected_activity is None:
             return []
         return list(self._materials.get((blueprint_type_id, selected_activity), []))
+
+    def skills_for(self, blueprint_type_id: int, activity: int | None = None) -> list[IndustryActivitySkill]:
+        selected_activity = activity if activity is not None else self.activity_for(blueprint_type_id)
+        if selected_activity is None:
+            return []
+        return list(self._activity_skills.get((blueprint_type_id, selected_activity), []))
 
     def build_recipe_for(self, product_type_id: int) -> ProductionRecipe | None:
         blueprint = self._bp_by_product.get(product_type_id)

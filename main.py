@@ -1,5 +1,5 @@
 from bom_planner import BomPlanner
-from bom_view import shopping_list_for
+from bom_view import required_skills_for, shopping_list_for
 from build_models import BuildPlan, PrintSettings
 from db_io import load_tables
 from structures import RIG_TIER_BY_META_GROUP, RigMode, RigTier, StructureConfig
@@ -10,8 +10,10 @@ from prints import *
 TOP_LEVEL_BLUEPRINTS = [
     # ("Heron Blueprint", 0, 0, 1, 1),
     # ("Raven Blueprint", 3, 14, 1, 2),
-    ("Rokh Blueprint", 10, 14, 1, 1),
+    # ("Rokh Blueprint", 10, 14, 1, 1),
     # ("Charon Blueprint", 10, 20, 1, 1),
+    # ("Revelation Navy Issue Blueprint", 0, 20, 1, 1),
+    ("Avatar Blueprint", 0, 20, 1, 1),
 ]
 
 # Blueprint ME modifiers. Users will be able to add their own prints and configs.
@@ -160,6 +162,7 @@ def main():
     # print_buy_components(idx, buy_product_type_ids)
     # print(f"\nTotal build time: {format_duration(result.total_time_seconds)}")
     # print_blueprint_settings(result)
+    print_required_skills(required_skills_for(result, idx))
     print_depth_summary(result)
     # shopping_list = shopping_list_for(result)
     # print_shopping_list(shopping_list)

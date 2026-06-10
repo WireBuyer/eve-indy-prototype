@@ -5,6 +5,7 @@ from model import (
     PRODUCTION_ACTIVITIES,
     BlueprintActivityTime,
     BlueprintProduct,
+    IndustryActivitySkill,
     MaterialRow,
     RigAffectedProductGroup,
     TypeInfo,
@@ -22,6 +23,7 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
     - bp_by_product: productTypeID -> `BlueprintProduct` (published blueprint that produces a product)
     - materials: (blueprint_typeID, activityID) -> list of `MaterialRow` (blueprint inputs)
     - activity_times: (typeID, activityID) -> `BlueprintActivityTime` (time row for that blueprint/activity)
+    - activity_skills: (typeID, activityID) -> list of `IndustryActivitySkill` (required skills)
     """
     conn = sqlite3.connect(db_path)
     cur = conn.cursor()
@@ -107,6 +109,32 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         t = float(time) if time is not None else None
         activity_times[(tid, act)] = BlueprintActivityTime(type_id=tid, activity=act, time=t)
 
+    # Load industryActivitySkills - skills required to run production jobs.
+    activity_skills = defaultdict(list)
+    cur.execute(
+        '''
+        SELECT s.typeID, s.activityID, s.skillID, s.level
+        FROM "industryActivitySkills" s
+        JOIN "invTypes" bp ON bp.typeID = s.typeID
+        JOIN "invTypes" skill ON skill.typeID = s.skillID
+        WHERE bp.published = 1
+        AND skill.published = 1
+        '''
+    )
+    for typeID, activityID, skillID, level in cur.fetchall():
+        tid = int(typeID)
+        act = int(activityID)
+        if act not in PRODUCTION_ACTIVITIES:
+            continue
+        activity_skills[(tid, act)].append(
+            IndustryActivitySkill(
+                type_id=tid,
+                activity=act,
+                skill_id=int(skillID),
+                level=int(level),
+            )
+        )
+
     cur.execute(
         '''
         SELECT rigTypeID, activityKey, bonusType, productGroupID, filterID
@@ -161,4 +189,5 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         dict(rig_affected_groups),
         rig_meta_groups,
         solar_system_ids_by_name,
+        dict(activity_skills),
     )
