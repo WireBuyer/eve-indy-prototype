@@ -20,6 +20,7 @@ class JobFeeCalculator:
         prints: int,
         system_index: float = 0.0,
         job_cost_modifier: float = 1.0,
+        facility_tax_rate: float = 0.0,
     ) -> JobFees:
         eiv = 0.0
         for material in materials:
@@ -28,11 +29,12 @@ class JobFeeCalculator:
 
         scc_surcharge = ceil(eiv * SCC_SURCHARGE_RATE) * prints
         index_fee = ceil(eiv * system_index * job_cost_modifier) * prints
+        tax_fee = ceil(eiv * facility_tax_rate) * prints
 
         return JobFees(
             scc_surcharge=scc_surcharge,
             index_fee=index_fee,
-            tax_fee=0.0,
+            tax_fee=tax_fee,
         )
 
     # todo: implement science fee function

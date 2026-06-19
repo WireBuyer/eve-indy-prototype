@@ -6,6 +6,9 @@ from industry_index import IndustryIndex
 from .bonus_data import (
     ACTIVITY_KEYS,
     CAPITAL_CONSTRUCTION_COMPONENT_GROUP_ID,
+    SCIENCE_JOB_COST_RIG_REDUCTION,
+    SCIENCE_JOB_COST_RIGS_BY_ACTIVITY,
+    SCIENCE_JOB_COST_SECURITY_MULTIPLIER,
     SIMPLE_RIG_REDUCTION,
     SIMPLE_SECURITY_MULTIPLIER,
     STRUCTURE_MODIFIERS,
@@ -58,7 +61,12 @@ class StructureBonusService:
         if activity_key is None:
             return 1.0
 
-        return self._structure_modifier(structureConfig, activity_key, BonusType.JOB_COST)
+        modifier = self._structure_modifier(structureConfig, activity_key, BonusType.JOB_COST)
+        if structureConfig.rig_mode == RigMode.SIMPLE:
+            return modifier * self._simple_job_cost_rig_modifier(structureConfig, activity_key)
+        if structureConfig.rig_mode == RigMode.ADVANCED:
+            return modifier * self._advanced_job_cost_rig_modifier(structureConfig, activity_key)
+        raise ValueError(f"Unknown rig mode for {structureConfig.name}: {structureConfig.rig_mode}")
 
     def _structure_modifier(
         self,
@@ -122,3 +130,39 @@ class StructureBonusService:
 
             modifier *= 1.0 - (reduction * multiplier)
         return modifier
+
+    def _simple_job_cost_rig_modifier(
+        self,
+        config: StructureConfig,
+        activity_key: str,
+    ) -> float:
+        return self._job_cost_rig_modifier(config.security, activity_key, config.job_cost)
+
+    def _advanced_job_cost_rig_modifier(
+        self,
+        config: StructureConfig,
+        activity_key: str,
+    ) -> float:
+        modifier = 1.0
+        rig_tiers = SCIENCE_JOB_COST_RIGS_BY_ACTIVITY.get(activity_key, {})
+        for _rig_name, rig_type_id, _tier in config.rigs:
+            configured_tier = rig_tiers.get(rig_type_id)
+            if configured_tier is None:
+                continue
+            modifier *= self._job_cost_rig_modifier(config.security, activity_key, configured_tier)
+        return modifier
+
+    def _job_cost_rig_modifier(
+        self,
+        security: str,
+        activity_key: str,
+        tier: RigTier | None,
+    ) -> float:
+        if tier is None or activity_key not in SCIENCE_JOB_COST_RIGS_BY_ACTIVITY:
+            return 1.0
+
+        reduction = SCIENCE_JOB_COST_RIG_REDUCTION.get(tier)
+        multiplier = SCIENCE_JOB_COST_SECURITY_MULTIPLIER.get(tier, {}).get(security)
+        if reduction is None or multiplier is None:
+            return 1.0
+        return 1.0 - (reduction * multiplier)

@@ -30,5 +30,6 @@ class StructureConfig:
     rig_mode: RigMode = RigMode.SIMPLE
     me: RigTier | None = None
     te: RigTier | None = None
+    job_cost: RigTier | None = None
     rigs: list[tuple[str, int, RigTier]] = field(default_factory=list)
     system_id: int | None = None

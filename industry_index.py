@@ -37,7 +37,7 @@ class IndustryIndex:
         self._system_indexes: dict[int, dict[int, float]] = {}
         self._type_id_by_name = {type_info.name: type_id for type_id, type_info in inv_types.items()}
         self._solar_system_ids_by_name = {
-            name.casefold(): int(system_id)
+            name.lower(): int(system_id)
             for name, system_id in (solar_system_ids_by_name or {}).items()
         }
 

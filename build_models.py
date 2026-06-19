@@ -75,8 +75,8 @@ class JobFees:
         return (
             f"SCC surcharge {_format_isk(self.scc_surcharge)} | "
             f"index fee {_format_isk(self.index_fee)} | "
-            # f"Tax {_format_isk(self.tax_fee)} | "
-            # f"Total {_format_isk(self.total)}"
+            f"tax fee {_format_isk(self.tax_fee)} | "
+            f"total {_format_isk(self.total)}"
         )
 
 

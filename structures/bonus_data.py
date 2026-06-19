@@ -1,6 +1,13 @@
 from __future__ import annotations
 
-from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY
+from model import (
+    COPYING_ACTIVITY,
+    INVENTION_ACTIVITY,
+    MANUFACTURING_ACTIVITY,
+    MATERIAL_RESEARCH_ACTIVITY,
+    REACTION_ACTIVITY,
+    TIME_RESEARCH_ACTIVITY,
+)
 
 from .models import BonusType, RigTier
 
@@ -13,6 +20,10 @@ RIG_TIER_BY_META_GROUP = {
 
 ACTIVITY_KEYS = {
     MANUFACTURING_ACTIVITY: "manufacturing",
+    TIME_RESEARCH_ACTIVITY: "researching_time_efficiency",
+    MATERIAL_RESEARCH_ACTIVITY: "researching_material_efficiency",
+    COPYING_ACTIVITY: "copying",
+    INVENTION_ACTIVITY: "invention",
     REACTION_ACTIVITY: "reaction",
 }
 
@@ -57,5 +68,34 @@ SIMPLE_SECURITY_MULTIPLIER = {
     "reaction": {
         RigTier.T1: {"highsec": 0.0, "lowsec": 1.0, "nullsec": 1.1, "wormhole": 1.1},
         RigTier.T2: {"highsec": 0.0, "lowsec": 1.0, "nullsec": 1.1, "wormhole": 1.1},
+    },
+}
+
+SCIENCE_JOB_COST_RIG_REDUCTION = {
+    RigTier.T1: 0.10,
+    RigTier.T2: 0.12,
+}
+
+SCIENCE_JOB_COST_SECURITY_MULTIPLIER = {
+    RigTier.T1: {"highsec": 1.0, "lowsec": 1.9, "nullsec": 2.1, "wormhole": 2.1},
+    RigTier.T2: {"highsec": 1.0, "lowsec": 1.9, "nullsec": 2.1, "wormhole": 2.1},
+}
+
+SCIENCE_JOB_COST_RIGS_BY_ACTIVITY = {
+    "researching_material_efficiency": {
+        43885: RigTier.T1,
+        43884: RigTier.T2,
+    },
+    "researching_time_efficiency": {
+        43887: RigTier.T1,
+        43886: RigTier.T2,
+    },
+    "copying": {
+        43891: RigTier.T1,
+        43890: RigTier.T2,
+    },
+    "invention": {
+        43879: RigTier.T1,
+        43878: RigTier.T2,
     },
 }

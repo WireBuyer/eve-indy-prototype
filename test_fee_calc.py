@@ -6,8 +6,16 @@ import unittest
 from build_models import JobFees
 from fee_calc import JobFeeCalculator
 from industry_index import IndustryIndex
-from model import MANUFACTURING_ACTIVITY, REACTION_ACTIVITY, MaterialRow
-from structures import StructureBonusService, StructureConfig
+from model import (
+    COPYING_ACTIVITY,
+    INVENTION_ACTIVITY,
+    MANUFACTURING_ACTIVITY,
+    MATERIAL_RESEARCH_ACTIVITY,
+    REACTION_ACTIVITY,
+    TIME_RESEARCH_ACTIVITY,
+    MaterialRow,
+)
+from structures import RigMode, RigTier, StructureBonusService, StructureConfig
 
 
 class JobFeeCalculatorTests(unittest.TestCase):
@@ -57,12 +65,27 @@ class JobFeeCalculatorTests(unittest.TestCase):
         self.assertEqual(fees.scc_surcharge, 5.0)
         self.assertEqual(fees.index_fee, 10.0)
 
+    def test_calculate_applies_facility_tax(self):
+        calculator = JobFeeCalculator({34: 101.0})
+        materials = [MaterialRow(100, MANUFACTURING_ACTIVITY, 34, 1)]
+
+        fees = calculator.get_production_fees(
+            materials,
+            runs=1,
+            prints=2,
+            facility_tax_rate=0.05,
+        )
+
+        self.assertEqual(fees.scc_surcharge, 10.0)
+        self.assertEqual(fees.index_fee, 0.0)
+        self.assertEqual(fees.tax_fee, 12.0)
+
     def test_job_fees_str_formats_all_fee_fields(self):
         fees = JobFees(scc_surcharge=1234, index_fee=56.7, tax_fee=0)
 
         self.assertEqual(
             str(fees),
-            "SCC surcharge 1,234.00 ISK | index fee 56.70 ISK | ",
+            "SCC surcharge 1,234.00 ISK | index fee 56.70 ISK | tax fee 0.00 ISK | total 1,290.70 ISK",
         )
 
     def test_structure_job_cost_modifier_applies_engineering_complex_role_bonus(self):
@@ -88,6 +111,41 @@ class JobFeeCalculatorTests(unittest.TestCase):
             service.job_cost_modifier(StructureConfig("tatara", "Tatara", "Tatara", "lowsec"), REACTION_ACTIVITY),
             1.0,
         )
+
+    def test_simple_science_job_cost_rig_uses_security_multiplier(self):
+        service = StructureBonusService(IndustryIndex({}, {}, {}, {}, {}))
+
+        self.assertAlmostEqual(
+            service.job_cost_modifier(
+                StructureConfig(
+                    "science",
+                    "Science Raitaru",
+                    "Raitaru",
+                    "lowsec",
+                    job_cost=RigTier.T2,
+                ),
+                INVENTION_ACTIVITY,
+            ),
+            0.772,
+        )
+
+    def test_science_job_cost_rig_only_applies_to_matching_activity(self):
+        service = StructureBonusService(IndustryIndex({}, {}, {}, {}, {}))
+        config = StructureConfig(
+            "science",
+            "Advanced Science Raitaru",
+            "Raitaru",
+            "nullsec",
+            rig_mode=RigMode.ADVANCED,
+            rigs=[("Standup M-Set ME Research Cost Optimization II", 43884, RigTier.T2)],
+        )
+
+        self.assertAlmostEqual(
+            service.job_cost_modifier(config, MATERIAL_RESEARCH_ACTIVITY),
+            0.748,
+        )
+        self.assertEqual(service.job_cost_modifier(config, TIME_RESEARCH_ACTIVITY), 1.0)
+        self.assertEqual(service.job_cost_modifier(config, COPYING_ACTIVITY), 1.0)
 
     def test_calculate_raises_when_adjusted_price_is_missing(self):
         calculator = JobFeeCalculator({})

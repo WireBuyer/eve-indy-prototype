@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from bom_view import depth_layers as result_depth_layers
 from bom_view import is_built, item_tag, rows as result_rows
-from build_models import BomItem, BomResult, PrintSettings
+from build_models import BomItem, BomResult, JobFees, PrintSettings
 
 
 def format_duration(seconds: float) -> str:
@@ -145,6 +145,35 @@ def print_depth_summary(result: BomResult) -> None:
                 )
             )
         print_table_rows(rows)
+
+
+def print_job_fees(result: BomResult) -> None:
+    print("\nJob fees:")
+
+    built_items = [item for item in result_rows(result) if is_built(item)]
+    if not built_items:
+        print("  (none)")
+        return
+
+    name_width = max(len(item.build.blueprint_name) for item in built_items)
+    total_scc_surcharge = 0.0
+    total_index_fee = 0.0
+    total_tax_fee = 0.0
+
+    for item in built_items:
+        build = item.build
+        fees = build.fees
+        total_scc_surcharge += fees.scc_surcharge
+        total_index_fee += fees.index_fee
+        total_tax_fee += fees.tax_fee
+        print(f"  {build.blueprint_name:<{name_width}} | {fees}")
+
+    total_fees = JobFees(
+        scc_surcharge=total_scc_surcharge,
+        index_fee=total_index_fee,
+        tax_fee=total_tax_fee,
+    )
+    print(f"  Total fees: {total_fees}")
 
 
 def print_shopping_list(shopping_list: list[dict], title: str = "Shopping list") -> list[dict]:

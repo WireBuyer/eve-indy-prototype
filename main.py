@@ -10,8 +10,8 @@ from prints import *
 TOP_LEVEL_BLUEPRINTS = [
     # ("Heron Blueprint", 0, 0, 1, 1),
     # ("Raven Blueprint", 3, 14, 1, 2),
-    ("Rokh Blueprint", 10, 14, 1, 1),
-    # ("Charon Blueprint", 10, 20, 1, 1),
+    # ("Rokh Blueprint", 10, 14, 1, 1),
+    ("Charon Blueprint", 10, 20, 1, 1),
 ]
 
 # Blueprint ME modifiers. Users will be able to add their own prints and configs.
@@ -58,11 +58,19 @@ def main():
         rig_mode: RigMode = RigMode.SIMPLE,
         me: RigTier | None = None,
         te: RigTier | None = None,
+        job_cost: RigTier | None = None,
         rigs: list[str] | None = None,
+        system_name: str | None = None,
     ) -> StructureConfig:
         def resolved_rig(rig_name: str) -> tuple[str, int, RigTier]:
             rig_type_id = to_type(rig_name)
             return rig_name, rig_type_id, RIG_TIER_BY_META_GROUP[idx.rig_meta_group(rig_type_id)]
+
+        system_id = None
+        if system_name is not None:
+            system_id = idx.get_system_id(system_name)
+            if system_id is None:
+                raise ValueError(f"Solar system not found: {system_name}")
 
         return StructureConfig(
             config_id=config_id,
@@ -72,7 +80,9 @@ def main():
             rig_mode=rig_mode,
             me=me,
             te=te,
+            job_cost=job_cost,
             rigs=[resolved_rig(rig_name) for rig_name in (rigs or [])],
+            system_id=system_id,
         )
 
     def structure_catalog(configs: list[StructureConfig]) -> dict[str, StructureConfig]:
@@ -161,10 +171,11 @@ def main():
     # print(f"\nTotal build time: {format_duration(result.total_time_seconds)}")
     # print_blueprint_settings(result)
     print_depth_summary(result)
-    # shopping_list = shopping_list_for(result)
-    # print_shopping_list(shopping_list)
-    # print_shopping_list(shopping_list_for(result, "minerals"), "Minerals")
-    # print_shopping_list(shopping_list_for(result, "gas"), "Gas")
+    print_job_fees(result)
+    shopping_list = shopping_list_for(result)
+    print_shopping_list(shopping_list)
+    print_shopping_list(shopping_list_for(result, "minerals"), "Minerals")
+    print_shopping_list(shopping_list_for(result, "gas"), "Gas")
 
 
 if __name__ == "__main__":

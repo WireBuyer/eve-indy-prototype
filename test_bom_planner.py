@@ -1,7 +1,9 @@
 import io
+import json
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from bom_planner import BomPlanner
 from bom_view import is_bought, is_built, item_tag, rows, shopping_list_for
@@ -360,6 +362,56 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(result.roots[0].build.material_efficiency, 0)
         self.assertEqual(result.items_by_product_id[600].quantity, 98.0)
         self.assertAlmostEqual(result.roots[0].build.total_time_seconds, 60.0)
+
+    def test_job_fee_helper_uses_default_system_and_structure_system_override(self):
+        idx = self.structure_fixture_index(
+            solar_system_ids_by_name={
+                "Jita": 30000142,
+                "Perimeter": 30000144,
+            },
+        )
+        with TemporaryDirectory() as directory:
+            adjusted_prices_path = Path(directory) / "adjusted_prices.json"
+            system_indexes_path = Path(directory) / "system_indexes.json"
+            adjusted_prices_path.write_text(json.dumps({"300": 10.0, "400": 1.0}), encoding="utf-8")
+            system_indexes_path.write_text(
+                json.dumps(
+                    {
+                        "30000142": {"1": 0.01},
+                        "30000144": {"1": 0.02},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            idx.load_adjusted_prices(str(adjusted_prices_path))
+            idx.load_indexes(str(system_indexes_path))
+
+        default_result = BomPlanner(idx).build_result(
+            BuildPlan(root_prints={101: PrintSettings("Root Blueprint", 101, runs=1)})
+        )
+
+        structure_result = BomPlanner(
+            idx,
+            structure_configs=structure_catalog(
+                [
+                    StructureConfig(
+                        config_id="perimeter",
+                        name="Perimeter Structure",
+                        structure="Other",
+                        security="highsec",
+                        system_id=30000144,
+                    )
+                ]
+            ),
+        ).build_result(
+            BuildPlan(
+                root_prints={101: PrintSettings("Root Blueprint", 101, runs=1)},
+                primary_manufacturing_structure_id="perimeter",
+            )
+        )
+
+        self.assertEqual(default_result.roots[0].build.fees.index_fee, 10.0)
+        self.assertEqual(structure_result.roots[0].build.fees.index_fee, 20.0)
 
     def test_planner_can_temporarily_use_estimate_math(self):
         estimate_planner = BomPlanner(self.idx, use_estimate_math=True)
@@ -788,6 +840,7 @@ class BomPlannerTests(unittest.TestCase):
         self,
         rig_affected_groups=None,
         component_group_id=20,
+        solar_system_ids_by_name=None,
     ):
         names = {
             101: "Root Blueprint",
@@ -840,6 +893,7 @@ class BomPlannerTests(unittest.TestCase):
             materials,
             activity_times,
             rig_affected_groups,
+            solar_system_ids_by_name=solar_system_ids_by_name,
         )
 
 

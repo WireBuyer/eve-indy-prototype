@@ -190,11 +190,6 @@ class BomPlanner:
         # need to pass materials into both the fee calculator and the modifier appliers
         materials = self.idx.inputs(recipe.blueprint_type_id, recipe.activity)
         fees = self._job_fees_for(recipe, structure_config, materials, runs, settings.prints)
-        if self.fee_calculator is not None:
-            per_print_fees = self._job_fees_for(recipe, structure_config, materials, runs, 1)
-            print(f"{recipe.blueprint_name}: {per_print_fees}")
-            if settings.prints > 1:
-                print(f"|||| {recipe.blueprint_name}: {settings.prints} prints {fees}")
 
         # apply the modifiers to get the needed quantity 
         for material in materials:
@@ -249,11 +244,12 @@ class BomPlanner:
         job_cost_modifier = self.structure_bonus.job_cost_modifier(structure_config, recipe.activity)
 
         return self.fee_calculator.get_production_fees(
-            materials,
-            runs,
-            prints,
-            system_index,
-            job_cost_modifier,
+            materials=materials,
+            runs=runs,
+            prints=prints,
+            system_index=system_index,
+            job_cost_modifier=job_cost_modifier,
+            facility_tax_rate=0.0,
         )
 
     def _structure_config_for(self, plan: BuildPlan, recipe: ProductionRecipe) -> StructureConfig | None:
