@@ -20,7 +20,7 @@ from model import (
 )
 from plan_service import update_prints, update_root_prints
 from production_math import ProductionMath
-from structures import RigMode, RigTier, StructureConfig
+from structures import RigTier, StructureConfig
 
 
 def structure_catalog(configs: list[StructureConfig]) -> dict[str, StructureConfig]:
@@ -145,8 +145,13 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(ProductionMath().material_quantity(recipe, settings, 975, 1), 1892.0)
         self.assertEqual(ProductionMath().material_quantity(recipe, settings, 975, 1, 0.99), 1874.0)
 
-    def test_primary_manufacturing_structure_applies_hull_and_simple_matching_rig(self):
-        idx = self.structure_fixture_index()
+    def test_primary_manufacturing_structure_applies_hull_and_configured_matching_rigs(self):
+        idx = self.structure_fixture_index(
+            rig_affected_groups={
+                (9001, "manufacturing", "material"): {10, 20},
+                (9002, "manufacturing", "time"): {10, 20},
+            },
+        )
         planner = BomPlanner(
             idx,
             structure_configs=structure_catalog(
@@ -156,8 +161,10 @@ class BomPlannerTests(unittest.TestCase):
                         name="Raitaru",
                         structure="Raitaru",
                         security="highsec",
-                        me=RigTier.T1,
-                        te=RigTier.T1,
+                        rigs=[
+                            ("Material Rig", 9001, RigTier.T1),
+                            ("Time Rig", 9002, RigTier.T1),
+                        ],
                     )
                 ]
             ),
@@ -175,36 +182,14 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(result.roots[0].build.total_time_seconds, 68.0)
         self.assertEqual(result.roots[0].build.structure_config_id, "raitaru")
 
-    def test_simple_rig_mode_uses_enum_tier_without_rig_lookup(self):
-        idx = self.structure_fixture_index()
-        planner = BomPlanner(
-            idx,
-            structure_configs=structure_catalog(
-                [
-                    StructureConfig(
-                        config_id="raitaru",
-                        name="Raitaru",
-                        structure="Raitaru",
-                        security="highsec",
-                        me=RigTier.T1,
-                        te=RigTier.T1,
-                    )
-                ]
-            ),
+    def test_thukker_rig_uses_capital_material_reduction(self):
+        idx = self.structure_fixture_index(
+            component_group_id=873,
+            rig_affected_groups={
+                (9003, "manufacturing", "material"): {873},
+                (9004, "manufacturing", "time"): {10},
+            },
         )
-
-        result = planner.build_result(
-            BuildPlan(
-                root_prints={101: PrintSettings("Root Blueprint", 101, runs=1)},
-                primary_manufacturing_structure_id="raitaru",
-            )
-        )
-
-        self.assertEqual(result.items_by_product_id[300].quantity, 98.0)
-        self.assertEqual(result.items_by_product_id[400].quantity, 971.0)
-
-    def test_simple_thukker_uses_capital_material_reduction(self):
-        idx = self.structure_fixture_index(component_group_id=873)
         planner = BomPlanner(
             idx,
             structure_configs=structure_catalog(
@@ -214,8 +199,10 @@ class BomPlannerTests(unittest.TestCase):
                         name="Thukker Raitaru",
                         structure="Raitaru",
                         security="highsec",
-                        me=RigTier.THUKKER,
-                        te=RigTier.THUKKER,
+                        rigs=[
+                            ("Thukker Material Rig", 9003, RigTier.THUKKER),
+                            ("Thukker Time Rig", 9004, RigTier.THUKKER),
+                        ],
                     )
                 ]
             ),
@@ -232,8 +219,13 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(result.items_by_product_id[400].quantity, 987.0)
         self.assertAlmostEqual(result.roots[0].build.total_time_seconds, 83.3)
 
-    def test_simple_thukker_uses_standard_material_reduction_for_noncapital(self):
-        idx = self.structure_fixture_index()
+    def test_thukker_rig_uses_standard_material_reduction_for_noncapital(self):
+        idx = self.structure_fixture_index(
+            rig_affected_groups={
+                (9003, "manufacturing", "material"): {20},
+                (9004, "manufacturing", "time"): {10},
+            },
+        )
         planner = BomPlanner(
             idx,
             structure_configs=structure_catalog(
@@ -243,8 +235,10 @@ class BomPlannerTests(unittest.TestCase):
                         name="Thukker Raitaru",
                         structure="Raitaru",
                         security="highsec",
-                        me=RigTier.THUKKER,
-                        te=RigTier.THUKKER,
+                        rigs=[
+                            ("Thukker Material Rig", 9003, RigTier.THUKKER),
+                            ("Thukker Time Rig", 9004, RigTier.THUKKER),
+                        ],
                     )
                 ]
             ),
@@ -262,7 +256,14 @@ class BomPlannerTests(unittest.TestCase):
         self.assertAlmostEqual(result.roots[0].build.total_time_seconds, 83.3)
 
     def test_structure_override_replaces_primary_for_print_node(self):
-        idx = self.structure_fixture_index()
+        idx = self.structure_fixture_index(
+            rig_affected_groups={
+                (9001, "manufacturing", "material"): {10},
+                (9002, "manufacturing", "time"): {10},
+                (9003, "manufacturing", "material"): {20},
+                (9004, "manufacturing", "time"): {20},
+            },
+        )
         planner = BomPlanner(
             idx,
             structure_configs=structure_catalog(
@@ -272,16 +273,20 @@ class BomPlannerTests(unittest.TestCase):
                         name="Raitaru",
                         structure="Raitaru",
                         security="highsec",
-                        me=RigTier.T1,
-                        te=RigTier.T1,
+                        rigs=[
+                            ("Raitaru Material Rig", 9001, RigTier.T1),
+                            ("Raitaru Time Rig", 9002, RigTier.T1),
+                        ],
                     ),
                     StructureConfig(
                         config_id="azbel",
                         name="Azbel",
                         structure="Azbel",
                         security="highsec",
-                        me=RigTier.T2,
-                        te=RigTier.T2,
+                        rigs=[
+                            ("Azbel Material Rig", 9003, RigTier.T2),
+                            ("Azbel Time Rig", 9004, RigTier.T2),
+                        ],
                     ),
                 ]
             ),
@@ -301,7 +306,7 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(result.items_by_product_id[400].quantity, 967.0)
         self.assertAlmostEqual(component.build.total_time_seconds, 608.0)
 
-    def test_advanced_rig_mode_uses_exact_affected_groups(self):
+    def test_configured_rig_uses_exact_affected_groups(self):
         idx = self.structure_fixture_index(
             rig_affected_groups={
                 (9001, "manufacturing", "material"): {20},
@@ -316,7 +321,6 @@ class BomPlannerTests(unittest.TestCase):
                         name="Exact Raitaru",
                         structure="Raitaru",
                         security="highsec",
-                        rig_mode=RigMode.ADVANCED,
                         rigs=[("Exact Material Rig", 9001, RigTier.T1)],
                     )
                 ]
@@ -335,7 +339,12 @@ class BomPlannerTests(unittest.TestCase):
         self.assertEqual(result.items_by_product_id[300].build.total_time_seconds, 850.0)
 
     def test_primary_reaction_structure_applies_reaction_bonuses(self):
-        idx = self.structure_fixture_index()
+        idx = self.structure_fixture_index(
+            rig_affected_groups={
+                (9101, "reaction", "material"): {40},
+                (9102, "reaction", "time"): {40},
+            },
+        )
         planner = BomPlanner(
             idx,
             structure_configs=structure_catalog(
@@ -345,8 +354,10 @@ class BomPlannerTests(unittest.TestCase):
                         name="Tatara",
                         structure="Tatara",
                         security="lowsec",
-                        me=RigTier.T1,
-                        te=RigTier.T1,
+                        rigs=[
+                            ("Reaction Material Rig", 9101, RigTier.T1),
+                            ("Reaction Time Rig", 9102, RigTier.T1),
+                        ],
                     )
                 ]
             ),

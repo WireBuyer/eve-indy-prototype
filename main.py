@@ -2,7 +2,7 @@ from bom_planner import BomPlanner
 from bom_view import shopping_list_for
 from build_models import BuildPlan, PrintSettings
 from db_io import load_tables
-from structures import RIG_TIER_BY_META_GROUP, RigMode, RigTier, StructureConfig
+from structures import RIG_TIER_BY_META_GROUP, RigTier, StructureConfig
 
 from prints import *
 
@@ -55,10 +55,6 @@ def main():
         name: str,
         structure: str,
         security: str,
-        rig_mode: RigMode = RigMode.SIMPLE,
-        me: RigTier | None = None,
-        te: RigTier | None = None,
-        job_cost: RigTier | None = None,
         rigs: list[str] | None = None,
         system_name: str | None = None,
     ) -> StructureConfig:
@@ -77,10 +73,6 @@ def main():
             name=name,
             structure=structure,
             security=security,
-            rig_mode=rig_mode,
-            me=me,
-            te=te,
-            job_cost=job_cost,
             rigs=[resolved_rig(rig_name) for rig_name in (rigs or [])],
             system_id=system_id,
         )
@@ -94,25 +86,25 @@ def main():
             name="T2 Large Raitaru",
             structure="Raitaru",
             security="highsec",
-            rig_mode=RigMode.SIMPLE,
-            me=RigTier.T2,
-            te=RigTier.T2,
+            rigs=[
+                "Standup M-Set Basic Large Ship Manufacturing Material Efficiency II",
+                "Standup M-Set Basic Large Ship Manufacturing Time Efficiency II",
+            ],
         ),
         structure_config(
             config_id="component_azbel",
             name="Component Azbel",
             structure="Azbel",
             security="highsec",
-            rig_mode=RigMode.SIMPLE,
-            me=RigTier.T1,
-            te=RigTier.T1,
+            rigs=[
+                "Standup L-Set Advanced Component Manufacturing Efficiency I",
+            ],
         ),
         structure_config(
             config_id="advanced_large_ship_raitaru",
             name="Advanced Large Ship Raitaru",
             structure="Raitaru",
             security="highsec",
-            rig_mode=RigMode.ADVANCED,
             rigs=[
                 "Standup M-Set Basic Large Ship Manufacturing Material Efficiency II",
                 "Standup M-Set Basic Large Ship Manufacturing Time Efficiency II",

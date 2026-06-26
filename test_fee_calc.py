@@ -15,7 +15,7 @@ from model import (
     TIME_RESEARCH_ACTIVITY,
     MaterialRow,
 )
-from structures import RigMode, RigTier, StructureBonusService, StructureConfig
+from structures import RigTier, StructureBonusService, StructureConfig
 
 
 class JobFeeCalculatorTests(unittest.TestCase):
@@ -112,7 +112,7 @@ class JobFeeCalculatorTests(unittest.TestCase):
             1.0,
         )
 
-    def test_simple_science_job_cost_rig_uses_security_multiplier(self):
+    def test_science_job_cost_rig_uses_security_multiplier(self):
         service = StructureBonusService(IndustryIndex({}, {}, {}, {}, {}))
 
         self.assertAlmostEqual(
@@ -122,7 +122,7 @@ class JobFeeCalculatorTests(unittest.TestCase):
                     "Science Raitaru",
                     "Raitaru",
                     "lowsec",
-                    job_cost=RigTier.T2,
+                    rigs=[("Standup M-Set Invention Cost Optimization II", 43878, RigTier.T2)],
                 ),
                 INVENTION_ACTIVITY,
             ),
@@ -136,7 +136,6 @@ class JobFeeCalculatorTests(unittest.TestCase):
             "Advanced Science Raitaru",
             "Raitaru",
             "nullsec",
-            rig_mode=RigMode.ADVANCED,
             rigs=[("Standup M-Set ME Research Cost Optimization II", 43884, RigTier.T2)],
         )
 

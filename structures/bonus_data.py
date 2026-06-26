@@ -48,7 +48,7 @@ STRUCTURE_MODIFIERS = {
     },
 }
 
-SIMPLE_RIG_REDUCTION = {
+RIG_REDUCTION = {
     "manufacturing": {
         BonusType.MATERIAL: {RigTier.T1: 0.02, RigTier.T2: 0.024, RigTier.THUKKER: 0.02},
         BonusType.TIME: {RigTier.T1: 0.20, RigTier.T2: 0.24, RigTier.THUKKER: 0.20},
@@ -59,7 +59,7 @@ SIMPLE_RIG_REDUCTION = {
     },
 }
 
-SIMPLE_SECURITY_MULTIPLIER = {
+RIG_SECURITY_MULTIPLIER = {
     "manufacturing": {
         RigTier.T1: {"highsec": 1.0, "lowsec": 1.9, "nullsec": 2.1, "wormhole": 2.1},
         RigTier.T2: {"highsec": 1.0, "lowsec": 1.9, "nullsec": 2.1, "wormhole": 2.1},
