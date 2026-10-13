@@ -1,17 +1,25 @@
 import sqlite3
 from collections import defaultdict
 
-from model import TypeInfo, BlueprintProduct, MaterialRow, BlueprintActivityTime
+from model import (
+    PRODUCTION_ACTIVITIES,
+    BlueprintActivityTime,
+    BlueprintProduct,
+    MaterialRow,
+    RigAffectedProductGroup,
+    TypeInfo,
+)
 from industry_index import IndustryIndex
 
 
 def load_tables(db_path: str = "eve.db") -> IndustryIndex:
     """Load relevant SDE tables from the SQLite DB and return in-memory maps.
 
-    Returns: (inv_types, bp_products, bp_by_product, materials, activities)
+    Returns an `IndustryIndex` with loaded production and rig lookup data.
+
     - inv_types: typeID -> TypeInfo (only published types)
-    - bp_products: (blueprint_typeID, activityID) -> list of `BlueprintProduct` (blueprint outputs)
-    - bp_by_product: productTypeID -> list of `BlueprintProduct` (reverse index: which blueprints produce a product)
+    - bp_products: (blueprint_typeID, activityID) -> `BlueprintProduct` (blueprint output)
+    - bp_by_product: productTypeID -> `BlueprintProduct` (published blueprint that produces a product)
     - materials: (blueprint_typeID, activityID) -> list of `MaterialRow` (blueprint inputs)
     - activity_times: (typeID, activityID) -> `BlueprintActivityTime` (time row for that blueprint/activity)
     """
@@ -33,22 +41,47 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         mgroup = int(marketGroupID) if marketGroupID is not None else None
         inv_types[tid] = TypeInfo(type_id=tid, name=name, volume=vol, icon_id=icon, group_id=group, market_group_id=mgroup)
 
-    # Load industryActivityProducts - blueprint outputs
-    cur.execute('SELECT typeID, activityID, productTypeID, quantity FROM "industryActivityProducts"')
-    bp_products = defaultdict(list)
-    bp_by_product = defaultdict(list)
+    # Load industryActivityProducts - published blueprint outputs
+    cur.execute(
+        '''
+        SELECT p.typeID, p.activityID, p.productTypeID, p.quantity
+        FROM "industryActivityProducts" p
+        JOIN "invTypes" bp ON bp.typeID = p.typeID
+        JOIN "invTypes" prod ON prod.typeID = p.productTypeID
+        WHERE bp.published = 1
+        AND prod.published = 1
+        '''
+    )
+    bp_products = {}
+    bp_by_product = {}
     for typeID, activityID, productTypeID, qty in cur.fetchall():
         tid = int(typeID)
         act = int(activityID)
+        if act not in PRODUCTION_ACTIVITIES:
+            continue
         ptype = int(productTypeID)
         q = float(qty)
         row = BlueprintProduct(type_id=tid, activity=act, product_typeid=ptype, quantity=q)
-        bp_products[(tid, act)].append(row)
-        bp_by_product[ptype].append(row)
+        key = (tid, act)
+        if key in bp_products:
+            raise ValueError(f"Multiple production outputs found for blueprint {tid}, activity {act}")
+        if ptype in bp_by_product:
+            raise ValueError(f"Multiple published production blueprints found for product {ptype}")
+        bp_products[key] = row
+        bp_by_product[ptype] = row
 
-    # Load industryActivityMaterials - blueprint inputs
+    # Load industryActivityMaterials - published blueprint inputs
     materials = defaultdict(list)
-    cur.execute('SELECT typeID, activityID, materialTypeID, quantity FROM "industryActivityMaterials"')
+    cur.execute(
+        '''
+        SELECT m.typeID, m.activityID, m.materialTypeID, m.quantity
+        FROM "industryActivityMaterials" m
+        JOIN "invTypes" bp ON bp.typeID = m.typeID
+        JOIN "invTypes" mat ON mat.typeID = m.materialTypeID
+        WHERE bp.published = 1
+        AND mat.published = 1
+        '''
+    )
     for typeID, activityID, materialTypeID, qty in cur.fetchall():
         tid = int(typeID)
         act = int(activityID)
@@ -58,7 +91,14 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
 
     # Load industryActivity - blueprint activity times
     # table columns: typeID, activityID, time
-    cur.execute('SELECT typeID, activityID, time FROM "industryActivity"')
+    cur.execute(
+        '''
+        SELECT a.typeID, a.activityID, a.time
+        FROM "industryActivity" a
+        JOIN "invTypes" bp ON bp.typeID = a.typeID
+        WHERE bp.published = 1
+        '''
+    )
     # use a single dict keyed by (typeID, activityID) -> BlueprintActivityTime to match other maps
     activity_times = {}
     for typeID, activityID, time in cur.fetchall():
@@ -67,6 +107,58 @@ def load_tables(db_path: str = "eve.db") -> IndustryIndex:
         t = float(time) if time is not None else None
         activity_times[(tid, act)] = BlueprintActivityTime(type_id=tid, activity=act, time=t)
 
+    cur.execute(
+        '''
+        SELECT rigTypeID, activityKey, bonusType, productGroupID, filterID
+        FROM "rigAffectedProductGroups"
+        '''
+    )
+    rig_affected_groups = defaultdict(set)
+    for rigTypeID, activityKey, bonusType, productGroupID, filterID in cur.fetchall():
+        row = RigAffectedProductGroup(
+            rig_type_id=int(rigTypeID),
+            activity_key=str(activityKey),
+            bonus_type=str(bonusType),
+            product_group_id=int(productGroupID),
+            filter_id=int(filterID) if filterID is not None else None,
+        )
+        key = (row.rig_type_id, row.activity_key, row.bonus_type)
+        rig_affected_groups[key].add(row.product_group_id)
+
+    cur.execute(
+        '''
+        SELECT DISTINCT mt.typeID, mt.metaGroupID
+        FROM "invMetaTypes" mt
+        JOIN "rigAffectedProductGroups" r ON r.rigTypeID = mt.typeID
+        '''
+    )
+    rig_meta_groups = {
+        int(typeID): int(metaGroupID)
+        for typeID, metaGroupID in cur.fetchall()
+        if metaGroupID is not None
+    }
+
+    cur.execute(
+        '''
+        SELECT solarSystemName, solarSystemID
+        FROM "mapSolarSystems"
+        WHERE solarSystemName IS NOT NULL
+        '''
+    )
+    solar_system_ids_by_name = {
+        str(solarSystemName): int(solarSystemID)
+        for solarSystemName, solarSystemID in cur.fetchall()
+    }
+
     conn.close()
     # return an index object that hides tuple-key usage
-    return IndustryIndex(inv_types, bp_products, bp_by_product, materials, activity_times)
+    return IndustryIndex(
+        inv_types,
+        bp_products,
+        bp_by_product,
+        materials,
+        activity_times,
+        dict(rig_affected_groups),
+        rig_meta_groups,
+        solar_system_ids_by_name,
+    )
